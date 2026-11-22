@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0 - 2026-11-22
+
 - **[New]** Searchable icon picker for macros, equipment sets, bank tabs, guild bank tabs and transmog outfits.
 - **[New]** Search by spell, item, mount, pet, achievement and currency names, spell descriptions, synonyms and icon file names, with close matches for typos.
 - **[New]** Search by colour: "green" finds icons that look green, ranked by how green they are.
