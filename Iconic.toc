@@ -6,6 +6,7 @@
 ## IconTexture: Interface\AddOns\Iconic\Assets\logo
 ## SavedVariables: IconicDB
 ## X-Website: https://github.com/whytspace/Iconic
+## X-Curse-Project-ID: 1824700
 
 Locales/Locales.lua
 Core.lua
