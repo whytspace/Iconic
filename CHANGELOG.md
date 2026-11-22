@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **[Change]** Icon data loads faster, and colour filters, colour grouping and filter counts respond faster.
+- **[Change]** The first icon picker of a session opens at once and shows "Loading icons…" until its icons appear.
 
 ## 0.1.0 - 2026-11-22
 

@@ -179,6 +179,27 @@ local function classIds(mask)
   return list
 end
 
+-- Decoded masks, cached: few distinct masks occur. The lists are shared, so never change them.
+local function cachedLists(decode)
+  return setmetatable({}, {
+    __index = function(cache, mask)
+      local list = decode(mask)
+      cache[mask] = list
+      return list
+    end,
+  })
+end
+local CLASS_IDS = cachedLists(classIds)
+local SOURCE_KEYS = cachedLists(function(mask)
+  local list = {}
+  for _, source in ipairs(Catalog.SOURCES) do
+    if hasBit(mask, source.bit) then
+      list[#list + 1] = source.key
+    end
+  end
+  return list
+end)
+
 -- Per filter group: does a row match one of the selected values?
 local DIMENSION_MATCHERS = {
   source = function(index, row, selected)
@@ -269,32 +290,42 @@ end
 -- Icons per filter value: { source = {S=n}, class = {[id]=n}, category = {[2]=n, ["2:7"]=n}, profession = {[id]=n} }.
 function Catalog.Counts(index, rows)
   local counts = { source = {}, class = {}, category = {}, profession = {}, color = {} }
-  local function add(dim, value)
-    counts[dim][value] = (counts[dim][value] or 0) + 1
-  end
+  local source, class, category, profession = counts.source, counts.class, counts.category, counts.profession
+  local srcs, clss, catLists, profLists = index.src, index.cls, index.cats, index.profs
   for _, row in ipairs(rows) do
-    local src = index.src[row]
-    for _, source in ipairs(Catalog.SOURCES) do
-      if hasBit(src, source.bit) then
-        add("source", source.key)
+    for _, key in ipairs(SOURCE_KEYS[srcs[row]]) do
+      source[key] = (source[key] or 0) + 1
+    end
+    for _, classId in ipairs(CLASS_IDS[clss[row]]) do
+      class[classId] = (class[classId] or 0) + 1
+    end
+    local cats = catLists[row]
+    if cats then
+      for i, number in ipairs(cats) do
+        local key, top = CATEGORY_KEYS[number], floor(number / 256)
+        category[key] = (category[key] or 0) + 1
+        -- Lists are sorted, so a top category repeats only right after itself.
+        if i == 1 or floor(cats[i - 1] / 256) ~= top then
+          category[top] = (category[top] or 0) + 1
+        end
       end
     end
-    for _, classId in ipairs(classIds(index.cls[row])) do
-      add("class", classId)
+    for _, prof in ipairs(profLists[row] or NONE) do
+      profession[prof] = (profession[prof] or 0) + 1
     end
-    local tops = {}
-    for _, number in ipairs(index.cats[row] or NONE) do
-      add("category", CATEGORY_KEYS[number])
-      tops[floor(number / 256)] = true
+  end
+  local minimum = ns.Search.COLOR_MIN
+  for _, color in ipairs(ns.Search.COLORS) do
+    local shares, n = index.colors[color.key], 0
+    if shares then
+      for _, row in ipairs(rows) do
+        if (shares[row] or 0) >= minimum then
+          n = n + 1
+        end
+      end
     end
-    for top in pairs(tops) do
-      add("category", top)
-    end
-    for _, prof in ipairs(index.profs[row] or NONE) do
-      add("profession", prof)
-    end
-    for _, color in ipairs(Catalog.GroupValues(index, row, "color")) do
-      add("color", color)
+    if n > 0 then
+      counts.color[color.key] = n
     end
   end
   return counts

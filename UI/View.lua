@@ -526,8 +526,7 @@ function View:PerRow()
   return perRow
 end
 
--- Loads the textures to show; `extras` are the provider's spellbook/equipment icons (count as usable).
-function View:SetTextures(textures, extras)
+function View:Fill(textures, extras)
   self.data = ns.LoadData() or self.data
   self.textures = textures
   self.rows, self.data, self.positions = Catalog.Rows(self.data, textures)
@@ -537,12 +536,33 @@ function View:SetTextures(textures, extras)
   self:Refresh()
 end
 
+-- Loads the textures to show; `extras` are the provider's spellbook/equipment icons (count as usable).
+-- Before the icon data is loaded, the grid fills a frame later, so the frame shows before the load pause.
+function View:SetTextures(textures, extras)
+  self.fillTicket = (self.fillTicket or 0) + 1
+  if ns.data ~= nil then
+    self:Fill(textures, extras)
+    return
+  end
+  local ticket = self.fillTicket
+  self.empty:SetText(L["Loading icons…"])
+  self.empty:Show()
+  C_Timer.After(0, function()
+    if self.fillTicket == ticket then
+      self:Fill(textures, extras)
+      self:SetSelected(self.selectedTexture)
+      self:ScrollToSelected()
+    end
+  end)
+end
+
 -- Position of a row's texture in the list given to SetTextures.
 function View:PositionOf(row)
   return self.positions and self.positions[row]
 end
 
 function View:SetSelected(texture)
+  self.selectedTexture = texture
   self.selectedKey = texture and (Catalog.ResolveId(self.data, texture) or texture) or nil
   self.scrollBox:ForEachFrame(function(frame)
     for _, button in ipairs(frame.buttons or {}) do
