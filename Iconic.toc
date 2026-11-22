@@ -21,5 +21,7 @@ UI/Browser.lua
 UI/Tooltips.lua
 UI/About.lua
 UI/Settings.lua
+UI/Screenshot.lua
+UI/ScreenshotTour.lua
 UI/API.lua
 UI/Events.lua

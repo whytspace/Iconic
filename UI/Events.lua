@@ -32,8 +32,13 @@ end)
 
 SLASH_ICONIC1 = "/iconic"
 SlashCmdList.ICONIC = function(msg)
-  if strtrim(msg or ""):lower() == "settings" then
+  local command = strtrim(msg or ""):lower()
+  if command == "settings" then
     ns.OpenSettings()
+  elseif command == "shot" then
+    ns.Screenshot:Capture()
+  elseif command:match("^shot tour") then
+    ns.ScreenshotTour:Run(command:match("^shot tour%s+(%S+)"))
   else
     ns.Browser:Toggle()
   end

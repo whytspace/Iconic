@@ -94,6 +94,19 @@ magick Assets/logo.png -resize 256x256 -depth 8 -type TrueColorAlpha -compress n
 
 Only the TGA ships; `.pkgmeta` ignores the PNG and SVG.
 
+## Screenshots
+
+README images come from the screenshot tour, never hand-taken screenshots. `/iconic shot tour` stages each view (`VIEWS` in `UI/ScreenshotTour.lua`), captures it on a black and a white backdrop with all other UI hidden, and restores your search, filters and grouping. Keep the mouse off the windows while it runs. Then turn each pair into a transparent PNG in `docs/images/`:
+
+```sh
+scripts/process-shots.sh                 # after /iconic shot tour
+scripts/process-shots.sh browser         # after /iconic shot tour browser
+```
+
+`/iconic shot` captures whatever browser or picker is open, for one-off images. A new tour view needs `VIEWS`, the `views` list in `process-shots.sh` (same order) and the README updated together.
+
+The script runs on the host and reads the retail Screenshots folder; set `SHOTS_DIR` for WoW Forever. ImageMagick is required. `pngquant` and `oxipng` are optional.
+
 ## Changelog
 
 Update `CHANGELOG.md` for player-facing changes. One flat list; start each entry with **[New]**, **[Change]**, or **[Fix]**, ordered New, Change, Fix. Phrase **[Fix]** entries as the misbehavior that stopped ("…no longer…").

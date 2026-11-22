@@ -285,6 +285,7 @@ function View:SetupFilterMenu()
     end
     if #colors > 0 then
       local menu = root:CreateButton(L["Color"])
+      view.colorMenu = menu
       for _, color in ipairs(colors) do
         local label = swatch(color.hex, SWATCH_MENU_SIZE) .. " " .. L[color.label]
         entry(menu, label, "color", color.key, isSet("color", color.key), toggle("color", color.key))

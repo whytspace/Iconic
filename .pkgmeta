@@ -22,6 +22,7 @@ ignore:
   - AGENTS.md
   - CLAUDE.md
   - CONTRIBUTING.md
+  - docs
   - README.md
   - scripts
   - spec
