@@ -41,6 +41,7 @@ read_globals = {
   "C_SpellBook",
   "C_Timer",
   "CLOSE",
+  "ColorPickerFrame",
   "CreateAndInitFromMixin",
   "CreateAtlasMarkup",
   "CreateColor",

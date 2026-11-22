@@ -79,16 +79,35 @@ local function category(key)
   return tonumber(class) * 256 + tonumber(subclass)
 end
 
+-- OKLab (x100) of each colour's first reference shade in scripts/build_colors.py, for fake dominant colours.
+local COLOR_LAB = {
+  red = { 55, 18, 9 },
+  orange = { 69, 9, 13 },
+  yellow = { 86, -3, 16 },
+  green = { 65, -15, 11 },
+  teal = { 65, -11, -2 },
+  blue = { 52, -2, -19 },
+  purple = { 52, 11, -17 },
+  pink = { 73, 16, -4 },
+  brown = { 44, 4, 6 },
+  black = { 18, 0, 0 },
+  white = { 94, 0, 1 },
+  grey = { 76, 0, 0 },
+}
+M.COLOR_LAB = COLOR_LAB
+
 -- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
 -- names = {...}, desc, src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
--- colors = "green:62 red:18" }.
+-- colors = "green:62 red:18" }; each colour becomes a dominant colour at its reference shade with that weight.
 function M.fakeData(ns, rows)
   local icons = { id = {}, file = {}, names = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
-      for _, color in ipairs(ns.Search.COLORS) do
-        colors[color.key] = {}
+      for k = 1, 4 do
+        for _, field in ipairs({ "l", "a", "b", "w", "name" }) do
+          colors[field .. k] = {}
+        end
       end
     end
   end
@@ -107,11 +126,17 @@ function M.fakeData(ns, rows)
     icons.cats[row] = list(r.cats, category)
     icons.profs[row] = list(r.profs, tonumber)
     icons.spells[row] = list(r.spells, tonumber)
-    for _, shares in pairs(colors) do
-      shares[row] = 0
+    if next(colors) then
+      for k = 1, 4 do
+        colors["l" .. k][row], colors["a" .. k][row], colors["b" .. k][row], colors["w" .. k][row] = 0, 0, 0, 0
+      end
     end
+    local k = 0
     for color, share in (r.colors or ""):gmatch("(%a+):(%d+)") do
-      colors[color][row] = tonumber(share)
+      k = k + 1
+      local lab = COLOR_LAB[color]
+      colors["l" .. k][row], colors["a" .. k][row], colors["b" .. k][row] = lab[1], lab[2], lab[3]
+      colors["w" .. k][row], colors["name" .. k][row] = tonumber(share), color
     end
   end
   icons.colors = colors

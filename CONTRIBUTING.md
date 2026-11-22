@@ -43,13 +43,13 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
-Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are one share column per colour.
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
 
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming). Change both together; the data spec catches drift.
 
 ## Icon colours
 
-Colour scores need the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
+Colour data needs the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
 
 - Default source: `/Applications/Games/World of Warcraft`. Elsewhere, set `WOW_DIR` to the install folder before `devc up`.
 - Docker Desktop must share that folder: Settings → Resources → File sharing.
@@ -59,16 +59,21 @@ Colour scores need the icon images. `scripts/extract_icons.py` reads them straig
 devc python3 -I scripts/extract_icons.py
 ```
 
-`scripts/build_colors.py` then scores every icon into `.cache/icon_colors.csv`, and `build_data.py` merges that into the data files. `build_data.py` stops when that file is missing:
+`scripts/build_colors.py` then finds every icon's dominant colours into `.cache/icon_colors.csv`, and `build_data.py` merges that into the data files. `build_data.py` stops when that file is missing:
 
 ```sh
 devc python3 -I scripts/build_colors.py --sheets
 devc python3 scripts/build_data.py
 ```
 
-Pixels are converted to OKLab and softly assigned to the nearest of the named colours in `COLORS`; pixels near the centre and saturated pixels weigh more. Each icon keeps the colours with a share of at least `MIN_SHARE` percent. `--sheets` writes `.cache/colors/<colour>.png` with the top icons per colour, for checking the result by eye.
+Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colours, each with its weight, the part of the icon it covers; pixels near the centre and saturated pixels weigh more. Each dominant colour is also named after the nearest reference shade in `COLORS`. `--sheets` writes `.cache/colors/<colour>.png` with the icons that have the most of each named colour, for checking the result by eye.
 
-In search, colour words (`COLOR_WORDS` in `Search.lua`) are conditions on these shares, not text: every colour must reach `COLOR_MIN`, and results rank by the weakest one.
+In search, colours are chips (`chipScore` in `Search.lua`); every chip must match and results rank by the weakest one:
+
+- A named chip, from a colour word's suggestion (`Search.COLORS` labels and hints), needs `COLOR_MIN` of the icon in dominant colours with that name.
+- A picked chip is compared in OKLab: an icon's closeness is the weight of each dominant colour, counted less the farther it lies from the pick (Gaussian with radius `PICK_RADIUS`). It needs `PICK_MIN`.
+
+Grouping by colour puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
 
 ## Synonyms
 
@@ -86,7 +91,7 @@ Add a group only when a player would plausibly search one word to find the other
 
 ## Assets
 
-`Assets/swatch.tga`, the shaded sphere behind colour swatches, is generated: `devc python3 -I scripts/build_swatch.py`.
+`Assets/swatch.tga`, the shaded sphere behind colour swatches, and `Assets/colorwheel.tga`, the colour picker button, are generated: `devc python3 -I scripts/build_swatch.py`.
 
 The add-on icon is `Assets/logo.svg`. WoW loads only uncompressed, power-of-two, 32-bit RGBA TGA files, referenced without the extension. The SVG uses filters, so render it to `Assets/logo.png` in a browser (e.g. headless Chrome) and convert that with ImageMagick:
 

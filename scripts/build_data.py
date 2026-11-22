@@ -383,14 +383,14 @@ SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "A": 16, "C": 32}
 
 
 def load_colors():
-    """Colour names and file ID -> shares from .cache/icon_colors.csv, written by build_colors.py."""
+    """Column names and file ID -> values from .cache/icon_colors.csv, written by build_colors.py."""
     path = os.path.join(ROOT, ".cache", "icon_colors.csv")
     if not os.path.exists(path):
         sys.exit(f"missing {path}; run scripts/build_colors.py first")
     with open(path, encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle)
-        names = next(reader)[1:]
-        return names, {int(row[0]): [int(v) for v in row[1:]] for row in reader}
+        columns = next(reader)[1:]
+        return columns, {int(row[0]): row[1:] for row in reader}
 
 
 def lua_string(text):
@@ -410,11 +410,11 @@ def category_number(key):
 
 
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
-    color_names, colors = load_colors()
+    color_columns, colors = load_colors()
     ids = sorted(icons)
     columns = {name: [] for name in ("id", "file", "names", "text", "src", "cls", "cats", "profs", "spells")}
-    shares = {name: [] for name in color_names}
-    no_colors = [0] * len(color_names)
+    # Dominant colours: l, a, b (OKLab * 100) and w (weight, 0 for no colour) are numbers, name is a colour key.
+    shares = {name: [] for name in color_columns}
     for file_id in ids:
         t = icons[file_id]
         names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
@@ -429,8 +429,13 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
         columns["profs"].append(lua_numbers(sorted(t.profs)))
         columns["spells"].append(lua_numbers(sorted(t.spells)))
-        for column, share in zip(shares.values(), colors.get(file_id, no_colors)):
-            column.append(str(share))
+        values = colors.get(file_id, [])
+        for k, (name, column) in enumerate(shares.items()):
+            value = values[k] if k < len(values) else ""
+            if name.startswith("name"):
+                column.append(lua_string(value) if value else "nil")
+            else:
+                column.append(value or "0")
 
     def column(out, name, values, indent):
         out.write(f"{indent}{name} = {{\n")

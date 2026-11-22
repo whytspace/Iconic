@@ -62,7 +62,8 @@ end
 
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file, names
 -- (display, "a|b"), text (padded search text), src (source bits), cls (class bits), cats (category numbers),
--- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colors: colour -> row -> share.
+-- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant colour, the
+-- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest colour key).
 function Catalog.NewIndex()
   return {
     count = 0,
@@ -78,7 +79,7 @@ function Catalog.NewIndex()
     cats = {},
     profs = {},
     spells = {},
-    colors = {},
+    colorSlots = {},
   }
 end
 
@@ -119,8 +120,20 @@ function Catalog.Parse(raw)
   for _, name in ipairs(COLUMNS) do
     index[name] = icons[name] or {}
   end
-  index.colors = icons.colors or {}
-  index.hasColors = next(index.colors) ~= nil
+  local colors = icons.colors or {}
+  for k = 1, math.huge do
+    if not colors["w" .. k] then
+      break
+    end
+    index.colorSlots[k] = {
+      l = colors["l" .. k],
+      a = colors["a" .. k],
+      b = colors["b" .. k],
+      w = colors["w" .. k],
+      name = colors["name" .. k],
+    }
+  end
+  index.hasColors = #index.colorSlots > 0
   local key, texture, byKey, byFile, file = index.key, index.texture, index.byKey, data.byFile, index.file
   for row = 1, #ids do
     local id = ids[row]
@@ -244,19 +257,11 @@ local DIMENSION_MATCHERS = {
     end
     return false
   end,
-  color = function(index, row, selected)
-    for color in pairs(selected) do
-      if ns.Search.ColorShare(index, row, color) >= ns.Search.COLOR_MIN then
-        return true
-      end
-    end
-    return false
-  end,
 }
-Catalog.DIMENSIONS = { "source", "class", "category", "profession", "color" }
+Catalog.DIMENSIONS = { "source", "class", "category", "profession" }
 
 -- filters: { source = {S=true}, class = {[8]=true}, category = {[2]=true, ["2:7"]=true},
--- profession = {[164]=true}, color = {green=true}, usable = true }; usableSet: key -> true.
+-- profession = {[164]=true}, usable = true }; usableSet: key -> true.
 -- Values within a group combine with OR, groups with AND. `skip` names a group to ignore.
 function Catalog.Matches(index, row, filters, usableSet, skip)
   if not filters then
@@ -314,18 +319,20 @@ function Catalog.Counts(index, rows)
       profession[prof] = (profession[prof] or 0) + 1
     end
   end
-  local minimum = ns.Search.COLOR_MIN
-  for _, color in ipairs(ns.Search.COLORS) do
-    local shares, n = index.colors[color.key], 0
-    if shares then
-      for _, row in ipairs(rows) do
-        if (shares[row] or 0) >= minimum then
-          n = n + 1
-        end
+  local minimum, color, slots = ns.Search.COLOR_MIN, counts.color, index.colorSlots
+  local shares = {}
+  for _, row in ipairs(rows) do
+    for _, slot in ipairs(slots) do
+      local name = slot.name[row]
+      if name then
+        shares[name] = (shares[name] or 0) + slot.w[row]
       end
     end
-    if n > 0 then
-      counts.color[color.key] = n
+    for name, share in pairs(shares) do
+      if share >= minimum then
+        color[name] = (color[name] or 0) + 1
+      end
+      shares[name] = nil
     end
   end
   return counts
@@ -340,7 +347,7 @@ function Catalog.FacetCounts(index, rows, filters, usableSet)
       active[#active + 1] = dim
     end
   end
-  local counts = { source = {}, class = {}, category = {}, profession = {}, color = {} }
+  local counts = { source = {}, class = {}, category = {}, profession = {} }
   local buckets = {}
   for _, row in ipairs(rows) do
     if not (filters and filters.usable) or (usableSet and usableSet[index.key[row]]) then
@@ -378,12 +385,46 @@ end
 
 function Catalog.ActiveFilterCount(filters)
   local count = filters and filters.usable and 1 or 0
-  for _, dim in ipairs({ "source", "class", "category", "profession", "color" }) do
+  for _, dim in ipairs(Catalog.DIMENSIONS) do
     for _ in pairs(filters and filters[dim] or {}) do
       count = count + 1
     end
   end
   return count
+end
+
+local DULL = { grey = true, black = true, white = true, brown = true }
+-- Minimum weight (0-100) of a colour that names a group, and OKLab chroma (x100) a vivid colour needs.
+local GROUP_MIN_WEIGHT, VIVID_CHROMA = 10, 4
+
+-- Colour group of a row and the weight of that colour: its strongest vivid colour covering GROUP_MIN_WEIGHT, else
+-- such a brown, else its strongest colour of any kind.
+local function colorGroup(index, row)
+  local vivid, vividWeight, brownWeight, strongest, strongestWeight
+  for _, slot in ipairs(index.colorSlots) do
+    local name, weight = slot.name[row], slot.w[row]
+    if name and weight > 0 then
+      if not strongestWeight or weight > strongestWeight then
+        strongest, strongestWeight = name, weight
+      end
+      if weight >= GROUP_MIN_WEIGHT then
+        if name == "brown" then
+          brownWeight = math.max(brownWeight or 0, weight)
+        elseif not DULL[name] and (not vividWeight or weight > vividWeight) then
+          local a, b = slot.a[row], slot.b[row]
+          if a * a + b * b >= VIVID_CHROMA * VIVID_CHROMA then
+            vivid, vividWeight = name, weight
+          end
+        end
+      end
+    end
+  end
+  if vivid then
+    return vivid, vividWeight
+  elseif brownWeight then
+    return "brown", brownWeight
+  end
+  return strongest, strongestWeight
 end
 
 -- Group values of a row for a group-by key; an empty list puts it under "Other".
@@ -412,11 +453,7 @@ function Catalog.GroupValues(index, row, groupBy)
       values[i] = prof
     end
   elseif groupBy == "color" then
-    for _, color in ipairs(ns.Search.COLORS) do
-      if ns.Search.ColorShare(index, row, color.key) >= ns.Search.COLOR_MIN then
-        values[#values + 1] = color.key
-      end
-    end
+    values[1] = colorGroup(index, row)
   end
   return values
 end
@@ -501,13 +538,14 @@ function Catalog.Sections(data, rows, groupBy, recentRows)
   for _, value in ipairs(values) do
     local list = byValue[value]
     if groupBy == "color" then
-      -- Strongest share first; equal shares keep the incoming order.
-      local position, shares = {}, index.colors[value] or NONE
+      -- Most of the group's colour first; equal weights keep the incoming order.
+      local position, share = {}, {}
       for i, row in ipairs(list) do
         position[row] = i
+        share[row] = select(2, colorGroup(index, row))
       end
       table.sort(list, function(a, b)
-        local sa, sb = shares[a] or 0, shares[b] or 0
+        local sa, sb = share[a], share[b]
         if sa ~= sb then
           return sa > sb
         end

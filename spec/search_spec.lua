@@ -111,27 +111,60 @@ describe("Search", function()
       rows = Catalog.Rows(data, { 1, 2, 3, 4, 5 })
     end)
 
-    it("ranks icons by how much of the colour they show", function()
-      assert.are.same({ 1, 2, 5 }, keys((find("green"))))
-    end)
-
-    it("ignores the colour word in names", function()
-      local results = find("green")
-      for _, row in ipairs(results) do
-        assert.are_not.equal(4, data.index.key[row])
+    local function named(...)
+      local chips = {}
+      for i, key in ipairs({ ... }) do
+        chips[i] = { key = key }
       end
+      return { chips = chips }
+    end
+
+    it("ranks icons by how much of a named colour they show", function()
+      assert.are.same({ 1, 2, 5 }, keys((find("", named("green")))))
     end)
 
-    it("requires every colour and ranks by the weakest", function()
-      assert.are.same({ 5 }, keys((find("red green"))))
+    it("treats a typed colour word as text", function()
+      assert.are.same({ 4 }, keys((find("green"))))
     end)
 
-    it("combines a colour with text", function()
-      assert.are.same({ 1 }, keys((find("green emerald"))))
+    it("requires every chip and ranks by the weakest", function()
+      assert.are.same({ 5 }, keys((find("", named("red", "green")))))
     end)
 
-    it("maps colour aliases", function()
-      assert.are.same({ 3, 5 }, keys((find("crimson"))))
+    it("combines chips with text", function()
+      assert.are.same({ 1 }, keys((find("emerald", named("green")))))
+    end)
+
+    describe("picked colour", function()
+      local green, red
+
+      before_each(function()
+        green = Search.PickTarget(60 / 255, 170 / 255, 55 / 255)
+        red = Search.PickTarget(205 / 255, 40 / 255, 40 / 255)
+      end)
+
+      it("converts a colour to OKLab scaled like the data", function()
+        local lab = addon.COLOR_LAB.red
+        for i = 1, 3 do
+          assert.is_true(math.abs(red[i] - lab[i]) < 0.5)
+        end
+      end)
+
+      it("ranks icons by how much of them is near the colour and drops distant ones", function()
+        assert.are.same({ 1, 2, 5 }, keys((find("", { chips = { { target = green } } }))))
+        assert.are.same({ 3, 5 }, keys((find("", { chips = { { target = red } } }))))
+      end)
+
+      it("filters by words and still ranks by closeness", function()
+        assert.are.same({ 1 }, keys((find("gem", { chips = { { target = green } } }))))
+        assert.are.same({ 3 }, keys((find("gem", { chips = { { target = red } } }))))
+        assert.are.same({ 5 }, keys((find("flower", { chips = { { target = red } } }))))
+        assert.are.same({}, keys((find("peacebloom", { chips = { { target = red } } }))))
+      end)
+
+      it("combines a picked colour with a named one", function()
+        assert.are.same({ 5 }, keys((find("", { chips = { { target = red }, { key = "green" } } }))))
+      end)
     end)
   end)
 

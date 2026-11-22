@@ -110,30 +110,25 @@ describe("Catalog", function()
       rows = Catalog.Rows(data, { 1, 2, 3, 4 })
     end)
 
-    it("groups by colour, strongest share first, weak shares under Other", function()
+    it("groups each icon under its strongest vivid colour, most of it first", function()
       local titles = {}
       for i, section in ipairs(Catalog.Sections(data, rows, "color")) do
         titles[i] = section.title .. ":" .. table.concat(keys(section.rows), ",")
       end
-      assert.are.same({ "Red:3,1", "Green:2,1", "Other:4" }, titles)
+      assert.are.same({ "Red:3", "Green:2,1", "Grey:4" }, titles)
     end)
 
-    it("filters by any selected colour", function()
-      assert.are.same({ 1, 3 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
-      assert.are.same({ 1, 2, 3 }, keys(Catalog.Filter(data.index, rows, { color = { red = true, green = true } })))
+    it("ignores colour filters", function()
+      assert.are.same({ 1, 2, 3, 4 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
     end)
 
-    it("counts each group under the other groups' filters", function()
-      local counts = Catalog.FacetCounts(data.index, rows, { color = { red = true }, source = {} })
-      assert.are.equal(2, counts.color.green)
-      assert.are.equal(2, counts.color.red)
-    end)
-
-    it("suggests a colour for related words", function()
-      local suggestion = Catalog.Suggest(data, "blood", Catalog.Counts(data.index, rows))[1]
-      assert.are.equal("color", suggestion.dim)
-      assert.are.equal("red", suggestion.value)
-      assert.are.equal("blood", suggestion.word)
+    it("suggests a colour for related words and aliases", function()
+      for _, word in ipairs({ "blood", "crimson" }) do
+        local suggestion = Catalog.Suggest(data, word, Catalog.Counts(data.index, rows))[1]
+        assert.are.equal("color", suggestion.dim)
+        assert.are.equal("red", suggestion.value)
+        assert.are.equal(word, suggestion.word)
+      end
     end)
 
     it("counts icons per colour", function()

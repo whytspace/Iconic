@@ -22,10 +22,11 @@ local function after(delay, fn)
   end)
 end
 
--- Search, filters and grouping for one view; nil keeps the current value.
-local function stage(view, query, filters, groupBy)
+-- Search, filters, grouping and colour chips for one view.
+local function stage(view, query, filters, groupBy, chips)
   ns.db.groupBy = groupBy
   view.filters = filters
+  view:SetChips(chips or {})
   view.search:SetText(query)
   view.search:ClearFocus()
   view:UpdateGroupText()
@@ -103,17 +104,9 @@ local VIEWS = {
     run = function(capture)
       ns.Browser:Open()
       local view = ns.Browser.view
-      stage(view, "gem", { color = { green = true } }, "none")
+      stage(view, "gem", {}, "none", { { key = "green" } })
       after(SETTLE, function()
-        view.filter:OpenMenu()
-        after(0.1, function()
-          if view.colorMenu then
-            view.colorMenu:ForceOpenSubmenu()
-          end
-          capture(ns.Browser.frame, function()
-            view.filter:CloseMenu()
-          end)
-        end)
+        capture(ns.Browser.frame)
       end)
     end,
   },
@@ -142,6 +135,7 @@ local function snapshot()
     macroShown = MacroFrame and MacroFrame:IsShown(),
     query = view and view.search:GetText(),
     filters = view and view.filters,
+    chips = view and view.chips,
     selected = ns.Browser.selected,
   }
 end
@@ -160,6 +154,7 @@ local function restore(saved)
   local view = ns.Browser.view
   if view then
     view.filters = saved.filters or {}
+    view:SetChips(saved.chips or {})
     view.search:SetText(saved.query or "")
     view:UpdateGroupText()
     view:Refresh()

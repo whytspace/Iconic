@@ -249,91 +249,118 @@ local function variantsFor(token, synonyms, vocabulary)
   return variants
 end
 
--- Colour words (after stemming) and the colour they search for; matches COLORS in scripts/build_colors.py.
-local COLOR_WORDS = {
-  red = "red",
-  crimson = "red",
-  scarlet = "red",
-  orange = "orange",
-  yellow = "yellow",
-  green = "green",
-  teal = "teal",
-  cyan = "teal",
-  turquoise = "teal",
-  blue = "blue",
-  azure = "blue",
-  purple = "purple",
-  violet = "purple",
-  pink = "pink",
-  magenta = "pink",
-  brown = "brown",
-  black = "black",
-  white = "white",
-  grey = "grey",
-  gray = "grey",
-}
--- Minimum colour share (0-100) for a colour word to match; the loose pass accepts less.
-local COLOR_MIN, COLOR_MIN_LOOSE, COLOR_WEIGHT = 20, 10, 0.2
+-- Minimum share (0-100) of a named colour for a named colour chip to match.
+local COLOR_MIN = 20
 Search.COLOR_MIN = COLOR_MIN
 
--- Colour names in display order, with a hex shade for swatches (as in scripts/build_colors.py) and words
--- that suggest the colour filter without being colour conditions themselves.
+-- Colour names in display order (keys as in scripts/build_colors.py), with a hex shade for swatches and other
+-- words that suggest the colour.
 Search.COLORS = {
-  { key = "red", label = "Red", hex = "dd3333", hints = { "blood", "ruby" } },
+  { key = "red", label = "Red", hex = "dd3333", hints = { "crimson", "scarlet", "blood", "ruby" } },
   { key = "orange", label = "Orange", hex = "e67d1e", hints = { "copper", "rust" } },
   { key = "yellow", label = "Yellow", hex = "ebd237", hints = { "gold", "golden", "amber" } },
   { key = "green", label = "Green", hex = "4cbb44", hints = { "emerald", "jade", "verdant", "fel" } },
-  { key = "teal", label = "Teal", hex = "1ea5a0", hints = { "aqua" } },
-  { key = "blue", label = "Blue", hex = "4b7ce8", hints = { "sapphire", "sky" } },
-  { key = "purple", label = "Purple", hex = "a060e0", hints = { "amethyst", "void" } },
-  { key = "pink", label = "Pink", hex = "f078be", hints = { "rose" } },
+  { key = "teal", label = "Teal", hex = "1ea5a0", hints = { "cyan", "turquoise", "aqua" } },
+  { key = "blue", label = "Blue", hex = "4b7ce8", hints = { "azure", "sapphire", "sky" } },
+  { key = "purple", label = "Purple", hex = "a060e0", hints = { "violet", "amethyst", "void" } },
+  { key = "pink", label = "Pink", hex = "f078be", hints = { "magenta", "rose" } },
   { key = "brown", label = "Brown", hex = "a87848", hints = { "leather", "wood", "bronze" } },
   { key = "black", label = "Black", hex = "707070", hints = { "dark", "obsidian", "onyx", "ebon" } },
   { key = "white", label = "White", hex = "ffffff", hints = { "pale", "ivory", "snow" } },
-  { key = "grey", label = "Grey", hex = "a0a0a0", hints = { "silver", "steel", "stone" } },
+  { key = "grey", label = "Grey", hex = "a0a0a0", hints = { "gray", "silver", "steel", "stone" } },
 }
 
--- The colour a query token asks for, if it is a colour word.
-function Search.ColorOf(token)
-  return COLOR_WORDS[token]
+-- OKLab distance (x100, as the data stores it) over which a dominant colour stops matching a picked one.
+local PICK_RADIUS = 5
+-- Minimum closeness (0-100) of an icon to a picked colour.
+local PICK_MIN = 10
+Search.PICK_MIN = PICK_MIN
+
+-- OKLab of an sRGB colour with channels from 0 to 1.
+local function oklab(r, g, b)
+  local function linear(c)
+    return c <= 0.04045 and c / 12.92 or ((c + 0.055) / 1.055) ^ 2.4
+  end
+  local function cbrt(v)
+    return v < 0 and -((-v) ^ (1 / 3)) or v ^ (1 / 3)
+  end
+  r, g, b = linear(r), linear(g), linear(b)
+  local l = cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  local m = cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  local s = cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  return 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
 end
 
--- Share (0-100) of a colour in an index row.
+-- A picked sRGB colour (channels 0-1) as an OKLab target scaled like the data, for an exact colour chip.
+function Search.PickTarget(r, g, b)
+  local L, a, bb = oklab(r, g, b)
+  return { L * 100, a * 100, bb * 100 }
+end
+
+local PICK_SPREAD = 2 * PICK_RADIUS * PICK_RADIUS
+-- Beyond three radii a colour adds under 1.2% of its weight; it is skipped.
+local PICK_FAR = 9 * PICK_RADIUS * PICK_RADIUS
+
+-- Closeness (0-100) of an index row to a picked colour: the weight of its dominant colours, each counted by how
+-- near it is to the pick.
+local function pickScore(index, row, pick)
+  local score, exp, slots = 0, math.exp, index.colorSlots
+  local pL, pa, pb = pick[1], pick[2], pick[3]
+  for k = 1, #slots do
+    local slot = slots[k]
+    local weight = slot.w[row]
+    if weight and weight > 0 then
+      local dL, da, db = slot.l[row] - pL, slot.a[row] - pa, slot.b[row] - pb
+      local d2 = dL * dL + da * da + db * db
+      if d2 < PICK_FAR then
+        score = score + weight * exp(-d2 / PICK_SPREAD)
+      end
+    end
+  end
+  return score
+end
+
+-- Share (0-100) of a named colour in an index row: the weight of its dominant colours with that name.
 function Search.ColorShare(index, row, color)
-  local shares = index.colors[color]
-  return shares and shares[row] or 0
-end
-
--- Splits query tokens into colour names and text tokens. Without colour data every token is text.
-local function splitColors(tokens, hasColors)
-  local colors, text = {}, {}
-  for _, token in ipairs(tokens) do
-    local color = hasColors and COLOR_WORDS[token]
-    if color then
-      colors[#colors + 1] = color
-    else
-      text[#text + 1] = token
+  local share = 0
+  for _, slot in ipairs(index.colorSlots) do
+    if slot.name[row] == color then
+      share = share + slot.w[row]
     end
   end
-  return colors, text
+  return share
 end
 
--- Colour part of a score: every requested colour must reach the minimum; ranks by the weakest one.
-local function colorScore(index, row, colors, minimum)
+-- Colour part of a score, or nil when a chip misses: a named chip ({ key }) needs COLOR_MIN of that colour name,
+-- an exact one ({ target }, from PickTarget) PICK_MIN closeness. Ranks by the weakest chip.
+local function chipScore(index, row, chips)
   local weakest
-  for _, color in ipairs(colors) do
-    local share = Search.ColorShare(index, row, color)
-    if share < minimum then
-      return nil
+  for i = 1, #chips do
+    local chip = chips[i]
+    local score
+    if chip.target then
+      score = pickScore(index, row, chip.target)
+      if score < PICK_MIN then
+        return nil
+      end
+    else
+      score = Search.ColorShare(index, row, chip.key)
+      if score < COLOR_MIN then
+        return nil
+      end
     end
-    weakest = math.min(weakest or share, share)
+    if not weakest or score < weakest then
+      weakest = score
+    end
   end
-  return weakest and weakest * COLOR_WEIGHT or 0
+  return weakest
 end
 
 -- One pass over the candidate rows. `index` holds the columns (see Catalog.NewIndex).
 local function run(index, rows, query, opts, loose)
-  local colors, tokens = splitColors(Search.Tokens(query), index.hasColors)
+  local tokens = Search.Tokens(query)
   local synonyms = opts.synonyms or {}
   local usable = opts.usable
   local idQuery = tonumber(Search.Normalize(query))
@@ -346,21 +373,18 @@ local function run(index, rows, query, opts, loose)
   end
 
   local texts, ids, keys, spells = index.text, index.id, index.key, index.spells
-  local minimum = loose and COLOR_MIN_LOOSE or COLOR_MIN
-  local scores, results = {}, {}
+  local chips = opts.chips and #opts.chips > 0 and opts.chips or nil
+  local scores, closeness, results = {}, {}, {}
   for _, row in ipairs(rows) do
     local score = 0
-    -- nil when a requested colour is missing.
-    local colorPart = 0
-    if #colors > 0 then
-      colorPart = colorScore(index, row, colors, minimum)
-    end
-    if idQuery and ids[row] == idQuery then
-      score = SCORE_ID
-    elseif not colorPart then
+    local colorPart = chips and chipScore(index, row, chips)
+    if chips and not colorPart then
       score = 0
+    elseif idQuery and ids[row] == idQuery then
+      score = SCORE_ID
     elseif #tokens == 0 then
-      score = colorPart
+      -- Colour chips alone keep every icon that has their colours.
+      score = chips and 1 or 0
     else
       local text = texts[row]
       local matched = 0
@@ -381,7 +405,6 @@ local function run(index, rows, query, opts, loose)
         if phrase and find(text, phrase, 1, true) then
           score = score + BONUS_PHRASE
         end
-        score = score + colorPart
       end
     end
     if score > 0 then
@@ -392,6 +415,7 @@ local function run(index, rows, query, opts, loose)
         score = score + BONUS_PLAYER
       end
       scores[row] = score
+      closeness[row] = colorPart
       results[#results + 1] = row
     end
   end
@@ -401,6 +425,9 @@ local function run(index, rows, query, opts, loose)
     position[row] = i
   end
   table.sort(results, function(a, b)
+    if chips and closeness[a] ~= closeness[b] then
+      return closeness[a] > closeness[b]
+    end
     if scores[a] ~= scores[b] then
       return scores[a] > scores[b]
     end
@@ -411,7 +438,8 @@ end
 
 -- Ranked rows matching every query token; when none do, a looser pass (any token, typos) and
 -- `isLoose = true`. Returns rows, isLoose, scores (row -> score).
--- opts: synonyms (from BuildSynonyms), usable (key -> true), vocabulary (function returning a token list).
+-- opts: synonyms (from BuildSynonyms), usable (key -> true), vocabulary (function returning a token list),
+-- chips (colour chips, see chipScore: keeps icons with every chip's colour and ranks them by the weakest first).
 function Search.Find(index, rows, query, opts)
   opts = opts or {}
   local results, scores = run(index, rows, query, opts, false)

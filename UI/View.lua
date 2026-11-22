@@ -8,6 +8,8 @@ local MIN_ICON_SIZE, ICON_GAP, ROW_INSET = 34, 4, 8
 local BAND_HEIGHT, HEADER_GAP, SECTION_GAP, TOOLBAR_HEIGHT = 26, 8, 8, 40
 local HEADER_HEIGHT = BAND_HEIGHT + HEADER_GAP + 2
 local SEARCH_DELAY = 0.2
+-- While a colour is dragged in the picker, the grid follows at most this often.
+local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
 
 local View = {}
@@ -83,16 +85,12 @@ end
 local MENU_ICON = 16
 -- Shaded grey sphere (scripts/build_swatch.py), tinted per colour.
 local SWATCH = "Interface\\AddOns\\Iconic\\Assets\\swatch"
-local SWATCH_MENU_SIZE, SWATCH_ROW_SIZE, SUGGESTION_ICON_SIZE = 12, 12, 19
+-- Hue wheel on the same sphere (scripts/build_swatch.py), for the button that adds a colour chip.
+local COLOR_WHEEL = "Interface\\AddOns\\Iconic\\Assets\\colorwheel"
+local SWATCH_ROW_SIZE, SUGGESTION_ICON_SIZE = 12, 19
 
 local function hexToRGB(hex)
   return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
-end
-
--- Inline colour swatch for menu labels.
-local function swatch(hex, size)
-  local r, g, b = hexToRGB(hex)
-  return ("|T%s:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t"):format(SWATCH, size, size, r, g, b)
 end
 
 -- Class name in its class color, with the class icon.
@@ -277,21 +275,6 @@ function View:SetupFilterMenu()
       end
     end
 
-    local colors = {}
-    for _, color in ipairs(Search.COLORS) do
-      if total("color", color.key) > 0 then
-        colors[#colors + 1] = color
-      end
-    end
-    if #colors > 0 then
-      local menu = root:CreateButton(L["Color"])
-      view.colorMenu = menu
-      for _, color in ipairs(colors) do
-        local label = swatch(color.hex, SWATCH_MENU_SIZE) .. " " .. L[color.label]
-        entry(menu, label, "color", color.key, isSet("color", color.key), toggle("color", color.key))
-      end
-    end
-
     local profs = present("profession", sortedKeys(data.professions))
     if #profs > 0 then
       local menu = root:CreateButton(L["Profession"])
@@ -397,9 +380,18 @@ function View:InitHeader(frame, elementData)
   frame.toggle.down:SetShown(elementData.collapsed)
 end
 
+-- Grouping in effect: grouping by colour pauses while colour chips rank the icons.
+function View:GroupBy()
+  local groupBy = ns.db and ns.db.groupBy or "none"
+  if groupBy == "color" and #self.chips > 0 then
+    return "none"
+  end
+  return groupBy
+end
+
 -- Collapse state lives per group-by, keyed by section value.
 function View:CollapsedSet()
-  local groupBy = ns.db and ns.db.groupBy or "none"
+  local groupBy = self:GroupBy()
   local all = ns.db and ns.db.collapsed or {}
   all[groupBy] = all[groupBy] or {}
   return all[groupBy]
@@ -448,6 +440,246 @@ function View:CreateSignButton(parent, plus, tooltip, onClick)
     GameTooltip:Hide()
   end)
   return button
+end
+
+local MAX_CHIPS, CHIP_SIZE, CHIP_GAP = 3, 22, 8
+-- Size of the red X on colour chips and on the filter button (Blizzard's is 23).
+local RESET_SIZE = 20
+
+-- A chip's colour as { r, g, b } (0-1): the picked colour, or the swatch shade of a named colour.
+local function chipColor(chip)
+  if chip.color then
+    return chip.color
+  end
+  for _, color in ipairs(Search.COLORS) do
+    if color.key == chip.key then
+      local r, g, b = hexToRGB(color.hex)
+      return { r = r / 255, g = g / 255, b = b / 255 }
+    end
+  end
+end
+
+local function chipLabel(chip)
+  if chip.color then
+    local c = chip.color
+    return ("#%02X%02X%02X"):format(c.r * 255 + 0.5, c.g * 255 + 0.5, c.b * 255 + 0.5)
+  end
+  for _, color in ipairs(Search.COLORS) do
+    if color.key == chip.key then
+      return L[color.label]
+    end
+  end
+end
+
+local function createColorButton(parent, onClick, onEnter)
+  local button = CreateFrame("Button", nil, parent)
+  button:SetSize(CHIP_SIZE, CHIP_SIZE)
+  button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+  button.swatch = button:CreateTexture(nil, "ARTWORK")
+  button.swatch:SetSize(20, 20)
+  button.swatch:SetPoint("CENTER")
+  button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  button:SetScript("OnClick", onClick)
+  button:SetScript("OnEnter", function(owner)
+    GameTooltip:SetOwner(owner, "ANCHOR_TOP")
+    onEnter(owner)
+    GameTooltip:Show()
+  end)
+  button:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+  end)
+  return button
+end
+
+-- Colour chips and the button that adds one, in a bar left of the filter button. Each chip is a colour the icons
+-- must contain: click changes it in Blizzard's colour picker, right-click removes it.
+function View:CreateColorBar(parent)
+  local bar = CreateFrame("Frame", nil, parent)
+  bar:SetHeight(CHIP_SIZE)
+  self.chipButtons = {}
+  for i = 1, MAX_CHIPS do
+    local button = createColorButton(bar, function(_, mouseButton)
+      if mouseButton == "RightButton" then
+        self:RemoveChip(i)
+      else
+        self:OpenColorPicker(i)
+      end
+    end, function()
+      GameTooltip:SetText(chipLabel(self.chips[i]) or "", 1, 1, 1)
+      GameTooltip:AddLine(L["Click to change; the X or right-click removes it"], 0.7, 0.7, 0.7)
+    end)
+    button.swatch:SetTexture(SWATCH)
+    -- The same red X as the filter button's reset, in the chip's corner.
+    local remove = CreateFrame("Button", nil, button)
+    -- Level with the filter's X: on the filter's top edge, 3 px in from the swatch's right edge.
+    remove:SetSize(RESET_SIZE, RESET_SIZE)
+    remove:SetPoint("CENTER", button, "CENTER", 7, self.filter:GetHeight() / 2)
+    remove:SetFrameLevel(button:GetFrameLevel() + 2)
+    remove:SetNormalAtlas("auctionhouse-ui-filter-redx")
+    remove:SetHighlightAtlas("auctionhouse-ui-filter-redx", "ADD")
+    remove:GetHighlightTexture():SetAlpha(0.4)
+    remove:SetScript("OnClick", function()
+      self:RemoveChip(i)
+    end)
+    self.chipButtons[i] = button
+  end
+  self.addColorButton = createColorButton(bar, function(_, mouseButton)
+    if mouseButton ~= "RightButton" then
+      self:OpenColorPicker()
+    end
+  end, function()
+    GameTooltip:SetText(L["Search by colour"], 1, 1, 1)
+  end)
+  self.addColorButton.swatch:SetTexture(COLOR_WHEEL)
+  return bar
+end
+
+-- Lays out the chips and the add button, right-aligned in the bar.
+function View:UpdateChips()
+  local buttons = {}
+  for i, button in ipairs(self.chipButtons) do
+    local chip = self.chips[i]
+    button:SetShown(chip ~= nil)
+    if chip then
+      local c = chipColor(chip)
+      button.swatch:SetVertexColor(c.r, c.g, c.b)
+      buttons[#buttons + 1] = button
+    end
+  end
+  self.addColorButton:SetShown(#self.chips < MAX_CHIPS)
+  if #self.chips < MAX_CHIPS then
+    buttons[#buttons + 1] = self.addColorButton
+  end
+  for i, button in ipairs(buttons) do
+    button:ClearAllPoints()
+    button:SetPoint("LEFT", (i - 1) * (CHIP_SIZE + CHIP_GAP), 0)
+  end
+  self.colorBar:SetWidth(#buttons * (CHIP_SIZE + CHIP_GAP) - CHIP_GAP)
+end
+
+-- Replaces all chips: a list of { key = colour key } (named) or { color = { r, g, b } } (picked).
+function View:SetChips(chips)
+  self.chips = {}
+  for i, chip in ipairs(chips) do
+    if chip.color then
+      self.chips[i] = { color = chip.color, target = Search.PickTarget(chip.color.r, chip.color.g, chip.color.b) }
+    else
+      self.chips[i] = { key = chip.key }
+    end
+  end
+  self:UpdateChips()
+  self:QueuePickRefresh()
+end
+
+-- Sets chip `i` (or a new last chip) to a picked colour { r, g, b }.
+function View:SetChipColor(i, color)
+  local chips = self.chips
+  i = math.min(i, #chips + 1, MAX_CHIPS)
+  chips[i] = { color = color, target = Search.PickTarget(color.r, color.g, color.b) }
+  self:UpdateChips()
+  self:QueuePickRefresh()
+end
+
+-- Adds a named colour chip unless it is there already or the bar is full.
+function View:AddNamedChip(key)
+  for _, chip in ipairs(self.chips) do
+    if chip.key == key then
+      return
+    end
+  end
+  if #self.chips < MAX_CHIPS then
+    self.chips[#self.chips + 1] = { key = key }
+    self:UpdateChips()
+  end
+end
+
+function View:RemoveChip(i)
+  table.remove(self.chips, i)
+  self:UpdateChips()
+  self:QueuePickRefresh()
+end
+
+-- Refreshes soon after a colour change; unlike QueueRefresh, further changes don't push it back, so the grid
+-- keeps up while the colour is dragged.
+function View:QueuePickRefresh()
+  if self.pickRefreshQueued then
+    return
+  end
+  self.pickRefreshQueued = true
+  C_Timer.After(PICK_INTERVAL, function()
+    self.pickRefreshQueued = false
+    self:Refresh()
+  end)
+end
+
+-- Blizzard's colour picker is shared, so its Cancel button is hidden and Okay centred only while Iconic uses it;
+-- Escape still restores the old colour.
+local pickerButtons, pickerHooked
+local function hidePickerCancel()
+  local frame = ColorPickerFrame
+  local cancel = frame.Footer and frame.Footer.CancelButton or _G.ColorPickerCancelButton
+  local okay = frame.Footer and frame.Footer.OkayButton or _G.ColorPickerOkayButton
+  if not (cancel and okay) or pickerButtons then
+    return
+  end
+  local points = {}
+  for i = 1, okay:GetNumPoints() do
+    points[i] = { okay:GetPoint(i) }
+  end
+  pickerButtons = { cancel = cancel, okay = okay, points = points }
+  local _, _, _, _, y = cancel:GetPoint(1)
+  cancel:Hide()
+  okay:ClearAllPoints()
+  okay:SetPoint("BOTTOM", cancel:GetParent(), "BOTTOM", 0, y or 0)
+  if not pickerHooked then
+    pickerHooked = true
+    frame:HookScript("OnHide", function()
+      if pickerButtons then
+        pickerButtons.cancel:Show()
+        pickerButtons.okay:ClearAllPoints()
+        for _, point in ipairs(pickerButtons.points) do
+          pickerButtons.okay:SetPoint(unpack(point))
+        end
+        pickerButtons = nil
+      end
+    end)
+  end
+end
+
+-- Opens Blizzard's colour picker for chip `i`, or for a new chip; the grid follows the colour while it is dragged,
+-- Escape restores the chips as they were.
+function View:OpenColorPicker(i)
+  if not ColorPickerFrame and C_AddOns and C_AddOns.LoadAddOn then
+    C_AddOns.LoadAddOn("Blizzard_ColorPickerFrame")
+  end
+  if not (ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) then
+    return
+  end
+  local before = {}
+  for k, chip in ipairs(self.chips) do
+    before[k] = chip
+  end
+  local slot = i or #self.chips + 1
+  local editing = i and self.chips[i]
+  local start = editing and chipColor(editing) or { r = 0.12, g = 0.65, b = 0.63 }
+  ColorPickerFrame:SetupColorPickerAndShow({
+    r = start.r,
+    g = start.g,
+    b = start.b,
+    hasOpacity = false,
+    swatchFunc = function()
+      local r, g, b = ColorPickerFrame:GetColorRGB()
+      -- Opening the picker reports the start colour; a named chip stays named until the colour changes.
+      local unchanged = math.abs(r - start.r) + math.abs(g - start.g) + math.abs(b - start.b) < 0.005
+      if not (editing and unchanged) then
+        self:SetChipColor(slot, { r = r, g = g, b = b })
+      end
+    end,
+    cancelFunc = function()
+      self:SetChips(before)
+    end,
+  })
+  hidePickerCancel()
 end
 
 function View:CreateIconButton(parent)
@@ -622,8 +854,8 @@ function View:FacetCounts()
   end
   local index, query = self.data.index, self.search:GetText() or ""
   local rows = self.rows
-  if #Search.Normalize(query) >= MIN_QUERY then
-    rows = Search.Find(index, rows, query, { synonyms = ns.synonyms })
+  if #Search.Normalize(query) >= MIN_QUERY or #self.chips > 0 then
+    rows = Search.Find(index, rows, query, { synonyms = ns.synonyms, chips = self.chips })
   end
   self.facets = Catalog.FacetCounts(index, rows, self.filters, self.usable)
   return self.facets
@@ -637,8 +869,9 @@ function View:Refresh(keepScroll)
   end
   local data, index = self.data, self.data.index
   local query = self.search:GetText() or ""
-  local hasQuery = #Search.Normalize(query) >= MIN_QUERY
-  local groupBy = ns.db and ns.db.groupBy or "none"
+  local hasText = #Search.Normalize(query) >= MIN_QUERY
+  local hasQuery = hasText or #self.chips > 0
+  local groupBy = self:GroupBy()
 
   local rows = Catalog.Filter(index, self.rows, self.filters, self.usable)
   local loose = false
@@ -650,6 +883,7 @@ function View:Refresh(keepScroll)
         self.vocabulary = self.vocabulary or Search.Vocabulary(index.text)
         return self.vocabulary
       end,
+      chips = self.chips,
     })
   end
 
@@ -693,8 +927,10 @@ function View:Refresh(keepScroll)
   local empty = #rows == 0
   self.empty:SetShown(empty)
   if empty then
-    if hasQuery then
+    if hasText then
       self.empty:SetText(L['No icons match "%s".']:format(query))
+    elseif hasQuery then
+      self.empty:SetText(L["No icons have these colours."])
     else
       self.empty:SetText(L["No icons match these filters."])
     end
@@ -721,7 +957,14 @@ function View:UpdateSuggestions()
     return
   end
   local buttons = box:GetButtons()
-  local list = Catalog.Suggest(self.data, box:GetText(), self.counts, self.filters, #buttons)
+  -- Colours that already have a chip count as active, like ticked filters.
+  local active = setmetatable({ color = {} }, { __index = self.filters })
+  for _, chip in ipairs(self.chips) do
+    if chip.key then
+      active.color[chip.key] = true
+    end
+  end
+  local list = Catalog.Suggest(self.data, box:GetText(), self.counts, active, #buttons)
   for i, button in ipairs(buttons) do
     local suggestion = list[i]
     button.suggestion = suggestion
@@ -785,7 +1028,11 @@ function View:ApplySuggestion(suggestion)
   if not suggestion then
     return
   end
-  selectedSet(self.filters, suggestion.dim)[suggestion.value] = true
+  if suggestion.dim == "color" then
+    self:AddNamedChip(suggestion.value)
+  else
+    selectedSet(self.filters, suggestion.dim)[suggestion.value] = true
+  end
   self.search:SetText(Catalog.RemoveWord(self.search:GetText(), suggestion.word))
   self.search:Close()
   self:Refresh()
@@ -793,7 +1040,7 @@ end
 
 -- Creates the picker view inside `parent`. opts.onSelect(texture) is called when an icon is clicked.
 function ns.CreateView(parent, opts)
-  local self = setmetatable({ filters = {}, onSelect = opts and opts.onSelect }, View)
+  local self = setmetatable({ filters = {}, chips = {}, onSelect = opts and opts.onSelect }, View)
   local frame = CreateFrame("Frame", nil, parent)
   self.frame = frame
 
@@ -812,7 +1059,7 @@ function ns.CreateView(parent, opts)
   toolbar.line:SetColorTexture(1, 1, 1, 0.12)
   self.toolbar = toolbar
 
-  -- Right to left: expand all, collapse all, group by, filter; the search box takes the rest.
+  -- Right to left: expand all, collapse all, group by, filter, colour chips; the search box takes the rest.
   self.expandAll = self:CreateSignButton(toolbar, true, L["Expand all sections"], function()
     self:SetAllCollapsed(false)
   end)
@@ -828,13 +1075,20 @@ function ns.CreateView(parent, opts)
 
   self.filter = CreateFrame("DropdownButton", nil, toolbar, "WowStyle1FilterDropdownTemplate")
   leftAlignText(self.filter)
+  if self.filter.ResetButton then
+    self.filter.ResetButton:SetSize(RESET_SIZE, RESET_SIZE)
+  end
   self.filter:SetPoint("RIGHT", self.group, "LEFT", -8, 0)
+
+  self.colorBar = self:CreateColorBar(toolbar)
+  self.colorBar:SetPoint("RIGHT", self.filter, "LEFT", -8, 0)
+  self:UpdateChips()
 
   self.search = CreateFrame("EditBox", nil, toolbar, "IconicSearchBoxTemplate")
   self.search:ClearAllPoints()
   self.search:SetHeight(self.filter:GetHeight())
   self.search:SetPoint("LEFT", 16, 0)
-  self.search:SetPoint("RIGHT", self.filter, "LEFT", -10, 0)
+  self.search:SetPoint("RIGHT", self.colorBar, "LEFT", -10, 0)
   self.search:SetAutoFocus(false)
   self.search.Instructions:SetText(L["Search…"])
   self.search:HookScript("OnTextChanged", function()

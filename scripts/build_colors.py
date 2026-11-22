@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Score every icon's colours into .cache/icon_colors.csv, read by build_data.py.
+"""Find every icon's dominant colours into .cache/icon_colors.csv, read by build_data.py.
 
-Each icon gets a vector of colour shares (0-100): pixels are converted to OKLab and softly assigned to the
-nearest named colours; pixels near the centre and saturated pixels weigh more. Shares below
-MIN_SHARE are written as 0.
+Each icon gets up to MAX_COLORS colours in OKLab with their weight (the part of the icon they cover) and the
+name of the nearest reference colour. Pixels near the centre and saturated pixels weigh more.
 
 Usage:
-  python3 scripts/build_colors.py             score the icons in .cache/icons (from extract_icons.py)
+  python3 scripts/build_colors.py             analyse the icons in .cache/icons (from extract_icons.py)
   python3 scripts/build_colors.py --sheets    also write .cache/colors/<colour>.png contact sheets
 """
 
@@ -14,6 +13,7 @@ import argparse
 import csv
 import functools
 import math
+import multiprocessing
 import os
 import struct
 import sys
@@ -27,12 +27,14 @@ SHEET_DIR = os.path.join(ROOT, ".cache", "colors")
 OUT = os.path.join(ROOT, ".cache", "icon_colors.csv")
 
 BRANCHES = ["wowf", "wow"]
-MIN_SHARE = 10
-SAMPLE = 28  # icons are scored at this size, after cropping the frame
+SAMPLE = 28  # icons are analysed at this size, after cropping the frame
 CROP = 4  # pixels of the 64px icon frame to ignore on each side
-SOFTNESS = 0.07  # OKLab distance over which a pixel's weight spreads to neighbouring colours
+MAX_COLORS = 4
+ITERATIONS = 10  # k-means rounds
+MERGE = 0.05  # OKLab distance under which two found colours become one
+MIN_WEIGHT = 0.05  # smaller colours are dropped
 
-# Reference colours per name, in sRGB; several shades per name keep dark and light variants in their colour.
+# Reference colours per name, in sRGB, that name an icon's colours; keys must match Search.COLORS in Search.lua.
 COLORS = {
     "red": [(205, 40, 40), (120, 20, 25)],
     "orange": [(230, 125, 30), (170, 85, 25)],
@@ -45,7 +47,7 @@ COLORS = {
     "brown": [(115, 72, 40), (150, 105, 65)],
     "black": [(18, 18, 20)],
     "white": [(235, 235, 230)],
-    "grey": [(125, 125, 125), (75, 75, 78)],
+    "grey": [(176, 176, 176), (125, 125, 125), (75, 75, 78)],
 }
 
 
@@ -71,7 +73,6 @@ def srgb_to_oklab(r, g, b):
 
 
 PROTOTYPES = [(name, srgb_to_oklab(*rgb)) for name, shades in COLORS.items() for rgb in shades]
-NAMES = list(COLORS)
 
 
 def _centre_weights():
@@ -89,12 +90,13 @@ CENTRE_WEIGHTS = _centre_weights()
 
 
 @functools.lru_cache(maxsize=None)
-def pixel_info(r5, g5, b5):
-    """Chroma and normalized colour shares of a 5-bit-per-channel colour (cached: there are only 32768)."""
-    lab = srgb_to_oklab(r5 * 8 + 4, g5 * 8 + 4, b5 * 8 + 4)
-    shares = [math.exp(-((math.dist(lab, proto) / SOFTNESS) ** 2) / 2) for _, proto in PROTOTYPES]
-    norm = sum(shares) or 1.0
-    return math.hypot(lab[1], lab[2]), tuple(s / norm for s in shares)
+def pixel_lab(r5, g5, b5):
+    """OKLab of a 5-bit-per-channel colour (cached: there are only 32768)."""
+    return srgb_to_oklab(r5 * 8 + 4, g5 * 8 + 4, b5 * 8 + 4)
+
+
+def color_name(lab):
+    return min(PROTOTYPES, key=lambda proto: math.dist(lab, proto[1]))[0]
 
 
 def icon_ids():
@@ -129,61 +131,111 @@ def open_icon(path):
     return Image.open(path).convert("RGBA")
 
 
-def color_vector(path):
-    image = open_icon(path)
+def distance2(p, q):
+    return (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2
+
+
+def nearest(point, centres):
+    return min(range(len(centres)), key=lambda k: distance2(point, centres[k]))
+
+
+def dominant_colors(file_id):
+    """Up to MAX_COLORS (OKLab, weight) pairs by weighted k-means, heaviest first; weights sum to 1."""
+    image = open_icon(icon_path(file_id))
     width, height = image.size
     crop = round(CROP * width / 64)
     image = image.crop((crop, crop, width - crop, height - crop)).resize((SAMPLE, SAMPLE), Image.BOX)
-    totals = [0.0] * len(PROTOTYPES)
-    weight_sum = 0.0
+    histogram = {}
     for (r, g, b, a), centre in zip(image.getdata(), CENTRE_WEIGHTS):
         if a < 32:
             continue
-        chroma, shares = pixel_info(r >> 3, g >> 3, b >> 3)
+        lab = pixel_lab(r >> 3, g >> 3, b >> 3)
+        chroma = math.hypot(lab[1], lab[2])
         weight = centre * (0.4 + 0.6 * min(chroma / 0.15, 1.0)) * (a / 255)
-        for k, share in enumerate(shares):
-            totals[k] += weight * share
-        weight_sum += weight
-    if weight_sum == 0:
-        return {}
-    shares = dict.fromkeys(NAMES, 0.0)
-    for k, (name, _) in enumerate(PROTOTYPES):
-        shares[name] += totals[k]
-    return {name: round(100 * value / weight_sum) for name, value in shares.items()}
-
-
-def score(ids):
-    vectors, missing = {}, 0
-    for n, file_id in enumerate(ids, 1):
-        if not os.path.exists(icon_path(file_id)):
-            missing += 1
+        histogram[lab] = histogram.get(lab, 0.0) + weight
+    points = list(histogram.items())
+    total = sum(w for _, w in points)
+    if not total:
+        return []
+    # Start from the heaviest colour, then repeatedly the one farthest from the chosen ones, weighted by mass.
+    centres = [max(points, key=lambda pw: pw[1])[0]]
+    while len(centres) < min(MAX_COLORS, len(points)):
+        centres.append(max(points, key=lambda pw: pw[1] * min(distance2(pw[0], c) for c in centres))[0])
+    for _ in range(ITERATIONS):
+        sums = [[0.0, 0.0, 0.0, 0.0] for _ in centres]
+        for point, weight in points:
+            s = sums[nearest(point, centres)]
+            s[0] += point[0] * weight
+            s[1] += point[1] * weight
+            s[2] += point[2] * weight
+            s[3] += weight
+        centres = [(s[0] / s[3], s[1] / s[3], s[2] / s[3]) if s[3] else c for s, c in zip(sums, centres)]
+    weights = [0.0] * len(centres)
+    for point, weight in points:
+        weights[nearest(point, centres)] += weight
+    found = sorted(([c, w / total] for c, w in zip(centres, weights) if w > 0), key=lambda cw: -cw[1])
+    merged = []
+    for centre, weight in found:
+        for other in merged:
+            if distance2(centre, other[0]) < MERGE**2:
+                both = other[1] + weight
+                other[0] = tuple((other[0][j] * other[1] + centre[j] * weight) / both for j in range(3))
+                other[1] = both
+                break
         else:
-            try:
-                vectors[file_id] = color_vector(icon_path(file_id))
-            except (OSError, ValueError, NotImplementedError) as err:
-                log(f"  skip {file_id}: {err}")
-        if n % 5000 == 0:
-            log(f"  scored {n}/{len(ids)}")
-    if missing:
-        log(f"{missing} icons have no image; run scripts/extract_icons.py")
-    return vectors
+            merged.append([centre, weight])
+    kept = [m for m in merged if m[1] >= MIN_WEIGHT]
+    kept_total = sum(w for _, w in kept)
+    return [(c, w / kept_total) for c, w in kept]
 
 
-def write_csv(vectors):
+def analyse(file_id):
+    try:
+        return file_id, dominant_colors(file_id)
+    except (OSError, ValueError, NotImplementedError) as err:
+        log(f"  skip {file_id}: {err}")
+        return file_id, []
+
+
+def analyse_all(ids):
+    present = [i for i in ids if os.path.exists(icon_path(i))]
+    if len(present) < len(ids):
+        log(f"{len(ids) - len(present)} icons have no image; run scripts/extract_icons.py")
+    colors = {}
+    with multiprocessing.Pool() as pool:
+        for n, (file_id, found) in enumerate(pool.imap(analyse, present, chunksize=64), 1):
+            if found:
+                colors[file_id] = found
+            if n % 5000 == 0:
+                log(f"  analysed {n}/{len(present)}")
+    return colors
+
+
+def write_csv(colors):
     with open(OUT, "w", encoding="utf-8", newline="") as out:
         writer = csv.writer(out, lineterminator="\n")
-        writer.writerow(["id", *COLORS])
-        for file_id in sorted(vectors):
-            shares = [v if v >= MIN_SHARE else 0 for v in (vectors[file_id].get(name, 0) for name in COLORS)]
-            if any(shares):
-                writer.writerow([file_id, *shares])
+        header = ["id"]
+        for k in range(1, MAX_COLORS + 1):
+            header += [f"l{k}", f"a{k}", f"b{k}", f"w{k}", f"name{k}"]
+        writer.writerow(header)
+        for file_id in sorted(colors):
+            row = [file_id]
+            for (L, a, b), weight in colors[file_id]:
+                row += [round(L * 100), round(a * 100), round(b * 100), round(weight * 100), color_name((L, a, b))]
+            writer.writerow(row)
     log(f"wrote {OUT}")
 
 
-def write_sheets(vectors, per_sheet=96, columns=12):
+def write_sheets(colors, per_sheet=96, columns=12):
+    """Per reference colour name, the icons with the most weight in colours of that name."""
     os.makedirs(SHEET_DIR, exist_ok=True)
+    shares = {}
+    for file_id, found in colors.items():
+        for lab, weight in found:
+            key = (file_id, color_name(lab))
+            shares[key] = shares.get(key, 0.0) + weight
     for name in COLORS:
-        top = sorted(vectors, key=lambda i: -vectors[i].get(name, 0))[:per_sheet]
+        top = sorted(colors, key=lambda i: -shares.get((i, name), 0.0))[:per_sheet]
         rows = math.ceil(len(top) / columns)
         sheet = Image.new("RGB", (columns * 66, rows * 66), (20, 20, 20))
         for n, file_id in enumerate(top):
@@ -197,11 +249,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sheets", action="store_true", help="write a contact sheet of the top icons per colour")
     args = parser.parse_args()
-    ids = icon_ids()
-    vectors = score(ids)
-    write_csv(vectors)
+    colors = analyse_all(icon_ids())
+    write_csv(colors)
     if args.sheets:
-        write_sheets(vectors)
+        write_sheets(colors)
 
 
 if __name__ == "__main__":

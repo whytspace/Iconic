@@ -15,8 +15,8 @@ Iconic replaces the icon grid wherever the game lets you choose an icon: macros,
 ## Features
 
 - **Search** by spell, item, mount, pet, achievement and currency names, spell descriptions and icon file names. "target" finds Hunter's Mark, synonyms find related words, and typos still show close matches.
-- **Colours**: "green" finds icons that look green, ranked by how green they are; "red green" needs both, "green gem" combines colour and name.
-- **Filter** by source, class, item category, profession and colour, or show only your own spells and items.
+- **Colours**: add up to three colour chips next to the search box, from the colour picker or by typing a colour such as "green" and taking the suggestion. Icons rank by how close they are to the colours, with or without words.
+- **Filter** by source, class, item category and profession, or show only your own spells and items.
 - **Group** the grid by the same categories.
 - **Recently used** icons come first.
 - **Icon IDs** in tooltips, always or while holding Shift, Ctrl or Alt (Options → AddOns → Iconic).
