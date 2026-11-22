@@ -1,0 +1,23 @@
+## Interface: 120105, 120107, 16001
+## Title: Iconic
+## Notes: Searchable, filterable icon picker for macros, equipment sets, banks and outfits.
+## Author: whytspace
+## Version: 0.1.0
+## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
+## SavedVariables: IconicDB
+## X-Website: https://github.com/whytspace/Iconic
+
+Locales/Locales.lua
+Core.lua
+Data/Synonyms.lua
+Search.lua
+Catalog.lua
+Data.lua
+
+UI/View.lua
+UI/Pickers.lua
+UI/Browser.lua
+UI/Tooltips.lua
+UI/Settings.lua
+UI/API.lua
+UI/Events.lua

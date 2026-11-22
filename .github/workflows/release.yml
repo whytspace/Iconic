@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Only this tag's notes; the full CHANGELOG.md still ships in the zip.
+      - name: Generate the release changelog
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          section="$(awk -v v="$ver" '
+            $0 ~ "^## " v "( |$)" { grab = 1; next }
+            grab && /^## / { exit }
+            grab { print }
+          ' CHANGELOG.md)"
+          if [ -n "$(printf '%s' "$section" | tr -d '[:space:]')" ]; then
+            printf '%s\n' "$section" > CHANGELOG-latest.md
+            echo "Wrote the $ver section to CHANGELOG-latest.md."
+          else
+            # A note-free version (e.g. a maintenance bump) must NOT fall back to
+            # the whole CHANGELOG.md — that floods the CurseForge release notes.
+            # The full changelog still ships inside the packaged zip.
+            printf 'Maintenance release — no user-facing changes.\n' > CHANGELOG-latest.md
+            echo "No CHANGELOG section for $ver; wrote a maintenance placeholder."
+          fi
+
+      # Drives both the CurseForge upload and the GitHub release body from CHANGELOG-latest.md.
+      - name: Package addon
+        uses: BigWigsMods/packager@v2
+        env:
+          # @v2's release.sh reads GITHUB_OAUTH / CF_API_KEY; the *_TOKEN names are master-only.
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+          CF_API_KEY: ${{ secrets.CF_API_TOKEN }}

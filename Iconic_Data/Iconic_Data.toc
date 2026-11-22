@@ -1,0 +1,10 @@
+## Interface: 120105, 120107, 16001
+## Title: Iconic Data
+## Notes: Icon names and categories for Iconic, loaded when an icon picker opens.
+## Author: whytspace
+## Version: 0.1.0
+## LoadOnDemand: 1
+## Dependencies: Iconic
+
+Forever.lua [AllowLoadGameType camelot, forever][ExcludeLoadGameType standard]
+Retail.lua [AllowLoadGameType standard][ExcludeLoadGameType camelot, forever]

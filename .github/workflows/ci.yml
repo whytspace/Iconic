@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Lua 5.1
+        uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1"
+
+      - name: Set up LuaRocks
+        uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install Luacheck and Busted
+        # busted pulls lua-term from a GitHub tarball that can flake; if it does
+        # again, install lua-term 0.3-1 (luarocks-hosted .src.rock) first.
+        run: |
+          luarocks install luacheck
+          luarocks install busted
+
+      # Lint/format only tracked source — the Lua/LuaRocks install lands in the
+      # workspace and must not be scanned.
+      - name: Luacheck
+        run: luacheck $(git ls-files '*.lua')
+
+      - name: Busted
+        run: busted
+
+      - name: StyLua
+        uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: v2.5.2
+          args: --check .

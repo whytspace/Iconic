@@ -1,0 +1,6 @@
+.cache/
+luacov.stats.out
+luacov.report.out
+CHANGELOG-latest.md
+__pycache__/
+.DS_Store
