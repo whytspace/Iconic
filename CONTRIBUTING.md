@@ -59,7 +59,7 @@ Colour scores need the icon images. `scripts/extract_icons.py` reads them straig
 devc python3 -I scripts/extract_icons.py
 ```
 
-`scripts/build_colors.py` then downloads any icon still missing from wago.tools (slow, about 1–2 per second), scores every icon into `scripts/icon_colors.tsv`, and `build_data.py` merges that into the data files:
+`scripts/build_colors.py` then scores every icon into `.cache/icon_colors.csv`, and `build_data.py` merges that into the data files. `build_data.py` stops when that file is missing:
 
 ```sh
 devc python3 -I scripts/build_colors.py --sheets

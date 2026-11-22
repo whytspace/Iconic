@@ -380,30 +380,17 @@ def lookup_body(mapping):
 
 # Must match Catalog.SOURCES in Catalog.lua.
 SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "A": 16, "C": 32}
-# Must match COLORS in Search.lua.
-COLOR_NAMES = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "brown", "black", "white", "grey"]
 
 
 def load_colors():
-    """File ID -> {colour: share} from scripts/icon_colors.tsv (written by build_colors.py), if present."""
-    path = os.path.join(ROOT, "scripts", "icon_colors.tsv")
-    colors = {}
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as handle:
-            for line in handle:
-                if line.startswith("#") or "\t" not in line:
-                    continue
-                file_id, value = line.rstrip("\n").split("\t", 1)
-                shares = {}
-                for part in value.split():
-                    name, share = part.split(":")
-                    if name not in COLOR_NAMES:
-                        sys.exit(f"unknown colour {name} in {path}")
-                    shares[name] = int(share)
-                colors[int(file_id)] = shares
-    else:
-        log("no scripts/icon_colors.tsv; icons get no colours")
-    return colors
+    """Colour names and file ID -> shares from .cache/icon_colors.csv, written by build_colors.py."""
+    path = os.path.join(ROOT, ".cache", "icon_colors.csv")
+    if not os.path.exists(path):
+        sys.exit(f"missing {path}; run scripts/build_colors.py first")
+    with open(path, encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        names = next(reader)[1:]
+        return names, {int(row[0]): [int(v) for v in row[1:]] for row in reader}
 
 
 def lua_string(text):
@@ -423,10 +410,11 @@ def category_number(key):
 
 
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
-    colors = load_colors()
+    color_names, colors = load_colors()
     ids = sorted(icons)
     columns = {name: [] for name in ("id", "file", "names", "text", "src", "cls", "cats", "profs", "spells")}
-    shares = {name: [] for name in COLOR_NAMES} if colors else {}
+    shares = {name: [] for name in color_names}
+    no_colors = [0] * len(color_names)
     for file_id in ids:
         t = icons[file_id]
         names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
@@ -441,8 +429,8 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
         columns["profs"].append(lua_numbers(sorted(t.profs)))
         columns["spells"].append(lua_numbers(sorted(t.spells)))
-        for name, column in shares.items():
-            column.append(str(colors.get(file_id, {}).get(name, 0)))
+        for column, share in zip(shares.values(), colors.get(file_id, no_colors)):
+            column.append(str(share))
 
     def column(out, name, values, indent):
         out.write(f"{indent}{name} = {{\n")
