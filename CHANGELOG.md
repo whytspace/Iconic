@@ -14,3 +14,4 @@
 - **[New]** Collapse or expand all sections with the toolbar buttons, or by Shift-clicking a section header.
 - **[New]** Icon IDs in tooltips: always, never, or while holding Shift, Ctrl or Alt.
 - **[New]** `/iconic` opens a standalone icon browser.
+- **[New]** About page in Options → AddOns → Iconic.

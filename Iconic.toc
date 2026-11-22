@@ -19,6 +19,7 @@ UI/View.lua
 UI/Pickers.lua
 UI/Browser.lua
 UI/Tooltips.lua
+UI/About.lua
 UI/Settings.lua
 UI/API.lua
 UI/Events.lua

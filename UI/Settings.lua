@@ -52,6 +52,7 @@ function ns.SetupSettings()
     L["When spell, item, mount and currency tooltips elsewhere in the game show their icon ID."]
   )
 
+  Settings.RegisterCanvasLayoutSubcategory(category, ns.CreateAboutPanel(), L["About"])
   Settings.RegisterAddOnCategory(category)
   ns.settingsCategory = category
 end
