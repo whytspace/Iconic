@@ -9,6 +9,7 @@
 - **[Change]** Colour search and grouping use each icon's dominant colours, so light greys and muted colours are found more reliably.
 - **[Change]** Icon data loads faster, and colour grouping and filter counts respond faster.
 - **[Change]** The first icon picker of a session opens at once and shows "Loading icons…" until its icons appear.
+- **[Fix]** Clicking the icon under "Currently Selected" no longer does nothing: it scrolls to the icon, first clearing the search, colour chips and filters or opening its section if they hide it. The text below says which.
 
 ## 0.1.0 - 2026-11-22
 

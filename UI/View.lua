@@ -803,6 +803,46 @@ function View:SetSelected(texture)
       end
     end
   end)
+  self:NotifySelectedState()
+end
+
+-- Where the selected icon stands: "visible" in the grid, "hidden" by the search, colour chips, filters or a
+-- collapsed section, or "absent" from the picker's icons.
+function View:SelectedState()
+  local row = self.selectedKey and self.data and self.data.index.byKey[self.selectedKey]
+  if not (row and self.positions and self.positions[row]) then
+    return "absent"
+  end
+  return self.visibleRows and self.visibleRows[row] and "visible" or "hidden"
+end
+
+function View:NotifySelectedState()
+  if self.onSelectedState then
+    self.onSelectedState(self:SelectedState())
+  end
+end
+
+-- Scrolls to the selected icon; when it is hidden, first clears the search, colour chips and filters, or opens
+-- its collapsed section.
+function View:RevealSelected()
+  if self:SelectedState() == "hidden" then
+    local row = self.data.index.byKey[self.selectedKey]
+    if not self.sectionOf[row] then
+      self.search:SetText("")
+      -- Drops the refresh the text change queued, which would scroll back to the top.
+      self.pending = (self.pending or 0) + 1
+      self.chips = {}
+      self:UpdateChips()
+      self.filters = {}
+      self:Refresh()
+    end
+    local key = self.sectionOf[row]
+    if key and not self.visibleRows[row] then
+      self:CollapsedSet()[key] = nil
+      self:Refresh(true)
+    end
+  end
+  self:ScrollToSelected()
 end
 
 function View:Select(row)
@@ -895,10 +935,16 @@ function View:Refresh(keepScroll)
 
   local perRow = self:PerRow()
   local elements, collapsed = {}, self:CollapsedSet()
-  self.sectionKeys = {}
+  self.sectionKeys, self.sectionOf, self.visibleRows = {}, {}, {}
   for sectionIndex, section in ipairs(sections) do
     local key = section.recent and "recent" or tostring(section.value or section.title or "")
     local isCollapsed = section.title and collapsed[key] or false
+    for _, row in ipairs(section.rows) do
+      self.sectionOf[row] = key
+      if not isCollapsed then
+        self.visibleRows[row] = true
+      end
+    end
     if section.title then
       self.sectionKeys[#self.sectionKeys + 1] = key
       elements[#elements + 1] = {
@@ -936,6 +982,7 @@ function View:Refresh(keepScroll)
     end
   end
   self.filter:ValidateResetState()
+  self:NotifySelectedState()
 end
 
 local BUTTON_TEXT_INSET, BUTTON_ARROW_SPACE = 10, 30
@@ -1038,9 +1085,15 @@ function View:ApplySuggestion(suggestion)
   self:Refresh()
 end
 
--- Creates the picker view inside `parent`. opts.onSelect(texture) is called when an icon is clicked.
+-- Creates the picker view inside `parent`. opts.onSelect(texture) is called when an icon is clicked,
+-- opts.onSelectedState(state) whenever SelectedState may have changed.
 function ns.CreateView(parent, opts)
-  local self = setmetatable({ filters = {}, chips = {}, onSelect = opts and opts.onSelect }, View)
+  local self = setmetatable({
+    filters = {},
+    chips = {},
+    onSelect = opts and opts.onSelect,
+    onSelectedState = opts and opts.onSelectedState,
+  }, View)
   local frame = CreateFrame("Frame", nil, parent)
   self.frame = frame
 

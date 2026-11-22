@@ -3,6 +3,8 @@ local ADDON_NAME, ns = ...
 local Pickers = { attached = {}, pending = {} }
 ns.Pickers = Pickers
 
+local L = ns.L
+
 -- Adapter for frames built on Blizzard's IconSelectorPopupFrameTemplate. Third-party adapters override
 -- any of these functions; each receives the picker frame first.
 local TemplateAdapter = {}
@@ -73,6 +75,40 @@ function TemplateAdapter.HookStateChanges(popup, onChange)
   end
 end
 
+-- Says what a click on the selected icon does, by View:SelectedState: "visible", "hidden" or "absent".
+function TemplateAdapter.ShowSelectedState(popup, selectedState)
+  local area = popup.BorderBox and popup.BorderBox.SelectedIconArea
+  local text = area and area.SelectedIconText
+  local description = text and text.SelectedIconDescription
+  if not description then
+    return
+  end
+  if selectedState == "visible" then
+    description:SetText(ICON_SELECTION_CLICK)
+    description:SetFontObject(GameFontHighlightSmall)
+  elseif selectedState == "hidden" then
+    description:SetText(L["Click to clear the search and view it"])
+    description:SetFontObject(GameFontHighlightSmall)
+  else
+    description:SetText(ICON_SELECTION_NOTINLIST)
+    description:SetFontObject(GameFontDisableSmall)
+  end
+  if text.Layout then
+    text:Layout()
+  end
+end
+
+-- Calls `onClick` when the selected icon is clicked, and `onTextReset` after Blizzard rewrites its text.
+function TemplateAdapter.HookSelected(popup, onClick, onTextReset)
+  local area = popup.BorderBox and popup.BorderBox.SelectedIconArea
+  if area and area.SelectedIconButton then
+    area.SelectedIconButton:HookScript("OnClick", onClick)
+  end
+  if popup.SetSelectedIconText then
+    hooksecurefunc(popup, "SetSelectedIconText", onTextReset)
+  end
+end
+
 function TemplateAdapter.HookConfirm(popup, onConfirm)
   if popup.OkayButton_OnClick then
     hooksecurefunc(popup, "OkayButton_OnClick", onConfirm)
@@ -109,8 +145,19 @@ function Pickers.Attach(popup, overrides)
         onSelect = function(texture, position)
           adapter.SetIcon(popup, texture, position)
         end,
+        onSelectedState = function(selectedState)
+          state.selectedState = selectedState
+          adapter.ShowSelectedState(popup, selectedState)
+        end,
       })
       adapter.Anchor(popup, state.view.frame)
+      adapter.HookSelected(popup, function()
+        state.view:RevealSelected()
+      end, function()
+        if state.selectedState then
+          adapter.ShowSelectedState(popup, state.selectedState)
+        end
+      end)
     end
     local textures, extras = adapter.GetTextures(popup)
     state.view:SetTextures(textures, extras)

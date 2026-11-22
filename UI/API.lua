@@ -23,7 +23,8 @@ end
 -- others pass functions overriding Pickers.TemplateAdapter (each gets the frame first):
 --   Anchor(frame, viewFrame), GetTextures(frame) -> textures, extras, GetIcon(frame) -> texture,
 --   SetIcon(frame, texture, position), IsDragging(frame) -> bool, HideNative(frame),
---   HookStateChanges(frame, onChange), HookConfirm(frame, onConfirm)
+--   HookStateChanges(frame, onChange), HookConfirm(frame, onConfirm),
+--   ShowSelectedState(frame, state) with state "visible", "hidden" or "absent", HookSelected(frame, onClick, onTextReset)
 -- Returns true when attached now, false when waiting for the frame.
 function Iconic.RegisterPicker(frame, adapter)
   if frame == nil then
