@@ -3,7 +3,7 @@
 ## Notes: Searchable, filterable icon picker for macros, equipment sets, banks and outfits.
 ## Author: whytspace
 ## Version: 0.1.0
-## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
+## IconTexture: Interface\AddOns\Iconic\Assets\logo
 ## SavedVariables: IconicDB
 ## X-Website: https://github.com/whytspace/Iconic
 

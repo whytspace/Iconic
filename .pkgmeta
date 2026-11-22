@@ -27,3 +27,5 @@ ignore:
   - spec
   - stylua.toml
   - luacov.report.out
+  - Assets/*.png
+  - Assets/*.svg

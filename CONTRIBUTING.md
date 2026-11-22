@@ -59,6 +59,16 @@ Add a group only when a player would plausibly search one word to find the other
 
 `UI/Pickers.lua` replaces the icon grid of every frame built on Blizzard's `IconSelectorPopupFrameTemplate`. A new Blizzard picker is one entry in `Pickers.BLIZZARD`. Other add-ons call `Iconic.RegisterPicker(frame, adapter)`, documented in `UI/API.lua`.
 
+## Assets
+
+The add-on icon is `Assets/logo.svg`. WoW loads only uncompressed, power-of-two, 32-bit RGBA TGA files, referenced without the extension. The SVG uses filters, so render it to `Assets/logo.png` in a browser (e.g. headless Chrome) and convert that with ImageMagick:
+
+```sh
+magick Assets/logo.png -resize 256x256 -depth 8 -type TrueColorAlpha -compress none TGA:Assets/logo.tga
+```
+
+Only the TGA ships; `.pkgmeta` ignores the PNG and SVG.
+
 ## Changelog
 
 Update `CHANGELOG.md` for player-facing changes. One flat list; start each entry with **[New]**, **[Change]**, or **[Fix]**, ordered New, Change, Fix. Phrase **[Fix]** entries as the misbehavior that stopped ("…no longer…").
