@@ -298,9 +298,10 @@ function Search.ColorOf(token)
   return COLOR_WORDS[token]
 end
 
--- Share (0-100) of a colour in an icon's padded colour string (" green:62 red:18 ").
-function Search.ColorShare(colors, color)
-  return colors and tonumber(colors:match(" " .. color .. ":(%d+)")) or 0
+-- Share (0-100) of a colour in an index row.
+function Search.ColorShare(index, row, color)
+  local shares = index.colors[color]
+  return shares and shares[row] or 0
 end
 
 -- Splits query tokens into colour names and text tokens. Without colour data every token is text.
@@ -318,10 +319,10 @@ local function splitColors(tokens, hasColors)
 end
 
 -- Colour part of a score: every requested colour must reach the minimum; ranks by the weakest one.
-local function colorScore(colorText, colors, minimum)
+local function colorScore(index, row, colors, minimum)
   local weakest
   for _, color in ipairs(colors) do
-    local share = Search.ColorShare(colorText, color)
+    local share = Search.ColorShare(index, row, color)
     if share < minimum then
       return nil
     end
@@ -344,7 +345,7 @@ local function run(index, rows, query, opts, loose)
     variants[i] = variantsFor(token, synonyms, vocabulary)
   end
 
-  local texts, ids, keys, spells, colorTexts = index.text, index.id, index.key, index.spells, index.colors
+  local texts, ids, keys, spells = index.text, index.id, index.key, index.spells
   local minimum = loose and COLOR_MIN_LOOSE or COLOR_MIN
   local scores, results = {}, {}
   for _, row in ipairs(rows) do
@@ -352,7 +353,7 @@ local function run(index, rows, query, opts, loose)
     -- nil when a requested colour is missing.
     local colorPart = 0
     if #colors > 0 then
-      colorPart = colorScore(colorTexts[row], colors, minimum)
+      colorPart = colorScore(index, row, colors, minimum)
     end
     if idQuery and ids[row] == idQuery then
       score = SCORE_ID

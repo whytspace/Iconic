@@ -48,7 +48,7 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       local results = ns.Search.Find(data.index, rows, "green", opts)
       assert.is_true(#results > 100)
       for i = 1, 10 do
-        assert.is_true(ns.Search.ColorShare(data.index.colors[results[i]], "green") >= 50)
+        assert.is_true(ns.Search.ColorShare(data.index, results[i], "green") >= 50)
       end
     end)
 

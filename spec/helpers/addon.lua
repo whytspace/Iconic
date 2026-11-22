@@ -63,31 +63,65 @@ local function searchField(Search, names, file, desc)
   return table.concat(fields, "|")
 end
 
--- Builds a tiny IconicData table. Rows: { id, file, names = {...}, desc, src, cls, cats, profs, spells, colors }.
-function M.fakeData(ns, rows)
-  local lines = {}
-  for _, r in ipairs(rows) do
-    local names = r.names or {}
-    lines[#lines + 1] = table.concat({
-      r[1],
-      r[2],
-      table.concat(names, "|"),
-      searchField(ns.Search, names, r[2], r.desc),
-      r.src or "",
-      r.cls or "",
-      r.cats or "",
-      r.profs or "",
-      r.spells or "",
-      r.colors or "",
-    }, "\t")
+local SOURCE_BITS = { S = 1, I = 2, M = 4, P = 8, A = 16, C = 32 }
+
+-- Space-separated values into a list, or nil when there are none, as list columns hold them.
+local function list(text, convert)
+  local values = {}
+  for value in (text or ""):gmatch("%S+") do
+    values[#values + 1] = convert(value)
   end
+  return #values > 0 and values or nil
+end
+
+local function category(key)
+  local class, subclass = key:match("^(%d+):(%d+)$")
+  return tonumber(class) * 256 + tonumber(subclass)
+end
+
+-- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
+-- names = {...}, desc, src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
+-- colors = "green:62 red:18" }.
+function M.fakeData(ns, rows)
+  local icons = { id = {}, file = {}, names = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
+  local colors = {}
+  for _, r in ipairs(rows) do
+    if r.colors then
+      for _, color in ipairs(ns.Search.COLORS) do
+        colors[color.key] = {}
+      end
+    end
+  end
+  for row, r in ipairs(rows) do
+    local names = r.names or {}
+    icons.id[row] = tonumber(r[1])
+    icons.file[row] = r[2]
+    icons.names[row] = #names > 0 and table.concat(names, "|") or nil
+    icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc))
+    local src = 0
+    for letter in (r.src or ""):gmatch(".") do
+      src = src + SOURCE_BITS[letter]
+    end
+    icons.src[row] = src
+    icons.cls[row] = tonumber(r.cls) or 0
+    icons.cats[row] = list(r.cats, category)
+    icons.profs[row] = list(r.profs, tonumber)
+    icons.spells[row] = list(r.spells, tonumber)
+    for _, shares in pairs(colors) do
+      shares[row] = 0
+    end
+    for color, share in (r.colors or ""):gmatch("(%a+):(%d+)") do
+      colors[color][row] = tonumber(share)
+    end
+  end
+  icons.colors = colors
   return {
     flavor = "test",
     build = "0",
     classes = "3\tHunter\n8\tMage\n",
     itemClasses = "0\tConsumable\n2\tWeapon\n2:7\tOne-Handed Swords\n4\tArmor\n",
     professions = "185\tCooking\n",
-    icons = table.concat(lines, "\n") .. "\n",
+    icons = icons,
   }
 end
 

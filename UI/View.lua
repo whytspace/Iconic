@@ -26,8 +26,8 @@ local function computeUsable(data, extraTextures)
   for row = 1, index.count do
     local spells = index.spells[row]
     if spells then
-      for id in spells:gmatch("%d+") do
-        if isSpellKnown(tonumber(id)) then
+      for _, id in ipairs(spells) do
+        if isSpellKnown(id) then
           set[index.key[row]] = true
           break
         end

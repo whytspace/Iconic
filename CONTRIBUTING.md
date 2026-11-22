@@ -43,6 +43,8 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are one share column per colour.
+
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming). Change both together; the data spec catches drift.
 
 ## Icon colours

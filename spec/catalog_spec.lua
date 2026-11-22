@@ -31,7 +31,7 @@ describe("Catalog", function()
     assert.are.equal("One-Handed Swords", data.itemClasses["2:7"])
     assert.are.equal("Cooking", data.professions[185])
     assert.are.same({ "Prowler Steak" }, Catalog.Names(index, index.byKey[40]))
-    assert.are.equal(" 185 ", index.profs[index.byKey[40]])
+    assert.are.same({ 185 }, index.profs[index.byKey[40]])
   end)
 
   it("resolves texture paths to file IDs, drops duplicates and keeps unknown textures", function()

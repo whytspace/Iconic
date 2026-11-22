@@ -4,17 +4,38 @@ local Catalog = {}
 ns.Catalog = Catalog
 
 local L = ns.L
-local find, floor = string.find, math.floor
+local floor = math.floor
 
--- Source letters as written by scripts/build_data.py, in display order.
+-- Sources in display order; `bit` is the source's bit in the src column, as written by scripts/build_data.py.
 Catalog.SOURCES = {
-  { key = "S", label = "Spells" },
-  { key = "I", label = "Items" },
-  { key = "M", label = "Mounts" },
-  { key = "P", label = "Pets" },
-  { key = "A", label = "Achievements" },
-  { key = "C", label = "Currencies" },
+  { key = "S", bit = 1, label = "Spells" },
+  { key = "I", bit = 2, label = "Items" },
+  { key = "M", bit = 4, label = "Mounts" },
+  { key = "P", bit = 8, label = "Pets" },
+  { key = "A", bit = 16, label = "Achievements" },
+  { key = "C", bit = 32, label = "Currencies" },
 }
+
+local SOURCE_BITS = {}
+for _, source in ipairs(Catalog.SOURCES) do
+  SOURCE_BITS[source.key] = source.bit
+end
+
+-- Stands in for an empty list column.
+local NONE = {}
+
+local function hasBit(mask, bit)
+  return floor(mask / bit) % 2 == 1
+end
+
+-- Category number (class * 256 + subclass, as in the data) -> "class:subclass" filter key.
+local CATEGORY_KEYS = setmetatable({}, {
+  __index = function(keys, number)
+    local key = floor(number / 256) .. ":" .. number % 256
+    keys[number] = key
+    return key
+  end,
+})
 
 Catalog.GROUPS = {
   { key = "none", label = "None" },
@@ -24,19 +45,6 @@ Catalog.GROUPS = {
   { key = "profession", label = "Profession" },
   { key = "color", label = "Color" },
 }
-
-local function split(line, sep)
-  local fields, start = {}, 1
-  while true do
-    local i = find(line, sep, start, true)
-    if not i then
-      fields[#fields + 1] = string.sub(line, start)
-      return fields
-    end
-    fields[#fields + 1] = string.sub(line, start, i - 1)
-    start = i + 1
-  end
-end
 
 -- "key<TAB>name[<TAB>icon]" lines into key -> name and key -> icon.
 local function lookup(body)
@@ -52,13 +60,9 @@ local function lookup(body)
   return map, icons
 end
 
-local function padded(list)
-  return (list and list ~= "") and (" " .. list .. " ") or nil
-end
-
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file, names
--- (display, "a|b"), text (padded search text), src, cls, cats (" 2:7 4:1 "), profs (" 185 "), spells,
--- colors (" green:62 red:18 ").
+-- (display, "a|b"), text (padded search text), src (source bits), cls (class bits), cats (category numbers),
+-- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colors: colour -> row -> share.
 function Catalog.NewIndex()
   return {
     count = 0,
@@ -78,7 +82,8 @@ function Catalog.NewIndex()
   }
 end
 
-local function addRow(index, key, id, texture, file, names, text, src, cls, cats, profs, spells, colors)
+-- A row for a texture without data: only its file name is searched.
+local function addRow(index, key, id, texture, file)
   local row = index.count + 1
   index.count = row
   index.byKey[key] = row
@@ -86,18 +91,16 @@ local function addRow(index, key, id, texture, file, names, text, src, cls, cats
   index.id[row] = id
   index.texture[row] = texture
   index.file[row] = file
-  index.names[row] = names
-  index.text[row] = text
-  index.src[row] = src or ""
-  index.cls[row] = cls or 0
-  index.cats[row] = cats
-  index.profs[row] = profs
-  index.spells[row] = spells
-  index.colors[row] = colors
+  index.text[row] = ns.Search.PadText(ns.Search.FileText(file))
+  index.src[row] = 0
+  index.cls[row] = 0
   return row
 end
 
--- Parses the table a data add-on leaves in the global IconicData into lookups and an index.
+local COLUMNS = { "file", "names", "text", "src", "cls", "cats", "profs", "spells" }
+
+-- Turns the table a data add-on leaves in the global IconicData into lookups and an index. The index takes
+-- over the data's columns, so `raw` must not be parsed twice.
 function Catalog.Parse(raw)
   local data = {
     flavor = raw.flavor,
@@ -110,33 +113,21 @@ function Catalog.Parse(raw)
     byFile = {},
   }
   data.professions, data.professionIcons = lookup(raw.professions)
-  local index, PadText = data.index, ns.Search.PadText
-  for line in (raw.icons or ""):gmatch("[^\n]+") do
-    local f = split(line, "\t")
-    local id = tonumber(f[1])
-    if id then
-      local names = f[3] ~= "" and f[3] or nil
-      local text = (f[4] and f[4] ~= "") and PadText(f[4]) or PadText(ns.Search.FileText(f[2]))
-      local colors = padded(f[10])
-      index.hasColors = index.hasColors or colors ~= nil
-      addRow(
-        index,
-        id,
-        id,
-        id,
-        f[2],
-        names,
-        text,
-        f[5],
-        tonumber(f[6]),
-        padded(f[7]),
-        padded(f[8]),
-        padded(f[9]),
-        colors
-      )
-      data.byFile[f[2]] = id
-    end
+  local index, icons = data.index, raw.icons or {}
+  local ids = icons.id or {}
+  index.id = ids
+  for _, name in ipairs(COLUMNS) do
+    index[name] = icons[name] or {}
   end
+  index.colors = icons.colors or {}
+  index.hasColors = next(index.colors) ~= nil
+  local key, texture, byKey, byFile, file = index.key, index.texture, index.byKey, data.byFile, index.file
+  for row = 1, #ids do
+    local id = ids[row]
+    key[row], texture[row], byKey[id] = id, id, row
+    byFile[file[row]] = id
+  end
+  index.count = #ids
   return data
 end
 
@@ -162,7 +153,7 @@ function Catalog.Rows(data, textures)
     local row = index.byKey[key]
     if not row then
       local file = type(texture) == "string" and string.lower(texture):match("([^\\/]+)$") or nil
-      row = addRow(index, key, id, texture, file, nil, ns.Search.PadText(ns.Search.FileText(file)))
+      row = addRow(index, key, id, texture, file)
     end
     if not seen[row] then
       seen[row] = position
@@ -173,7 +164,7 @@ function Catalog.Rows(data, textures)
 end
 
 function Catalog.HasClass(mask, classId)
-  return floor(mask / 2 ^ (classId - 1)) % 2 == 1
+  return hasBit(mask, 2 ^ (classId - 1))
 end
 
 local function classIds(mask)
@@ -193,7 +184,7 @@ local DIMENSION_MATCHERS = {
   source = function(index, row, selected)
     local src = index.src[row]
     for key in pairs(selected) do
-      if find(src, key, 1, true) then
+      if hasBit(src, SOURCE_BITS[key]) then
         return true
       end
     end
@@ -213,9 +204,8 @@ local DIMENSION_MATCHERS = {
     if not cats then
       return false
     end
-    for key in pairs(selected) do
-      local needle = type(key) == "number" and (" " .. key .. ":") or (" " .. key .. " ")
-      if find(cats, needle, 1, true) then
+    for _, number in ipairs(cats) do
+      if selected[floor(number / 256)] or selected[CATEGORY_KEYS[number]] then
         return true
       end
     end
@@ -226,17 +216,16 @@ local DIMENSION_MATCHERS = {
     if not profs then
       return false
     end
-    for prof in pairs(selected) do
-      if find(profs, " " .. prof .. " ", 1, true) then
+    for _, prof in ipairs(profs) do
+      if selected[prof] then
         return true
       end
     end
     return false
   end,
   color = function(index, row, selected)
-    local colors = index.colors[row]
     for color in pairs(selected) do
-      if ns.Search.ColorShare(colors, color) >= ns.Search.COLOR_MIN then
+      if ns.Search.ColorShare(index, row, color) >= ns.Search.COLOR_MIN then
         return true
       end
     end
@@ -284,22 +273,25 @@ function Catalog.Counts(index, rows)
     counts[dim][value] = (counts[dim][value] or 0) + 1
   end
   for _, row in ipairs(rows) do
-    for letter in index.src[row]:gmatch(".") do
-      add("source", letter)
+    local src = index.src[row]
+    for _, source in ipairs(Catalog.SOURCES) do
+      if hasBit(src, source.bit) then
+        add("source", source.key)
+      end
     end
     for _, classId in ipairs(classIds(index.cls[row])) do
       add("class", classId)
     end
     local tops = {}
-    for key, top in (index.cats[row] or ""):gmatch("((%d+):%d+)") do
-      add("category", key)
-      tops[tonumber(top)] = true
+    for _, number in ipairs(index.cats[row] or NONE) do
+      add("category", CATEGORY_KEYS[number])
+      tops[floor(number / 256)] = true
     end
     for top in pairs(tops) do
       add("category", top)
     end
-    for prof in (index.profs[row] or ""):gmatch("%d+") do
-      add("profession", tonumber(prof))
+    for _, prof in ipairs(index.profs[row] or NONE) do
+      add("profession", prof)
     end
     for _, color in ipairs(Catalog.GroupValues(index, row, "color")) do
       add("color", color)
@@ -369,7 +361,7 @@ function Catalog.GroupValues(index, row, groupBy)
   if groupBy == "source" then
     local src = index.src[row]
     for _, source in ipairs(Catalog.SOURCES) do
-      if find(src, source.key, 1, true) then
+      if hasBit(src, source.bit) then
         values[#values + 1] = source.key
       end
     end
@@ -377,24 +369,21 @@ function Catalog.GroupValues(index, row, groupBy)
     values = classIds(index.cls[row])
   elseif groupBy == "category" then
     local seen = {}
-    for top in (index.cats[row] or ""):gmatch(" (%d+):") do
-      top = tonumber(top)
+    for _, number in ipairs(index.cats[row] or NONE) do
+      local top = floor(number / 256)
       if not seen[top] then
         seen[top] = true
         values[#values + 1] = top
       end
     end
   elseif groupBy == "profession" then
-    for prof in (index.profs[row] or ""):gmatch("%d+") do
-      values[#values + 1] = tonumber(prof)
+    for i, prof in ipairs(index.profs[row] or NONE) do
+      values[i] = prof
     end
   elseif groupBy == "color" then
-    local colors = index.colors[row]
-    if colors then
-      for _, color in ipairs(ns.Search.COLORS) do
-        if ns.Search.ColorShare(colors, color.key) >= ns.Search.COLOR_MIN then
-          values[#values + 1] = color.key
-        end
+    for _, color in ipairs(ns.Search.COLORS) do
+      if ns.Search.ColorShare(index, row, color.key) >= ns.Search.COLOR_MIN then
+        values[#values + 1] = color.key
       end
     end
   end
@@ -482,12 +471,12 @@ function Catalog.Sections(data, rows, groupBy, recentRows)
     local list = byValue[value]
     if groupBy == "color" then
       -- Strongest share first; equal shares keep the incoming order.
-      local position, colors = {}, index.colors
+      local position, shares = {}, index.colors[value] or NONE
       for i, row in ipairs(list) do
         position[row] = i
       end
       table.sort(list, function(a, b)
-        local sa, sb = ns.Search.ColorShare(colors[a], value), ns.Search.ColorShare(colors[b], value)
+        local sa, sb = shares[a] or 0, shares[b] or 0
         if sa ~= sb then
           return sa > sb
         end

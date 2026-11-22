@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **[Change]** Icon data loads faster, and colour filters, colour grouping and filter counts respond faster.
+
 ## 0.1.0 - 2026-11-22
 
 - **[New]** Searchable icon picker for macros, equipment sets, bank tabs, guild bank tabs and transmog outfits.

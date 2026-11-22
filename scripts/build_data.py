@@ -378,8 +378,14 @@ def lookup_body(mapping):
     return "".join(f"{key}\t{mapping[key]}\n" for key in sorted(mapping, key=sort_key))
 
 
+# Must match Catalog.SOURCES in Catalog.lua.
+SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "A": 16, "C": 32}
+# Must match COLORS in Search.lua.
+COLOR_NAMES = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "brown", "black", "white", "grey"]
+
+
 def load_colors():
-    """File ID -> "colour:share ..." from scripts/icon_colors.tsv (written by build_colors.py), if present."""
+    """File ID -> {colour: share} from scripts/icon_colors.tsv (written by build_colors.py), if present."""
     path = os.path.join(ROOT, "scripts", "icon_colors.tsv")
     colors = {}
     if os.path.exists(path):
@@ -388,29 +394,61 @@ def load_colors():
                 if line.startswith("#") or "\t" not in line:
                     continue
                 file_id, value = line.rstrip("\n").split("\t", 1)
-                colors[int(file_id)] = value
+                shares = {}
+                for part in value.split():
+                    name, share = part.split(":")
+                    if name not in COLOR_NAMES:
+                        sys.exit(f"unknown colour {name} in {path}")
+                    shares[name] = int(share)
+                colors[int(file_id)] = shares
     else:
         log("no scripts/icon_colors.tsv; icons get no colours")
     return colors
 
 
+def lua_string(text):
+    text = text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
+    return '"' + text.replace("\0", "\\000") + '"'
+
+
+def lua_numbers(values):
+    return "{" + ",".join(str(v) for v in values) + "}" if values else "nil"
+
+
+def category_number(key):
+    class_id, subclass_id = (int(p) for p in key.split(":"))
+    if not 0 <= subclass_id < 256:
+        sys.exit(f"item subclass {key} does not fit class * 256 + subclass")
+    return class_id * 256 + subclass_id
+
+
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
     colors = load_colors()
-    lines = io.StringIO()
-    for file_id in sorted(icons):
+    ids = sorted(icons)
+    columns = {name: [] for name in ("id", "file", "names", "text", "src", "cls", "cats", "profs", "spells")}
+    shares = {name: [] for name in COLOR_NAMES} if colors else {}
+    for file_id in ids:
         t = icons[file_id]
         names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
-        search = search_text(names, t.file, t.desc)
-        fields = [
-            str(file_id), t.file, "|".join(names[:MAX_DISPLAY_NAMES]), search if search.strip("|") else "",
-            "".join(sorted(t.src)), str(t.cls or ""),
-            " ".join(sorted(t.cats)), " ".join(str(p) for p in sorted(t.profs)),
-            " ".join(str(s) for s in sorted(t.spells)),
-            colors.get(file_id, ""),
-        ]
-        while len(fields) > 2 and fields[-1] == "":
-            fields.pop()
-        lines.write("\t".join(fields) + "\n")
+        display = "|".join(names[:MAX_DISPLAY_NAMES])
+        columns["id"].append(str(file_id))
+        columns["file"].append(lua_string(t.file))
+        columns["names"].append(lua_string(display) if display else "nil")
+        # Padded as Search.PadText does, so the game reads it as is.
+        columns["text"].append(lua_string(" " + search_text(names, t.file, t.desc).replace("|", " | ") + " "))
+        columns["src"].append(str(sum(SOURCE_BITS[s] for s in t.src)))
+        columns["cls"].append(str(t.cls or 0))
+        columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
+        columns["profs"].append(lua_numbers(sorted(t.profs)))
+        columns["spells"].append(lua_numbers(sorted(t.spells)))
+        for name, column in shares.items():
+            column.append(str(colors.get(file_id, {}).get(name, 0)))
+
+    def column(out, name, values, indent):
+        out.write(f"{indent}{name} = {{\n")
+        for value in values:
+            out.write(f"{value},\n")
+        out.write(f"{indent}}},\n")
 
     path = os.path.join(OUT_DIR, FLAVORS[flavor]["file"])
     with open(path, "w", encoding="utf-8", newline="\n") as out:
@@ -421,8 +459,14 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         out.write(f"  classes = {long_string(lookup_body(classes))},\n")
         out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
         out.write(f"  professions = {long_string(lookup_body(professions))},\n")
-        out.write(f"  icons = {long_string(lines.getvalue())},\n")
-        out.write("}\n")
+        # One column per field, one row per icon, read by Catalog.Parse without parsing.
+        out.write("  icons = {\n")
+        for name, values in columns.items():
+            column(out, name, values, "    ")
+        out.write("    colors = {\n")
+        for name, values in shares.items():
+            column(out, name, values, "      ")
+        out.write("    },\n  },\n}\n")
     log(f"{flavor}: wrote {path} ({os.path.getsize(path) // 1024} KB)")
 
 
