@@ -2,7 +2,7 @@
 ## Title: Iconic Data
 ## Notes: Icon names and categories for Iconic, loaded when an icon picker opens.
 ## Author: whytspace
-## Version: 0.1.0
+## Version: 1.0.0
 ## LoadOnDemand: 1
 ## Dependencies: Iconic
 

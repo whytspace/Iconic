@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.0.0 - 2026-11-22
+
 - **[New]** Colour chips next to the search box: up to three colours an icon must contain, from the colour picker or from a colour word's suggestion, such as "Colour: Red" for "crimson". Icons rank by how close they are; click a chip to change it; its X or a right-click removes it.
 - **[Change]** Colour words in the search box suggest a colour chip instead of searching by colour themselves.
 - **[Change]** The colour filter is gone; colour chips replace it.
