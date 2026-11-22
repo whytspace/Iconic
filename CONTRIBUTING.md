@@ -45,6 +45,29 @@ Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped fi
 
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming). Change both together; the data spec catches drift.
 
+## Icon colours
+
+Colour scores need the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
+
+- Default source: `/Applications/Games/World of Warcraft`. Elsewhere, set `WOW_DIR` to the install folder before `devc up`.
+- Docker Desktop must share that folder: Settings → Resources → File sharing.
+- Without a WoW install at that path the container does not start.
+
+```sh
+devc python3 -I scripts/extract_icons.py
+```
+
+`scripts/build_colors.py` then downloads any icon still missing from wago.tools (slow, about 1–2 per second), scores every icon into `scripts/icon_colors.tsv`, and `build_data.py` merges that into the data files:
+
+```sh
+devc python3 -I scripts/build_colors.py --sheets
+devc python3 scripts/build_data.py
+```
+
+Pixels are converted to OKLab and softly assigned to the nearest of the named colours in `COLORS`; pixels near the centre and saturated pixels weigh more. Each icon keeps the colours with a share of at least `MIN_SHARE` percent. `--sheets` writes `.cache/colors/<colour>.png` with the top icons per colour, for checking the result by eye.
+
+In search, colour words (`COLOR_WORDS` in `Search.lua`) are conditions on these shares, not text: every colour must reach `COLOR_MIN`, and results rank by the weakest one.
+
 ## Synonyms
 
 Each line of `Data/Synonyms.lua` is one group of words that find each other's icons. To find candidates, list the words that often share an icon with a given word:
@@ -60,6 +83,8 @@ Add a group only when a player would plausibly search one word to find the other
 `UI/Pickers.lua` replaces the icon grid of every frame built on Blizzard's `IconSelectorPopupFrameTemplate`. A new Blizzard picker is one entry in `Pickers.BLIZZARD`. Other add-ons call `Iconic.RegisterPicker(frame, adapter)`, documented in `UI/API.lua`.
 
 ## Assets
+
+`Assets/swatch.tga`, the shaded sphere behind colour swatches, is generated: `devc python3 -I scripts/build_swatch.py`.
 
 The add-on icon is `Assets/logo.svg`. WoW loads only uncompressed, power-of-two, 32-bit RGBA TGA files, referenced without the extension. The SVG uses filters, so render it to `Assets/logo.png` in a browser (e.g. headless Chrome) and convert that with ImageMagick:
 

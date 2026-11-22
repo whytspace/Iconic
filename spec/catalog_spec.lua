@@ -99,6 +99,95 @@ describe("Catalog", function()
     assert.are.equal(1, counts.profession[185])
   end)
 
+  describe("colours", function()
+    before_each(function()
+      data = Catalog.Parse(addon.fakeData(ns, {
+        { "1", "a", colors = "green:40 red:22" },
+        { "2", "b", colors = "green:70" },
+        { "3", "c", colors = "red:65" },
+        { "4", "d", colors = "grey:15" },
+      }))
+      rows = Catalog.Rows(data, { 1, 2, 3, 4 })
+    end)
+
+    it("groups by colour, strongest share first, weak shares under Other", function()
+      local titles = {}
+      for i, section in ipairs(Catalog.Sections(data, rows, "color")) do
+        titles[i] = section.title .. ":" .. table.concat(keys(section.rows), ",")
+      end
+      assert.are.same({ "Red:3,1", "Green:2,1", "Other:4" }, titles)
+    end)
+
+    it("filters by any selected colour", function()
+      assert.are.same({ 1, 3 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
+      assert.are.same({ 1, 2, 3 }, keys(Catalog.Filter(data.index, rows, { color = { red = true, green = true } })))
+    end)
+
+    it("counts each group under the other groups' filters", function()
+      local counts = Catalog.FacetCounts(data.index, rows, { color = { red = true }, source = {} })
+      assert.are.equal(2, counts.color.green)
+      assert.are.equal(2, counts.color.red)
+    end)
+
+    it("suggests a colour for related words", function()
+      local suggestion = Catalog.Suggest(data, "blood", Catalog.Counts(data.index, rows))[1]
+      assert.are.equal("color", suggestion.dim)
+      assert.are.equal("red", suggestion.value)
+      assert.are.equal("blood", suggestion.word)
+    end)
+
+    it("counts icons per colour", function()
+      local counts = Catalog.Counts(data.index, rows)
+      assert.are.equal(2, counts.color.green)
+      assert.are.equal(2, counts.color.red)
+      assert.is_nil(counts.color.grey)
+    end)
+  end)
+
+  describe("suggestions", function()
+    local counts
+    before_each(function()
+      counts = Catalog.Counts(data.index, rows)
+    end)
+
+    local function labels(list)
+      local result = {}
+      for i, s in ipairs(list) do
+        result[i] = s.group .. ": " .. s.label
+      end
+      return result
+    end
+
+    it("offers filter values whose label starts with a typed word", function()
+      assert.are.same({ "Class: Hunter" }, labels(Catalog.Suggest(data, "hunt", counts)))
+    end)
+
+    it("matches words inside labels and names the parent category", function()
+      assert.are.same({ "Item category: Weapon › One-Handed Swords" }, labels(Catalog.Suggest(data, "sword", counts)))
+    end)
+
+    it("skips values without icons and active filters", function()
+      assert.are.same({}, labels(Catalog.Suggest(data, "armor", counts)))
+      assert.are.same({}, labels(Catalog.Suggest(data, "hunter", counts, { class = { [3] = true } })))
+    end)
+
+    it("reports the query word to drop", function()
+      local suggestion = Catalog.Suggest(data, "fire hunter", counts)[1]
+      assert.are.equal("hunter", suggestion.word)
+      assert.are.equal("fire", Catalog.RemoveWord("fire Hunter", suggestion.word))
+    end)
+  end)
+
+  it("counts facets: other groups narrow, the own group does not", function()
+    local counts = Catalog.FacetCounts(data.index, rows, { source = { I = true } })
+    -- Source counts ignore the Source filter itself.
+    assert.are.equal(3, counts.source.S)
+    -- Other groups count only items.
+    assert.is_nil(counts.class[3])
+    assert.are.equal(1, counts.category["2:7"])
+    assert.are.equal(1, counts.profession[185])
+  end)
+
   it("counts active filters", function()
     assert.are.equal(3, Catalog.ActiveFilterCount({ usable = true, class = { [3] = true, [8] = true } }))
   end)

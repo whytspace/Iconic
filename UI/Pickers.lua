@@ -11,7 +11,7 @@ Pickers.TemplateAdapter = TemplateAdapter
 -- Places the view over the area of Blizzard's icon grid and its filter dropdown.
 function TemplateAdapter.Anchor(popup, viewFrame)
   local grid = popup.IconSelector
-  viewFrame:SetPoint("TOPLEFT", grid, "TOPLEFT", -6, 36)
+  viewFrame:SetPoint("TOPLEFT", grid, "TOPLEFT", -10, 36)
   viewFrame:SetPoint("BOTTOMRIGHT", grid, "BOTTOMRIGHT", 0, 0)
   viewFrame:SetFrameStrata(grid:GetFrameStrata())
   viewFrame:SetFrameLevel(grid:GetFrameLevel() + 5)

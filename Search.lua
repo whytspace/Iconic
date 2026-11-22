@@ -85,7 +85,7 @@ function Search.PadText(text)
   return " " .. gsub(text or "", "|", " | ") .. " "
 end
 
--- Synonym groups ({ {"naked", "nude", ...}, ... }) become token -> { other tokens }.
+-- Synonym groups ({ {"cloak", "cape", ...}, ... }) become token -> { other tokens }.
 function Search.BuildSynonyms(groups)
   local map = {}
   for _, group in ipairs(groups or {}) do
@@ -249,9 +249,90 @@ local function variantsFor(token, synonyms, vocabulary)
   return variants
 end
 
+-- Colour words (after stemming) and the colour they search for; matches COLORS in scripts/build_colors.py.
+local COLOR_WORDS = {
+  red = "red",
+  crimson = "red",
+  scarlet = "red",
+  orange = "orange",
+  yellow = "yellow",
+  green = "green",
+  teal = "teal",
+  cyan = "teal",
+  turquoise = "teal",
+  blue = "blue",
+  azure = "blue",
+  purple = "purple",
+  violet = "purple",
+  pink = "pink",
+  magenta = "pink",
+  brown = "brown",
+  black = "black",
+  white = "white",
+  grey = "grey",
+  gray = "grey",
+}
+-- Minimum colour share (0-100) for a colour word to match; the loose pass accepts less.
+local COLOR_MIN, COLOR_MIN_LOOSE, COLOR_WEIGHT = 20, 10, 0.2
+Search.COLOR_MIN = COLOR_MIN
+
+-- Colour names in display order, with a hex shade for swatches (as in scripts/build_colors.py) and words
+-- that suggest the colour filter without being colour conditions themselves.
+Search.COLORS = {
+  { key = "red", label = "Red", hex = "dd3333", hints = { "blood", "ruby" } },
+  { key = "orange", label = "Orange", hex = "e67d1e", hints = { "copper", "rust" } },
+  { key = "yellow", label = "Yellow", hex = "ebd237", hints = { "gold", "golden", "amber" } },
+  { key = "green", label = "Green", hex = "4cbb44", hints = { "emerald", "jade", "verdant", "fel" } },
+  { key = "teal", label = "Teal", hex = "1ea5a0", hints = { "aqua" } },
+  { key = "blue", label = "Blue", hex = "4b7ce8", hints = { "sapphire", "sky" } },
+  { key = "purple", label = "Purple", hex = "a060e0", hints = { "amethyst", "void" } },
+  { key = "pink", label = "Pink", hex = "f078be", hints = { "rose" } },
+  { key = "brown", label = "Brown", hex = "a87848", hints = { "leather", "wood", "bronze" } },
+  { key = "black", label = "Black", hex = "707070", hints = { "dark", "obsidian", "onyx", "ebon" } },
+  { key = "white", label = "White", hex = "ffffff", hints = { "pale", "ivory", "snow" } },
+  { key = "grey", label = "Grey", hex = "a0a0a0", hints = { "silver", "steel", "stone" } },
+}
+
+-- The colour a query token asks for, if it is a colour word.
+function Search.ColorOf(token)
+  return COLOR_WORDS[token]
+end
+
+-- Share (0-100) of a colour in an icon's padded colour string (" green:62 red:18 ").
+function Search.ColorShare(colors, color)
+  return colors and tonumber(colors:match(" " .. color .. ":(%d+)")) or 0
+end
+
+-- Splits query tokens into colour names and text tokens. Without colour data every token is text.
+local function splitColors(tokens, hasColors)
+  local colors, text = {}, {}
+  for _, token in ipairs(tokens) do
+    local color = hasColors and COLOR_WORDS[token]
+    if color then
+      colors[#colors + 1] = color
+    else
+      text[#text + 1] = token
+    end
+  end
+  return colors, text
+end
+
+-- Colour part of a score: every requested colour must reach the minimum; ranks by the weakest one.
+local function colorScore(colorText, colors, minimum)
+  local weakest
+  for _, color in ipairs(colors) do
+    local share = Search.ColorShare(colorText, color)
+    if share < minimum then
+      return nil
+    end
+    weakest = math.min(weakest or share, share)
+  end
+  return weakest and weakest * COLOR_WEIGHT or 0
+end
+
 -- One pass over the candidate rows. `index` holds the columns (see Catalog.NewIndex).
 local function run(index, rows, query, opts, loose)
-  local tokens = Search.Tokens(query)
+  local colors, tokens = splitColors(Search.Tokens(query), index.hasColors)
   local synonyms = opts.synonyms or {}
   local usable = opts.usable
   local idQuery = tonumber(Search.Normalize(query))
@@ -263,13 +344,23 @@ local function run(index, rows, query, opts, loose)
     variants[i] = variantsFor(token, synonyms, vocabulary)
   end
 
-  local texts, ids, keys, spells = index.text, index.id, index.key, index.spells
+  local texts, ids, keys, spells, colorTexts = index.text, index.id, index.key, index.spells, index.colors
+  local minimum = loose and COLOR_MIN_LOOSE or COLOR_MIN
   local scores, results = {}, {}
   for _, row in ipairs(rows) do
     local score = 0
+    -- nil when a requested colour is missing.
+    local colorPart = 0
+    if #colors > 0 then
+      colorPart = colorScore(colorTexts[row], colors, minimum)
+    end
     if idQuery and ids[row] == idQuery then
       score = SCORE_ID
-    elseif #tokens > 0 then
+    elseif not colorPart then
+      score = 0
+    elseif #tokens == 0 then
+      score = colorPart
+    else
       local text = texts[row]
       local matched = 0
       for i = 1, #tokens do
@@ -289,6 +380,7 @@ local function run(index, rows, query, opts, loose)
         if phrase and find(text, phrase, 1, true) then
           score = score + BONUS_PHRASE
         end
+        score = score + colorPart
       end
     end
     if score > 0 then

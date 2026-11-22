@@ -378,7 +378,24 @@ def lookup_body(mapping):
     return "".join(f"{key}\t{mapping[key]}\n" for key in sorted(mapping, key=sort_key))
 
 
+def load_colors():
+    """File ID -> "colour:share ..." from scripts/icon_colors.tsv (written by build_colors.py), if present."""
+    path = os.path.join(ROOT, "scripts", "icon_colors.tsv")
+    colors = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith("#") or "\t" not in line:
+                    continue
+                file_id, value = line.rstrip("\n").split("\t", 1)
+                colors[int(file_id)] = value
+    else:
+        log("no scripts/icon_colors.tsv; icons get no colours")
+    return colors
+
+
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
+    colors = load_colors()
     lines = io.StringIO()
     for file_id in sorted(icons):
         t = icons[file_id]
@@ -389,6 +406,7 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
             "".join(sorted(t.src)), str(t.cls or ""),
             " ".join(sorted(t.cats)), " ".join(str(p) for p in sorted(t.profs)),
             " ".join(str(s) for s in sorted(t.spells)),
+            colors.get(file_id, ""),
         ]
         while len(fields) > 2 and fields[-1] == "":
             fields.pop()

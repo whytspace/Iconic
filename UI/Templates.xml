@@ -1,0 +1,46 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- One filter suggestion under the search box; styled like the profession recipe search preview. -->
+	<Button name="IconicSuggestionTemplate" mixin="SearchBoxListElementMixin" virtual="true">
+		<Size x="200" y="27"/>
+		<Layers>
+			<Layer level="OVERLAY" textureSubLevel="3">
+				<Texture parentKey="selectedTexture" atlas="search-highlight" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<!-- Centred in a 19px slot at the left, so smaller swatches keep the text aligned. -->
+				<Texture parentKey="Icon">
+					<Size x="19" y="19"/>
+					<Anchors>
+						<Anchor point="CENTER" relativePoint="LEFT" x="15.5" y="0"/>
+					</Anchors>
+				</Texture>
+				<FontString inherits="GameFontNormalSmall" justifyH="LEFT" parentKey="Name" wordwrap="false">
+					<Anchors>
+						<Anchor point="LEFT" x="31" y="0"/>
+						<Anchor point="RIGHT" x="-6" y="0"/>
+					</Anchors>
+					<Color r="0.96875" g="0.8984375" b="0.578125" a="1"/>
+				</FontString>
+			</Layer>
+		</Layers>
+		<NormalTexture inherits="_SearchBarSm"/>
+		<PushedTexture inherits="_SearchBarSm"/>
+		<Scripts>
+			<OnEnter method="OnEnter"/>
+		</Scripts>
+	</Button>
+
+	<!-- Blizzard's search box with a suggestion list underneath. -->
+	<EditBox name="IconicSearchBoxTemplate" inherits="SearchBoxListTemplate" virtual="true">
+		<KeyValues>
+			<KeyValue key="buttonTemplate" value="IconicSuggestionTemplate" type="string"/>
+			<KeyValue key="showAllButtonTemplate" value="SearchBoxListAllButtonTemplate" type="string"/>
+			<KeyValue key="minCharacters" value="2" type="number"/>
+		</KeyValues>
+	</EditBox>
+</Ui>

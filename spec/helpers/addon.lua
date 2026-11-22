@@ -63,7 +63,7 @@ local function searchField(Search, names, file, desc)
   return table.concat(fields, "|")
 end
 
--- Builds a tiny IconicData table. Rows: { id, file, names = {...}, desc, src, cls, cats, profs, spells }.
+-- Builds a tiny IconicData table. Rows: { id, file, names = {...}, desc, src, cls, cats, profs, spells, colors }.
 function M.fakeData(ns, rows)
   local lines = {}
   for _, r in ipairs(rows) do
@@ -78,6 +78,7 @@ function M.fakeData(ns, rows)
       r.cats or "",
       r.profs or "",
       r.spells or "",
+      r.colors or "",
     }, "\t")
   end
   return {

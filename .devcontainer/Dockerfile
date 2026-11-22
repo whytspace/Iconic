@@ -14,6 +14,7 @@ RUN apt-get update \
     luarocks \
     tar \
     python3 \
+    python3-pil \
     unzip \
   && luarocks --lua-version=5.1 install https://luarocks.org/lua-term-0.3-1.src.rock \
   && luarocks --lua-version=5.1 install luacheck \

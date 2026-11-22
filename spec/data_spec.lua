@@ -44,6 +44,14 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
     end)
 
+    it("ranks icons by colour share for a colour word", function()
+      local results = ns.Search.Find(data.index, rows, "green", opts)
+      assert.is_true(#results > 100)
+      for i = 1, 10 do
+        assert.is_true(ns.Search.ColorShare(data.index.colors[results[i]], "green") >= 50)
+      end
+    end)
+
     it("tags hunter spells with the hunter class", function()
       local row = data.index.byKey[data.byFile["ability_hunter_snipershot"]]
       assert.is_true(ns.Catalog.HasClass(data.index.cls[row], 3))

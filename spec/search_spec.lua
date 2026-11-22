@@ -34,7 +34,7 @@ describe("Search", function()
       { "135274", "inv_sword_04", names = { "Worn Shortsword", "Shadow Sword" }, src = "I", cats = "2:7" },
       { "132690", "inv_misc_bone_skull_01", names = { "Skull of Impending Doom" }, src = "I", cats = "15:0" },
       { "1001", "inv_shirt_white_01", names = { "White Linen Shirt" }, src = "I", cats = "4:0" },
-      { "1002", "ability_bodytorso_bare" },
+      { "1002", "inv_misc_cape_01", names = { "Tattered Cape" }, src = "I" },
       { "133971", "inv_misc_food_15", names = { "Prowler Steak", "Roasted Quail" }, src = "IS", cats = "0:5" },
     }))
     rows = Catalog.Rows(data, { 132212, 236188, 135274, 132690, 1001, 1002, 133971 })
@@ -61,7 +61,7 @@ describe("Search", function()
   end)
 
   it("finds icons through synonyms", function()
-    assert.are.same({ 1002 }, keys((find("naked"))))
+    assert.are.same({ 1002 }, keys((find("cloak"))))
   end)
 
   it("matches word prefixes while typing", function()
@@ -97,6 +97,42 @@ describe("Search", function()
 
   it("returns nothing for an unknown word without typo data", function()
     assert.are.same({}, keys((find("zzzz"))))
+  end)
+
+  describe("colours", function()
+    before_each(function()
+      data = Catalog.Parse(addon.fakeData(ns, {
+        { "1", "inv_misc_gem_emerald_01", names = { "Emerald" }, colors = "green:70 teal:12" },
+        { "2", "inv_misc_herb_01", names = { "Peacebloom" }, colors = "green:35 yellow:25" },
+        { "3", "inv_misc_gem_ruby_01", names = { "Ruby" }, colors = "red:65" },
+        { "4", "inv_misc_gem_green_01", names = { "Green Gem" }, colors = "grey:60" },
+        { "5", "inv_misc_flower_01", names = { "Fireflower" }, colors = "red:30 green:28" },
+      }))
+      rows = Catalog.Rows(data, { 1, 2, 3, 4, 5 })
+    end)
+
+    it("ranks icons by how much of the colour they show", function()
+      assert.are.same({ 1, 2, 5 }, keys((find("green"))))
+    end)
+
+    it("ignores the colour word in names", function()
+      local results = find("green")
+      for _, row in ipairs(results) do
+        assert.are_not.equal(4, data.index.key[row])
+      end
+    end)
+
+    it("requires every colour and ranks by the weakest", function()
+      assert.are.same({ 5 }, keys((find("red green"))))
+    end)
+
+    it("combines a colour with text", function()
+      assert.are.same({ 1 }, keys((find("green emerald"))))
+    end)
+
+    it("maps colour aliases", function()
+      assert.are.same({ 3, 5 }, keys((find("crimson"))))
+    end)
   end)
 
   it("computes edit distance with adjacent swaps", function()

@@ -11,6 +11,8 @@ ns.DEFAULTS = {
   },
   groupBy = "none",
   recent = {},
+  -- groupBy -> section key -> true
+  collapsed = {},
 }
 
 ns.MAX_RECENT = 24

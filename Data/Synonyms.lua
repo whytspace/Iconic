@@ -173,13 +173,4 @@ ns.SYNONYMS = {
   { "enchant", "enchanting", "dust", "essence", "rod" },
   { "engineering", "gadget", "gizmo", "device", "invention", "goblin", "gnomish" },
   { "cooking", "cook", "chef", "recipe", "kitchen" },
-
-  -- colors (from names until colour tags exist)
-  { "red", "crimson", "scarlet", "blood", "ruby" },
-  { "blue", "azure", "sapphire", "cobalt" },
-  { "green", "emerald", "jade", "verdant" },
-  { "purple", "violet", "amethyst", "lavender" },
-  { "black", "dark", "ebon", "obsidian", "onyx" },
-  { "white", "pale", "ivory", "pure" },
-  { "yellow", "golden", "amber" },
 }

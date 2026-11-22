@@ -27,6 +27,7 @@ globals = {
 
 read_globals = {
   "BankPanel",
+  "ButtonFrameTemplate_HideAttic",
   "ButtonFrameTemplate_HidePortrait",
   "C_AddOns",
   "C_ClassColor",
@@ -45,6 +46,7 @@ read_globals = {
   "CreateDataProvider",
   "CreateFrame",
   "CreateScrollBoxListLinearView",
+  "FrameTemplate_SetButtonBarHeight",
   "Enum",
   "GameTooltip",
   "GearManagerPopupFrame",

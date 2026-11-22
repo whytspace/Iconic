@@ -14,7 +14,9 @@
         "terminal.integrated.defaultProfile.linux": "zsh",
         "Lua.runtime.version": "Lua 5.1",
         "Lua.workspace.checkThirdParty": false,
-        "Lua.diagnostics.disable": ["lowercase-global"],
+        "Lua.diagnostics.disable": [
+          "lowercase-global"
+        ],
         "Lua.format.defaultConfig": {
           "indent_style": "space",
           "indent_size": "2"
@@ -26,5 +28,11 @@
         "JohnnyMorganz.stylua"
       ]
     }
+  },
+  "mounts": [
+    "source=${localEnv:WOW_DIR:/Applications/Games/World of Warcraft},target=/wow,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "WOW_DIR": "/wow"
   }
 }

@@ -9,6 +9,7 @@
   ],
   "diagnostics.globals": [
     "BankPanel",
+    "ButtonFrameTemplate_HideAttic",
     "ButtonFrameTemplate_HidePortrait",
     "C_AddOns",
     "C_ClassColor",
@@ -28,6 +29,7 @@
     "CreateFrame",
     "CreateScrollBoxListLinearView",
     "Enum",
+    "FrameTemplate_SetButtonBarHeight",
     "GameTooltip",
     "GearManagerPopupFrame",
     "GetClassAtlas",

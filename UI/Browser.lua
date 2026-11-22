@@ -4,6 +4,7 @@ local L = ns.L
 local Catalog = ns.Catalog
 
 local Browser = {}
+local FOOTER_HEIGHT = 52
 ns.Browser = Browser
 
 -- Every icon Blizzard offers in its pickers, spellbook icons first; also returns those extra icons.
@@ -23,6 +24,9 @@ end
 function Browser:Create()
   local frame = CreateFrame("Frame", "IconicBrowserFrame", UIParent, "ButtonFrameTemplate")
   ButtonFrameTemplate_HidePortrait(frame)
+  -- No empty band under the title; a footer tall enough for the 36px preview.
+  ButtonFrameTemplate_HideAttic(frame)
+  FrameTemplate_SetButtonBarHeight(frame, FOOTER_HEIGHT)
   frame:SetSize(560, 560)
   frame:SetPoint("CENTER")
   frame:SetMovable(true)
@@ -49,6 +53,15 @@ function Browser:Create()
   preview:SetPoint("BOTTOMLEFT", 12, 8)
   preview.icon = preview:CreateTexture(nil, "ARTWORK")
   preview.icon:SetAllPoints()
+  preview.iconicButton = true
+  preview:SetScript("OnEnter", function(owner)
+    if self.selectedRow then
+      self.view:ShowTooltip(owner, self.selectedRow)
+    end
+  end)
+  preview:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+  end)
   self.preview = preview
 
   local idLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -80,7 +93,7 @@ function Browser:Create()
 
   local close = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
   close:SetSize(80, 22)
-  close:SetPoint("BOTTOMRIGHT", -8, 8)
+  close:SetPoint("RIGHT", frame, "BOTTOMRIGHT", -10, 26)
   close:SetText(CLOSE)
   close:SetScript("OnClick", function()
     frame:Hide()
@@ -115,6 +128,7 @@ function Browser:SetSelected(texture)
   self.idBox.value = id and tostring(id) or ""
   self.idBox:SetText(self.idBox.value)
   local row = data and data.index.byKey[id or texture or ""]
+  self.selectedRow = row
   self.nameText:SetText(row and (Catalog.Names(data.index, row)[1] or data.index.file[row]) or "")
   self.choose:SetEnabled(texture ~= nil)
 end

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """List words that often share an icon with the given words: candidates for Data/Synonyms.lua.
 
-Usage: python3 scripts/synonym_candidates.py target naked heal [--data Iconic_Data/Retail.lua] [--top 15]
+Usage: python3 scripts/synonym_candidates.py target heal shield [--data Iconic_Data/Retail.lua] [--top 15]
 """
 
 import argparse
