@@ -49,6 +49,25 @@ function Browser:Create()
   tinsert(UISpecialFrames, frame:GetName())
   frame:SetTitle(L["Iconic"])
 
+  -- Opens Iconic's settings page, left of the close button.
+  local settings = CreateFrame("Button", nil, frame)
+  settings:SetSize(15, 16)
+  settings:SetPoint("RIGHT", frame.CloseButton, "LEFT", -2, 0)
+  -- Above the title bar's border art, like the close button.
+  settings:SetFrameLevel(frame.CloseButton:GetFrameLevel())
+  settings:SetNormalAtlas("questlog-icon-setting")
+  settings:SetHighlightAtlas("questlog-icon-setting", "ADD")
+  settings:GetHighlightTexture():SetAlpha(0.4)
+  settings:SetScript("OnClick", ns.OpenSettings)
+  settings:SetScript("OnEnter", function(owner)
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:SetText(L["Settings"])
+    GameTooltip:Show()
+  end)
+  settings:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+  end)
+
   self.view = ns.CreateView(frame, {
     searchLeft = SEARCH_LEFT,
     onSelect = function(texture)

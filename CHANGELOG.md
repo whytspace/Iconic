@@ -6,6 +6,7 @@
 - **[New]** Options → AddOns → Iconic can turn off suggested and recently used icons. ([#13](https://github.com/whytspace/Iconic/issues/13))
 - **[New]** The icon picker shows how many icons match out of all, such as "312 of 33,097 icons". ([#4](https://github.com/whytspace/Iconic/issues/4))
 - **[New]** German: in a German game client, the interface is in German and icons are found by their German and English names. ([#5](https://github.com/whytspace/Iconic/issues/5))
+- **[New]** A gear button in the `/iconic` window opens Iconic's settings.
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))

@@ -54,6 +54,7 @@ ns.Locales.deDE = {
   ["Search by colour"] = "Nach Farbe suchen",
   ["Search…"] = "Suchen…",
   ["Show recently used icons"] = "Zuletzt verwendet anzeigen",
+  ["Settings"] = "Einstellungen",
   ["Show suggested icons"] = "Vorschläge anzeigen",
   ["Source"] = "Herkunft",
   ["Spells"] = "Zauber",
