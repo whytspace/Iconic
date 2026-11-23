@@ -11,6 +11,7 @@ local SEARCH_DELAY = 0.2
 -- While a colour is dragged in the picker, the grid follows at most this often.
 local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
+local MAX_SUGGESTED_ROWS = 3
 
 local View = {}
 View.__index = View
@@ -788,6 +789,12 @@ function View:SetTextures(textures, extras)
   end)
 end
 
+-- Icons to suggest while the search is empty: textures, or { query = text } for that text's results.
+-- Takes effect with the next SetTextures or Refresh.
+function View:SetSuggestions(entries)
+  self.suggestions = entries
+end
+
 -- Position of a row's texture in the list given to SetTextures.
 function View:PositionOf(row)
   return self.positions and self.positions[row]
@@ -927,17 +934,35 @@ function View:Refresh(keepScroll)
     })
   end
 
-  local recent = not hasQuery and ns.db and Catalog.RecentRows(data, rows, ns.db.recent, self.filters, self.usable)
-  local sections = Catalog.Sections(data, rows, groupBy, recent or nil)
+  local perRow = self:PerRow()
+  local settings = ns.db and ns.db.settings
+  local recent = not hasQuery
+    and settings
+    and settings.showRecent
+    and Catalog.RecentRows(data, rows, ns.db.recent, self.filters, self.usable)
+  local suggested = not hasQuery
+    and settings
+    and settings.showSuggested
+    and Catalog.SuggestedRows(
+      data,
+      rows,
+      self.suggestions,
+      self.filters,
+      self.usable,
+      MAX_SUGGESTED_ROWS * perRow,
+      ns.synonyms
+    )
+  local sections = Catalog.Sections(data, rows, groupBy, recent or nil, suggested or nil)
   if loose and sections[1] and not sections[1].title then
     sections[1].title = L["Close matches"]
   end
 
-  local perRow = self:PerRow()
   local elements, collapsed = {}, self:CollapsedSet()
   self.sectionKeys, self.sectionOf, self.visibleRows = {}, {}, {}
   for sectionIndex, section in ipairs(sections) do
-    local key = section.recent and "recent" or tostring(section.value or section.title or "")
+    local key = (section.suggested and "suggested")
+      or (section.recent and "recent")
+      or tostring(section.value or section.title or "")
     local isCollapsed = section.title and collapsed[key] or false
     for _, row in ipairs(section.rows) do
       self.sectionOf[row] = key

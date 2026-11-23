@@ -52,6 +52,32 @@ function ns.SetupSettings()
     L["When spell, item, mount and currency tooltips elsewhere in the game show their icon ID."]
   )
 
+  local suggested = Settings.RegisterAddOnSetting(
+    category,
+    "ICONIC_SHOW_SUGGESTED",
+    "showSuggested",
+    settings,
+    Settings.VarType.Boolean,
+    L["Show suggested icons"],
+    ns.DEFAULTS.settings.showSuggested
+  )
+  Settings.CreateCheckbox(
+    category,
+    suggested,
+    L["Icons that fit what you're editing, such as the items of an equipment set, appear first."]
+  )
+
+  local recent = Settings.RegisterAddOnSetting(
+    category,
+    "ICONIC_SHOW_RECENT",
+    "showRecent",
+    settings,
+    Settings.VarType.Boolean,
+    L["Show recently used icons"],
+    ns.DEFAULTS.settings.showRecent
+  )
+  Settings.CreateCheckbox(category, recent, L["Icons you picked recently appear first."])
+
   Settings.RegisterCanvasLayoutSubcategory(category, ns.CreateAboutPanel(), L["About"])
   Settings.RegisterAddOnCategory(category)
   ns.settingsCategory = category

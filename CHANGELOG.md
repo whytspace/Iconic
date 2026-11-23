@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **[New]** Suggested icons appear first, fitting what you're editing: your class, spec or talent tree icons and the set's items for equipment sets, the spells and items in a macro, the items in a bank or guild bank tab, the appearances of a transmog outfit, and icons matching the name. ([#13](https://github.com/whytspace/Iconic/issues/13))
+- **[New]** Options → AddOns → Iconic can turn off suggested and recently used icons. ([#13](https://github.com/whytspace/Iconic/issues/13))
+
 ## 1.0.0 - 2026-11-22
 
 - **[New]** Colour chips next to the search box: up to three colours an icon must contain, from the colour picker or from a colour word's suggestion, such as "Colour: Red" for "crimson". Icons rank by how close they are; click a chip to change it; its X or a right-click removes it.

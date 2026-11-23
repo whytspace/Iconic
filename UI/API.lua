@@ -24,7 +24,9 @@ end
 --   Anchor(frame, viewFrame), GetTextures(frame) -> textures, extras, GetIcon(frame) -> texture,
 --   SetIcon(frame, texture, position), IsDragging(frame) -> bool, HideNative(frame),
 --   HookStateChanges(frame, onChange), HookConfirm(frame, onConfirm),
---   ShowSelectedState(frame, state) with state "visible", "hidden" or "absent", HookSelected(frame, onClick, onTextReset)
+--   ShowSelectedState(frame, state) with state "visible", "hidden" or "absent", HookSelected(frame, onClick, onTextReset),
+--   GetSuggestions(frame) -> list of textures or { query = text } shown first while the search is empty,
+--   HookSuggestionChanges(frame, onChange)
 -- Returns true when attached now, false when waiting for the frame.
 function Iconic.RegisterPicker(frame, adapter)
   if frame == nil then

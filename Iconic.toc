@@ -18,6 +18,7 @@ Data.lua
 UI/Templates.xml
 UI/View.lua
 UI/Pickers.lua
+UI/Suggestions.lua
 UI/Browser.lua
 UI/Tooltips.lua
 UI/About.lua

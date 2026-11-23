@@ -8,6 +8,8 @@ ns.DEFAULTS = {
   settings = {
     tooltipPicker = "always",
     tooltipGame = "shift",
+    showSuggested = true,
+    showRecent = true,
   },
   groupBy = "none",
   recent = {},

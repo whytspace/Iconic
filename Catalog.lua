@@ -505,9 +505,12 @@ end
 
 -- Splits rows into sections ({ title, rows, value }), keeping the order inside each. Rows appear in every
 -- section they belong to; rows without a value land in "Other".
-function Catalog.Sections(data, rows, groupBy, recentRows)
+function Catalog.Sections(data, rows, groupBy, recentRows, suggestedRows)
   local index = data.index
   local sections = {}
+  if suggestedRows and #suggestedRows > 0 then
+    sections[#sections + 1] = { title = L["Suggested"], rows = suggestedRows, suggested = true }
+  end
   if recentRows and #recentRows > 0 then
     sections[#sections + 1] = { title = L["Recently used"], rows = recentRows, recent = true }
   end
@@ -684,6 +687,77 @@ function Catalog.RecentRows(data, rows, recent, filters, usableSet)
     end
   end
   return list
+end
+
+-- Rows for suggestion entries, in order, unique, among `rows`, passing the filters and at most `max`. An entry
+-- is a texture or { query = text }, which adds the search results for that text.
+function Catalog.SuggestedRows(data, rows, entries, filters, usableSet, max, synonyms)
+  local index, present = data.index, {}
+  for _, row in ipairs(rows) do
+    present[row] = true
+  end
+  local list, seen = {}, {}
+  local function add(row)
+    if row and present[row] and not seen[row] and Catalog.Matches(index, row, filters, usableSet) then
+      seen[row] = true
+      list[#list + 1] = row
+    end
+    return max and #list >= max
+  end
+  for _, entry in ipairs(entries or {}) do
+    if type(entry) == "table" then
+      if entry.query and #ns.Search.Tokens(entry.query) > 0 then
+        for _, row in ipairs((ns.Search.Find(index, rows, entry.query, { synonyms = synonyms }))) do
+          if add(row) then
+            return list
+          end
+        end
+      end
+    elseif add(index.byKey[Catalog.ResolveId(data, entry) or entry]) then
+      return list
+    end
+  end
+  return list
+end
+
+local MACRO_COMMANDS = { cast = "one", use = "one", castsequence = "list", castrandom = "list", userandom = "list" }
+
+-- Spells and items a macro casts or uses, in order and unique: { name = text } or { slot = inventorySlot }.
+function Catalog.MacroTerms(body)
+  local terms, seen = {}, {}
+  local function add(text, command)
+    text = text:gsub("^%s*!?%s*", ""):gsub("%s+$", "")
+    local slot = command == "use" and tonumber(text)
+    local key = slot and ("slot:" .. slot) or text:lower()
+    if text == "" or seen[key] or (not slot and text:match("^[%d%s]+$")) then
+      return
+    end
+    seen[key] = true
+    terms[#terms + 1] = slot and { slot = slot } or { name = text }
+  end
+  for line in (body or ""):gmatch("[^\r\n]+") do
+    local command, args = line:match("^%s*/(%a+)%s*(.*)$")
+    command = command and command:lower()
+    if not command then
+      args = line:match("^%s*#showtooltip%s+(.+)$")
+      command = args and "cast"
+    end
+    local kind = MACRO_COMMANDS[command]
+    if kind then
+      for clause in (args .. ";"):gmatch("([^;]*);") do
+        clause = clause:gsub("%b[]", "")
+        if kind == "list" then
+          clause = clause:gsub("reset=%S+", "")
+          for part in (clause .. ","):gmatch("([^,]*),") do
+            add(part, command)
+          end
+        else
+          add(clause, command)
+        end
+      end
+    end
+  end
+  return terms
 end
 
 -- Display names of a row as a list.

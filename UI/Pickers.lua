@@ -1,6 +1,6 @@
 local ADDON_NAME, ns = ...
 
-local Pickers = { attached = {}, pending = {} }
+local Pickers = { attached = {}, pending = {}, ADAPTERS = {} }
 ns.Pickers = Pickers
 
 local L = ns.L
@@ -109,6 +109,16 @@ function TemplateAdapter.HookSelected(popup, onClick, onTextReset)
   end
 end
 
+-- Icons to suggest: textures, or { query = text } for that text's results. By default the name being entered.
+function TemplateAdapter.GetSuggestions(popup)
+  local editBox = popup.BorderBox and popup.BorderBox.IconSelectorEditBox
+  local name = editBox and editBox:GetText()
+  return name and name ~= "" and { { query = name } } or {}
+end
+
+-- Calls `onChange` when the suggestions may have changed while the picker is open.
+function TemplateAdapter.HookSuggestionChanges(_popup, _onChange) end
+
 function TemplateAdapter.HookConfirm(popup, onConfirm)
   if popup.OkayButton_OnClick then
     hooksecurefunc(popup, "OkayButton_OnClick", onConfirm)
@@ -139,6 +149,11 @@ function Pickers.Attach(popup, overrides)
     end
   end
 
+  local function suggestions()
+    local ok, entries = pcall(adapter.GetSuggestions, popup)
+    return ok and entries or nil
+  end
+
   local function onShow()
     if not state.view then
       state.view = ns.CreateView(popup, {
@@ -160,6 +175,7 @@ function Pickers.Attach(popup, overrides)
       end)
     end
     local textures, extras = adapter.GetTextures(popup)
+    state.view:SetSuggestions(suggestions())
     state.view:SetTextures(textures, extras)
     state.view:SetSelected(adapter.GetIcon(popup))
     state.view:ScrollToSelected()
@@ -168,6 +184,12 @@ function Pickers.Attach(popup, overrides)
 
   popup:HookScript("OnShow", onShow)
   adapter.HookStateChanges(popup, sync)
+  adapter.HookSuggestionChanges(popup, function()
+    if state.view and popup:IsShown() then
+      state.view:SetSuggestions(suggestions())
+      state.view:Refresh(true)
+    end
+  end)
   adapter.HookConfirm(popup, function()
     ns.AddRecent(adapter.GetIcon(popup))
   end)
@@ -180,28 +202,33 @@ end
 -- Blizzard pickers: the frame to look up and, for load-on-demand UIs, the add-on that creates it.
 Pickers.BLIZZARD = {
   {
+    key = "macro",
     addon = "Blizzard_MacroUI",
     frame = function()
       return MacroPopupFrame
     end,
   },
   {
+    key = "gear",
     frame = function()
       return GearManagerPopupFrame
     end,
   },
   {
+    key = "guildBank",
     addon = "Blizzard_GuildBankUI",
     frame = function()
       return GuildBankPopupFrame
     end,
   },
   {
+    key = "bank",
     frame = function()
       return BankPanel and BankPanel.TabSettingsMenu
     end,
   },
   {
+    key = "transmog",
     addon = "Blizzard_Transmog",
     frame = function()
       return TransmogFrame and TransmogFrame.OutfitPopup
@@ -214,7 +241,7 @@ function Pickers.AttachBlizzard()
   for _, entry in ipairs(Pickers.BLIZZARD) do
     local ok, popup = pcall(entry.frame)
     if ok and popup and popup.IconSelector then
-      Pickers.Attach(popup)
+      Pickers.Attach(popup, Pickers.ADAPTERS[entry.key])
     end
   end
 end

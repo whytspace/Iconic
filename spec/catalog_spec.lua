@@ -81,6 +81,47 @@ describe("Catalog", function()
     assert.are.equal("All icons", sections[2].title)
   end)
 
+  it("puts suggested icons before recent ones", function()
+    local suggested = Catalog.SuggestedRows(data, rows, { 40 })
+    local recent = Catalog.RecentRows(data, rows, { 30 })
+    local sections = Catalog.Sections(data, rows, "none", recent, suggested)
+    assert.are.equal("Suggested", sections[1].title)
+    assert.is_true(sections[1].suggested)
+    assert.are.equal("Recently used", sections[2].title)
+  end)
+
+  it("builds suggestions from textures and queries, unique, filtered and capped", function()
+    local suggested = Catalog.SuggestedRows(data, rows, { 30, { query = "fireball" }, 999, 10, 30 })
+    assert.are.same({ 30, 20, 10 }, keys(suggested))
+    local spells = Catalog.SuggestedRows(data, rows, { 30, { query = "fireball" }, 10 }, { source = { S = true } })
+    assert.are.same({ 20, 10 }, keys(spells))
+    assert.are.same(
+      { 30, 20 },
+      keys(Catalog.SuggestedRows(data, rows, { 30, { query = "fireball" }, 10 }, nil, nil, 2))
+    )
+  end)
+
+  it("reads spells, items and slots from a macro", function()
+    local body = table.concat({
+      "#showtooltip Fireball",
+      "/cast [mod:shift] Frost Nova; Fireball",
+      "/use 13",
+      "/castsequence reset=3 Arcane Shot, !Steady Shot",
+      "/use [@focus,help] Healthstone",
+      "/cast [nocombat]",
+      "/target focus",
+    }, "\n")
+    assert.are.same({
+      { name = "Fireball" },
+      { name = "Frost Nova" },
+      { slot = 13 },
+      { name = "Arcane Shot" },
+      { name = "Steady Shot" },
+      { name = "Healthstone" },
+    }, Catalog.MacroTerms(body))
+    assert.are.same({}, Catalog.MacroTerms(nil))
+  end)
+
   it("keeps the recent list unique and capped", function()
     local list = { 1, 2, 3 }
     Catalog.AddRecent(list, 2, 3)
