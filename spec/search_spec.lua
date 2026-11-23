@@ -45,6 +45,25 @@ describe("Search", function()
     assert.are.equal("hunters mark", Search.Normalize("Hunter's  MARK!"))
   end)
 
+  it("uses the client language's texts and colour words", function()
+    local german = addon.load({
+      GetLocale = function()
+        return "deDE"
+      end,
+    })
+    assert.are.equal("Rot", german.L["Red"])
+    assert.are.equal("Gruppieren: %s", german.L["Group by: %s"])
+    local yellow = german.Search.COLORS[3]
+    assert.are.equal("yellow", yellow.key)
+    assert.is_truthy(table.concat(yellow.hints, " "):find("goldene", 1, true))
+    assert.are.equal("Red", ns.L["Red"])
+  end)
+
+  it("folds accented letters to their base letters", function()
+    assert.are.equal("jager der weisse strasse", Search.Normalize("Jäger der Weiße STRAẞE"))
+    assert.are.equal("aou aou ae cafe", Search.Normalize("ÄÖÜ äöü Æ Café"))
+  end)
+
   it("stems common suffixes to one form", function()
     assert.are.equal("mark", Search.Stem("marks"))
     assert.are.equal("mark", Search.Stem("marked"))

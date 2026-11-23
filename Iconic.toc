@@ -9,6 +9,7 @@
 ## X-Curse-Project-ID: 1824700
 
 Locales/Locales.lua
+Locales/deDE.lua
 Core.lua
 Data/Synonyms.lua
 Search.lua

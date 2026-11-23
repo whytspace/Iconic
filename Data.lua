@@ -13,6 +13,11 @@ function ns.LoadData()
   if type(IconicData) == "table" then
     ns.data = ns.Catalog.Parse(IconicData)
     IconicData = nil
+    -- Loaded with the data only in a client whose text language has a translation.
+    if type(IconicDataLocale) == "table" then
+      ns.Catalog.ApplyLocale(ns.data, IconicDataLocale)
+      IconicDataLocale = nil
+    end
   else
     ns.data = false
   end

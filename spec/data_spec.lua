@@ -16,6 +16,29 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       opts = { synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS) }
     end)
 
+    it("finds icons by German and English names with the German data", function()
+      local german = ns.Catalog.Parse(addon.rawData(file))
+      ns.Catalog.ApplyLocale(german, addon.rawData(file:gsub("%.lua$", "_deDE.lua"), "IconicDataLocale"))
+      local textures = {}
+      for row = 1, german.index.count do
+        textures[row] = german.index.key[row]
+      end
+      local germanRows = ns.Catalog.Rows(german, textures)
+      assert.are.equal("Jäger", german.classes[3])
+      for _, query in ipairs({ "pyroschlag", "pyroblast" }) do
+        local found
+        for i, row in ipairs(ns.Search.Find(german.index, germanRows, query, opts)) do
+          if i > 3 then
+            break
+          end
+          for _, name in ipairs(ns.Catalog.Names(german.index, row)) do
+            found = found or name == "Pyroschlag"
+          end
+        end
+        assert.is_true(found, "Pyroschlag not in the top 3 for " .. query)
+      end
+    end)
+
     it("has icons and lookups", function()
       assert.is_true(#rows > 25000)
       assert.are.equal("Hunter", data.classes[3])

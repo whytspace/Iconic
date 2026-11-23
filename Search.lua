@@ -26,8 +26,34 @@ end
 -- Must match FILE_NOISE in scripts/build_data.py.
 local FILE_NOISE = { inv = true, misc = true, ability = true, spell = true, icon = true, achievement = true }
 
+-- Accented Latin letters (UTF-8) to base letters. Must match FOLD in scripts/build_data.py.
+local FOLD = { ["\225\186\158"] = "ss" }
+do
+  local bases = {
+    { "\192\193\194\195\196\197\224\225\226\227\228\229", "a" },
+    { "\198\230", "ae" },
+    { "\199\231", "c" },
+    { "\200\201\202\203\232\233\234\235", "e" },
+    { "\204\205\206\207\236\237\238\239", "i" },
+    { "\208\240", "d" },
+    { "\209\241", "n" },
+    { "\210\211\212\213\214\216\242\243\244\245\246\248", "o" },
+    { "\217\218\219\220\249\250\251\252", "u" },
+    { "\221\253\255", "y" },
+    { "\222\254", "th" },
+    { "\223", "ss" },
+  }
+  -- Latin-1 code point c (192-255) is "\195" followed by c - 64 in UTF-8.
+  for _, entry in ipairs(bases) do
+    for i = 1, #entry[1] do
+      FOLD["\195" .. string.char(byte(entry[1], i) - 64)] = entry[2]
+    end
+  end
+end
+
 function Search.Normalize(text)
-  text = lower(text or "")
+  text = gsub(gsub(text or "", "\225\186\158", FOLD), "\195[\128-\191]", FOLD)
+  text = lower(text)
   text = gsub(text, "'", "")
   text = gsub(text, "\226\128\153", "")
   text = gsub(text, "[^%w]+", " ")
@@ -269,6 +295,14 @@ Search.COLORS = {
   { key = "white", label = "White", hex = "ffffff", hints = { "pale", "ivory", "snow" } },
   { key = "grey", label = "Grey", hex = "a0a0a0", hints = { "gray", "silver", "steel", "stone" } },
 }
+
+-- The client language's extra colour words (Locales/*.lua).
+for _, color in ipairs(Search.COLORS) do
+  local extra = ns.LocaleColorHints and ns.LocaleColorHints[ns.locale]
+  for _, hint in ipairs(extra and extra[color.key] or {}) do
+    color.hints[#color.hints + 1] = hint
+  end
+end
 
 -- OKLab distance (x100, as the data stores it) over which a dominant colour stops matching a picked one.
 local PICK_RADIUS = 5

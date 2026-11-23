@@ -34,6 +34,19 @@ describe("Catalog", function()
     assert.are.same({ 185 }, index.profs[index.byKey[40]])
   end)
 
+  it("applies a translation's names, search text and labels", function()
+    Catalog.ApplyLocale(data, {
+      classes = "3\tJäger\n",
+      icons = { id = { 10, 999 }, names = { "Mal des Jägers", "Unbekannt" }, text = { " mal jager | hunter ", " x " } },
+    })
+    local row = data.index.byKey[10]
+    assert.are.equal("Jäger", data.classes[3])
+    assert.are.same({ "Mal des Jägers" }, Catalog.Names(data.index, row))
+    assert.are.equal(" mal jager | hunter ", data.index.text[row])
+    assert.are.same({ "Fireball" }, Catalog.Names(data.index, data.index.byKey[20]))
+    assert.are.equal("One-Handed Swords", data.itemClasses["2:7"])
+  end)
+
   it("resolves texture paths to file IDs, drops duplicates and keeps unknown textures", function()
     assert.are.same({ 10, 20, 30, 40, 50, "Interface\\Icons\\Unknown_Thing" }, keys(rows))
   end)

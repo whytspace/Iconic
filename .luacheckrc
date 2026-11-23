@@ -20,6 +20,7 @@ files["spec"] = {
 globals = {
   "Iconic",
   "IconicData",
+  "IconicDataLocale",
   "IconicDB",
   "SLASH_ICONIC1",
   "SlashCmdList",

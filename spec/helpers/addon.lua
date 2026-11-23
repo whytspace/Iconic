@@ -32,13 +32,13 @@ function M.load(globals)
   return ns, env
 end
 
--- Runs a data add-on file and returns the IconicData table it defines.
-function M.rawData(file)
+-- Runs a data add-on file and returns the table it defines in `global` (default IconicData).
+function M.rawData(file, global)
   local env = {}
   local chunk = assert(loadfile(root .. "/Iconic_Data/" .. file))
   setfenv(chunk, env)
   chunk()
-  return env.IconicData
+  return env[global or "IconicData"]
 end
 
 -- Search field as scripts/build_data.py writes it: name buckets (1st, 2nd, 3rd-4th, rest), file, description.

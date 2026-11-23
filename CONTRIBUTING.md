@@ -75,6 +75,17 @@ In search, colours are chips (`chipScore` in `Search.lua`); every chip must matc
 
 Grouping by colour puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
 
+## Translations
+
+German (`deDE`) is the first translation; others follow the same steps:
+
+- Interface texts: `Locales/<locale>.lua`, loaded from `Iconic.toc`. `spec/locale_spec.lua` fails while a text the code uses has no translation. Extra colour words go into `ns.LocaleColorHints`.
+- Icon data: add the locale to `LOCALES` in `scripts/build_data.py` and its two files to `Iconic_Data/Iconic_Data.toc` with `[AllowLoadTextLocale <locale>]`, so only that client loads them.
+
+Each `<Flavor>_<locale>.lua` holds translated display names, labels and search text for icons whose text differs. Its search text has the translated words first and the English ones after, so both find an icon. `Catalog.ApplyLocale` merges it into the English data at load.
+
+`Search.Normalize` and `normalize` in `build_data.py` fold accented letters (ä → a, ß → ss), so "jager" finds "Jäger". Stemming stays English-only and applies the same way to every language's words.
+
 ## Synonyms
 
 Each line of `Data/Synonyms.lua` is one group of words that find each other's icons. To find candidates, list the words that often share an icon with a given word:

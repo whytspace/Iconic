@@ -2,6 +2,8 @@
 """Build Iconic_Data/<Flavor>.lua from wago.tools DB2 CSV exports.
 
 Usage: python3 scripts/build_data.py [forever|retail ...] [--refresh]
+
+Also writes Iconic_Data/<Flavor>_<locale>.lua for each of LOCALES: translated names, labels and search text.
 """
 
 import argparse
@@ -20,6 +22,9 @@ FLAVORS = {
     "forever": {"branch": "wowf", "file": "Forever.lua"},
     "retail": {"branch": "wow", "file": "Retail.lua"},
 }
+
+# Translations shipped next to the English data; each needs its lines in Iconic_Data/Iconic_Data.toc.
+LOCALES = ["deDE"]
 
 MAX_NAMES = 16
 MAX_DISPLAY_NAMES = 6
@@ -49,6 +54,16 @@ DESC_STOPWORDS = STOPWORDS | set(
     """sec secs second seconds min mins minute minutes yard yards yds lasts last amount increased increases
     increase reduced reduces reduce causes cause deals deal dealt rank ranks""".split()
 )
+# Dropped from translated descriptions only.
+LOCALE_DESC_STOPWORDS = {
+    "deDE": set(
+        """der die das den dem des ein eine einen einem einer eines und oder mit von zu zum zur auf aus bei fur
+        nach uber unter vor im in ist sind wird werden wurde um an als auch sich ihr ihre ihren ihrem ihres sein
+        seine seinen seinem seines es er sie wenn dass nicht noch sek sekunden min minuten meter erhoht verringert
+        verursacht schaden""".split()
+    ),
+}
+
 # Must match FILE_NOISE in Search.lua.
 FILE_NOISE = {"inv", "misc", "ability", "spell", "icon", "achievement"}
 
@@ -78,12 +93,13 @@ def log(*args):
     print(*args, file=sys.stderr, flush=True)
 
 
-def fetch(table, branch, refresh):
+def fetch(table, branch, refresh, locale=None):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, f"{branch}-{table}.csv")
+    suffix = f"-{locale}" if locale else ""
+    path = os.path.join(CACHE, f"{branch}-{table}{suffix}.csv")
     version_path = path + ".version"
     if refresh or not os.path.exists(path):
-        url = f"https://wago.tools/db2/{table}/csv?branch={branch}"
+        url = f"https://wago.tools/db2/{table}/csv?branch={branch}" + (f"&locale={locale}" if locale else "")
         log(f"download {url}")
         req = urllib.request.Request(url, headers={"User-Agent": "Iconic-data-build"})
         with urllib.request.urlopen(req) as resp, open(path + ".part", "wb") as out:
@@ -114,8 +130,19 @@ def clean_name(name):
     return name
 
 
+# Accented Latin letters to base letters. Must match FOLD in Search.lua.
+FOLD = {"ẞ": "ss", "ß": "ss", "æ": "ae", "Æ": "ae", "þ": "th", "Þ": "th"}
+for _base, _letters in (
+    ("a", "ÀÁÂÃÄÅàáâãäå"), ("c", "Çç"), ("e", "ÈÉÊËèéêë"), ("i", "ÌÍÎÏìíîï"), ("d", "Ðð"), ("n", "Ññ"),
+    ("o", "ÒÓÔÕÖØòóôõöø"), ("u", "ÙÚÛÜùúûü"), ("y", "Ýýÿ"),
+):
+    for _letter in _letters:
+        FOLD[_letter] = _base
+FOLD_RE = re.compile("|".join(map(re.escape, FOLD)))
+
+
 def normalize(text):
-    text = text.lower().replace("'", "").replace("’", "")
+    text = FOLD_RE.sub(lambda m: FOLD[m.group(0)], text).lower().replace("'", "").replace("’", "")
     return re.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
@@ -142,10 +169,10 @@ def tokens(text):
     return [stem(t) for t in normalize(text).split() if t not in STOPWORDS]
 
 
-def desc_tokens(text):
+def desc_tokens(text, stopwords=DESC_STOPWORDS):
     text = DESC_CODES.sub(" ", text or "")
     for token in normalize(text).split():
-        if len(token) >= 3 and not token.isdigit() and token not in DESC_STOPWORDS:
+        if len(token) >= 3 and not token.isdigit() and token not in stopwords:
             yield token
 
 
@@ -172,10 +199,11 @@ def search_text(names, file, desc):
 
 
 class Icon:
-    __slots__ = ("file", "names", "seen", "desc", "src", "cls", "cats", "profs", "spells")
+    __slots__ = ("file", "names", "seen", "desc", "src", "cls", "cats", "profs", "spells", "stopwords")
 
-    def __init__(self, file):
+    def __init__(self, file, stopwords=DESC_STOPWORDS):
         self.file = file
+        self.stopwords = stopwords
         self.names = []
         self.seen = set()
         self.desc = []
@@ -193,7 +221,7 @@ class Icon:
 
     def add_desc(self, text):
         known = set(self.desc)
-        for token in desc_tokens(text):
+        for token in desc_tokens(text, self.stopwords):
             if len(self.desc) >= MAX_DESC_TOKENS:
                 return
             if token not in known:
@@ -201,8 +229,9 @@ class Icon:
                 self.desc.append(token)
 
 
-def build(flavor, refresh):
+def build(flavor, refresh, locale=None):
     branch = FLAVORS[flavor]["branch"]
+    stopwords = DESC_STOPWORDS | LOCALE_DESC_STOPWORDS.get(locale, set())
     tables = {}
     versions = set()
     for name in [
@@ -210,7 +239,7 @@ def build(flavor, refresh):
         "SkillRaceClassInfo", "ChrClasses", "Item", "ItemSparse", "ItemModifiedAppearance", "ItemAppearance",
         "ItemClass", "ItemSubClass", "Achievement", "Mount", "BattlePetSpecies", "CurrencyTypes",
     ]:
-        tables[name], version = fetch(name, branch, refresh)
+        tables[name], version = fetch(name, branch, refresh, locale)
         versions.add(version)
     build_version = max(versions)
 
@@ -218,8 +247,8 @@ def build(flavor, refresh):
     for row in tables["ManifestInterfaceData"]:
         path = row["FilePath"].lower().replace("/", "\\")
         if path.startswith("interface\\icons"):
-            icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"].lower()))
-    log(f"{flavor}: {len(icons)} icons")
+            icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"].lower()), stopwords)
+    log(f"{flavor}{' ' + locale if locale else ''}: {len(icons)} icons")
 
     def icon(file_id):
         return icons.get(num(file_id))
@@ -463,6 +492,56 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
     log(f"{flavor}: wrote {path} ({os.path.getsize(path) // 1024} KB)")
 
 
+def merge_text(first, second):
+    """Search texts joined field by field, first's tokens first, without repeats inside a field."""
+    fields = []
+    for a, b in zip(first.split("|"), second.split("|")):
+        seen, merged = set(), []
+        for token in (a + " " + b).split():
+            if token not in seen:
+                seen.add(token)
+                merged.append(token)
+        fields.append(" ".join(merged))
+    return "|".join(fields)
+
+
+def write_locale(flavor, locale, english, translated):
+    """Translated names, labels and search text (translated, then English) for icons whose text differs."""
+    _, _, en_icons, _, _, _ = english
+    build_version, branch, icons, classes, item_classes, professions = translated
+    ids, names_col, text_col = [], [], []
+    for file_id in sorted(en_icons):
+        t, en = icons.get(file_id), en_icons[file_id]
+        if not t or not (t.names or t.desc):
+            continue
+        names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
+        en_names = [n for _, _, n in sorted(en.names)[:MAX_NAMES]]
+        text = merge_text(search_text(names, t.file, t.desc), search_text(en_names, en.file, en.desc))
+        display = "|".join(names[:MAX_DISPLAY_NAMES])
+        if names == en_names and text == search_text(en_names, en.file, en.desc):
+            continue
+        ids.append(str(file_id))
+        names_col.append(lua_string(display) if display else "nil")
+        text_col.append(lua_string(" " + text.replace("|", " | ") + " "))
+
+    path = os.path.join(OUT_DIR, f"{os.path.splitext(FLAVORS[flavor]['file'])[0]}_{locale}.lua")
+    with open(path, "w", encoding="utf-8", newline="\n") as out:
+        out.write(f"-- Generated by scripts/build_data.py from wago.tools ({branch} {build_version} {locale}). Do not edit.\n")
+        out.write("IconicDataLocale = {\n")
+        out.write(f'  locale = "{locale}",\n')
+        out.write(f"  classes = {long_string(lookup_body(classes))},\n")
+        out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
+        out.write(f"  professions = {long_string(lookup_body(professions))},\n")
+        out.write("  icons = {\n")
+        for name, values in (("id", ids), ("names", names_col), ("text", text_col)):
+            out.write(f"    {name} = {{\n")
+            for value in values:
+                out.write(f"{value},\n")
+            out.write("    },\n")
+        out.write("  },\n}\n")
+    log(f"{flavor} {locale}: wrote {path} ({os.path.getsize(path) // 1024} KB, {len(ids)} icons)")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("flavors", nargs="*", help="forever, retail (default: both)")
@@ -472,7 +551,10 @@ def main():
     if unknown:
         parser.error(f"unknown flavor: {', '.join(sorted(unknown))}")
     for flavor in args.flavors or sorted(FLAVORS):
-        write(flavor, *build(flavor, args.refresh))
+        english = build(flavor, args.refresh)
+        write(flavor, *english)
+        for locale in LOCALES:
+            write_locale(flavor, locale, english, build(flavor, args.refresh, locale))
 
 
 if __name__ == "__main__":

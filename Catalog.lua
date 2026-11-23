@@ -144,6 +144,29 @@ function Catalog.Parse(raw)
   return data
 end
 
+-- Takes over a translation's labels, display names and search text (translated words first, then English).
+-- Its rows are keyed by file ID; icons it does not list keep their English data.
+function Catalog.ApplyLocale(data, raw)
+  if raw.classes then
+    data.classes = lookup(raw.classes)
+  end
+  if raw.itemClasses then
+    data.itemClasses = lookup(raw.itemClasses)
+  end
+  if raw.professions then
+    data.professions, data.professionIcons = lookup(raw.professions)
+  end
+  local index, icons = data.index, raw.icons or {}
+  local names, text = icons.names or {}, icons.text or {}
+  for i, id in ipairs(icons.id or {}) do
+    local row = index.byKey[id]
+    if row then
+      index.names[row] = names[i] or index.names[row]
+      index.text[row] = text[i] or index.text[row]
+    end
+  end
+end
+
 -- File ID for a provider texture: a number, or an "Interface\Icons\name" path.
 function Catalog.ResolveId(data, texture)
   if type(texture) == "number" then
