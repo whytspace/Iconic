@@ -14,6 +14,7 @@ local MIN_QUERY = 2
 local MAX_SUGGESTED_ROWS = 3
 local FOOTER_HEIGHT = 16
 local GRID_PAD_TOP, GRID_PAD_BOTTOM = 7, 6
+local SUGGEST_WIDTH = 320
 
 local View = {}
 View.__index = View
@@ -1110,6 +1111,8 @@ function View:UpdateSuggestions()
     return
   end
   local buttons = box:GetButtons()
+  -- At least SUGGEST_WIDTH wide, so long labels such as item categories fit beside a narrow search box.
+  box.searchPreviewContainer:SetWidth(math.max(box:GetWidth(), SUGGEST_WIDTH))
   -- Colours that already have a chip count as active, like ticked filters.
   local active = setmetatable({ color = {} }, { __index = self.filters })
   for _, chip in ipairs(self.chips) do
@@ -1276,7 +1279,6 @@ function ns.CreateView(parent, opts)
   local preview = self.search.searchPreviewContainer
   preview:ClearAllPoints()
   preview:SetPoint("TOPLEFT", self.search, "BOTTOMLEFT", -5, -1)
-  preview:SetPoint("TOPRIGHT", self.search, "BOTTOMRIGHT", -5, -1)
 
   self.scrollBox = CreateFrame("Frame", nil, frame, "WowScrollBoxList")
   -- Full width so section bands reach the frame edge; rows are inset instead.
