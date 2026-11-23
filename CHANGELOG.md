@@ -14,6 +14,7 @@
 - **[Change]** Colour chips find every shade of their colour and rank the closest first, whether picked or from a colour word; icons with a smaller part in that colour are found too. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** Searches with colour chips rank icons by how well the words match and by colour, not colour alone, and item category names such as "Shield" are searched too. ([#15](https://github.com/whytspace/Iconic/issues/15))
 - **[Change]** The search suggestions are wider, so long ones such as item categories are no longer cut off.
+- **[Change]** Adding a colour opens the colour picker at white with full lightness; the chip appears with the first colour you pick.
 - **[Change]** Closing the colour picker keeps the colour; remove a chip with its X or a right-click. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))

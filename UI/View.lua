@@ -719,7 +719,8 @@ function View:OpenColorPicker(i)
   -- Counted before the picker opens: it reports its start colour at once, which already adds a new chip.
   local chipCount = math.max(#self.chips, slot)
   local editing = i and self.chips[i]
-  local start = editing and editing.color or { r = 0.12, g = 0.65, b = 0.63 }
+  -- A new chip starts at white: no hue picked, full lightness.
+  local start = editing and editing.color or { r = 1, g = 1, b = 1 }
   self.pickerSlot, self.pickerWeight = slot, editing and editing.weight or 1
   ColorPickerFrame:SetupColorPickerAndShow({
     r = start.r,
@@ -728,9 +729,10 @@ function View:OpenColorPicker(i)
     hasOpacity = false,
     swatchFunc = function()
       local r, g, b = ColorPickerFrame:GetColorRGB()
-      -- Opening the picker reports the start colour; a preset chip keeps its name until the colour changes.
+      -- Opening the picker reports the start colour: a new chip appears only once a colour is picked, and a preset
+      -- chip keeps its name until the colour changes.
       local unchanged = math.abs(r - start.r) + math.abs(g - start.g) + math.abs(b - start.b) < 0.005
-      if not (editing and unchanged) then
+      if not unchanged then
         self:SetChipColor(slot, { r = r, g = g, b = b }, self.pickerWeight)
       end
     end,
