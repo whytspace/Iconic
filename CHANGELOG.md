@@ -9,6 +9,7 @@
 - **[New]** A gear button in the `/iconic` window opens Iconic's settings.
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))
+- **[Fix]** The `/iconic` window no longer stays above every other window; the one you clicked last is on top.
 - **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))
 
 ## 1.0.0 - 2026-11-22
