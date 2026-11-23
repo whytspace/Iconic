@@ -6,18 +6,30 @@
 
 **A searchable icon picker for World of Warcraft: WoW Forever and retail.**
 
-Iconic replaces the icon grid wherever the game lets you choose an icon: macros, equipment sets, bank tabs, guild bank tabs and transmog outfits.
+Imagine you've just put together a new equipment set or written the perfect macro. But now it needs an icon. After scrolling through WoW's 33,000 icons looking for the right one, you just give up.
+
+Why is it so hard to find the icon you have in mind? Why can't you just search for "golden shield" or "arrow", or even for your favourite spell or item?
+
+This is where **Iconic** comes in. It adds a search box, filters and categories to the icon picker, so you find exactly the icon you want.
 
 > ⚠️ **Early version:** please report bugs on [GitHub](https://github.com/whytspace/Iconic/issues).
 
 ![Iconic in the macro window](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png)
 
-## Features
+Iconic replaces the icon grid wherever the game lets you choose an icon:
 
-- **Search** by spell, item, mount, pet, achievement and currency names, spell descriptions and icon file names. "target" finds Hunter's Mark, synonyms find related words, and typos still show close matches.
-- **Colours**: add up to three colour chips next to the search box, from the colour picker or by typing a colour such as "green" and taking the suggestion. Icons rank by how close they are to the colours, with or without words.
-- **Filter** by source, class, item category and profession, or show only your own spells and items.
-- **Group** the grid by the same categories.
+- Macros
+- Equipment sets
+- Bank tabs
+- Guild bank tabs
+- Transmog outfits
+- Other add-ons that use it
+
+## Finding icons
+
+- **Words:** names of spells, items, mounts, pets, achievements and currencies, spell descriptions and icon file names. Related words count too ("target" finds marks), and typos still find close matches.
+- **Colours:** up to three colour chips next to the search box, from the colour picker or by typing a colour such as "green" and taking the suggestion. Icons rank by how much of each colour they have. Looking for an icon that's red and green? Iconic has you covered.
+- **Filters:** source, class, item category and profession, or only your own spells and items. The grid can be grouped the same ways.
 - **Recently used** icons come first.
 - **Icon IDs** in tooltips, always or while holding Shift, Ctrl or Alt (Options → AddOns → Iconic).
 - `/iconic` opens a standalone browser to look up icons and copy their IDs.
@@ -30,23 +42,9 @@ Iconic replaces the icon grid wherever the game lets you choose an icon: macros,
 2. Type in the search box, or pick filters from the toolbar.
 3. Type `/iconic` to browse icons without changing anything, and `/iconic settings` for the options.
 
-## Languages
-
-Iconic is English only for now.
-
 ## For add-on authors
 
 `Iconic.OpenPicker(onChoose, opts)` opens Iconic as a picker for your add-on. `Iconic.RegisterPicker(frame, adapter)` puts Iconic into your own icon picker. See `UI/API.lua`.
-
-## Screenshots
-
-| | |
-|---|---|
-| ![Picker](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png) | ![Browser](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/browser.png) |
-
-## Data
-
-Icon names and categories come from the game's data tables via [wago.tools](https://wago.tools).
 
 ## License
 
