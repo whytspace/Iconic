@@ -66,7 +66,7 @@ function ns.SetupTooltips()
   end
 end
 
--- Re-renders the shown tooltip so a modifier press shows or hides the icon ID at once.
+-- Re-renders an Iconic button's tooltip so a modifier press shows or hides the icon ID at once.
 function ns.OnModifierChanged()
   if not GameTooltip:IsShown() then
     return
@@ -74,7 +74,5 @@ function ns.OnModifierChanged()
   local owner = GameTooltip:GetOwner()
   if owner and owner.iconicButton then
     owner:GetScript("OnEnter")(owner)
-  elseif GameTooltip.RefreshData then
-    GameTooltip:RefreshData()
   end
 end
