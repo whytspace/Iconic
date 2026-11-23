@@ -17,6 +17,11 @@ describe("Search", function()
     return Search.Find(data.index, rows, query, opts)
   end
 
+  it("splits camel-case words in file names", function()
+    local text = addon.load().Search.FileText("Ability_Monk_SoothingMists")
+    assert.equals("||||monk sooth mist|", text)
+  end)
+
   before_each(function()
     ns = addon.load()
     Search, Catalog = ns.Search, ns.Catalog

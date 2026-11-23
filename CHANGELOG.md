@@ -11,6 +11,7 @@
 - **[New]** The colour picker opens beside the Iconic window. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[New]** A gear button in the `/iconic` window opens Iconic's settings.
 - **[New]** Baganator's bank tab icon picker gets Iconic too. ([#7](https://github.com/whytspace/Iconic/issues/7))
+- **[New]** Icons are found by what their picture shows, such as "werewolf", "rose" or "net", even when no name says so. ([#16](https://github.com/whytspace/Iconic/issues/16))
 - **[Change]** Clicking the icon under "Currently Selected" again scrolls to its next place in the picker, such as from recently used to all icons, then back to the first.
 - **[Change]** Colour chips find every shade of their colour and rank the closest first, whether picked or from a colour word; icons with a smaller part in that colour are found too. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** Searches with colour chips rank icons by how well the words match and by colour, not colour alone, and item category names such as "Shield" are searched too. ([#15](https://github.com/whytspace/Iconic/issues/15))
@@ -19,6 +20,7 @@
 - **[Change]** Closing the colour picker keeps the colour; remove a chip with its X or a right-click. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))
+- **[Change]** Words joined in icon file names are searched one by one, such as "mists" in SoothingMists. ([#16](https://github.com/whytspace/Iconic/issues/16))
 - **[Fix]** The `/iconic` window no longer stays above every other window; the one you clicked last is on top.
 - **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Fix]** Pressing Shift, Ctrl or Alt over a unit or other tooltip no longer causes Lua errors. ([#17](https://github.com/whytspace/Iconic/issues/17))

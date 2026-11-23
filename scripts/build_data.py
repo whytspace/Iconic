@@ -9,6 +9,7 @@ Also writes Iconic_Data/<Flavor>_<locale>.lua for each of LOCALES: translated na
 import argparse
 import csv
 import io
+import json
 import os
 import re
 import sys
@@ -66,6 +67,8 @@ LOCALE_DESC_STOPWORDS = {
 
 # Must match FILE_NOISE in Search.lua.
 FILE_NOISE = {"inv", "misc", "ability", "spell", "icon", "achievement"}
+CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
+TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
 
 PLAYABLE_CLASSES = {
     "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "DEATHKNIGHT", "SHAMAN", "MAGE", "WARLOCK", "MONK", "DRUID",
@@ -177,11 +180,12 @@ def desc_tokens(text, stopwords=DESC_STOPWORDS):
 
 
 def file_tokens(file):
-    return [t for t in tokens(re.sub(r"\d+", " ", file)) if t not in FILE_NOISE]
+    """Mirror of Search.FileText in Search.lua: camel-case words split, digits and noise words dropped."""
+    return [t for t in tokens(re.sub(r"\d+", " ", CAMEL.sub(" ", file))) if t not in FILE_NOISE]
 
 
-def search_text(names, file, desc):
-    """Field layout read by Search.lua: name buckets (1st, 2nd, 3rd-4th, rest), file name, description."""
+def search_text(names, file, desc, tags=()):
+    """Field layout read by Search.lua: name buckets (1st, 2nd, 3rd-4th, rest), file name and tags, description."""
     buckets = [names[0:1], names[1:2], names[2:4], names[4:]]
     seen = set()
     fields = []
@@ -192,17 +196,23 @@ def search_text(names, file, desc):
                 seen.add(token)
                 field.append(token)
         fields.append(" ".join(field))
-    fields.append(" ".join(file_tokens(file)))
+    file_field = []
+    for token in file_tokens(file) + tokens(" ".join(tags)):
+        if token not in file_field:
+            file_field.append(token)
+    fields.append(" ".join(file_field))
     desc_seen = set()
     fields.append(" ".join(t for t in tokens(" ".join(desc)) if not (t in desc_seen or desc_seen.add(t))))
     return "|".join(fields)
 
 
 class Icon:
-    __slots__ = ("file", "names", "seen", "desc", "src", "cls", "cats", "profs", "spells", "stopwords")
+    __slots__ = ("file", "words", "tags", "names", "seen", "desc", "src", "cls", "cats", "profs", "spells", "stopwords")
 
     def __init__(self, file, stopwords=DESC_STOPWORDS):
-        self.file = file
+        self.file = file.lower()
+        self.words = file
+        self.tags = ()
         self.stopwords = stopwords
         self.names = []
         self.seen = set()
@@ -247,7 +257,10 @@ def build(flavor, refresh, locale=None):
     for row in tables["ManifestInterfaceData"]:
         path = row["FilePath"].lower().replace("/", "\\")
         if path.startswith("interface\\icons"):
-            icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"].lower()), stopwords)
+            icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"], flags=re.IGNORECASE), stopwords)
+    for file_id, tags in load_tags().items():
+        if file_id in icons:
+            icons[file_id].tags = tags
     log(f"{flavor}{' ' + locale if locale else ''}: {len(icons)} icons")
 
     def icon(file_id):
@@ -438,6 +451,14 @@ def category_number(key):
     return class_id * 256 + subclass_id
 
 
+def load_tags():
+    """File ID → words for what the icon shows, from scripts/tag_icons.py."""
+    if not os.path.exists(TAGS):
+        return {}
+    with open(TAGS, encoding="utf-8") as handle:
+        return {int(k): v for k, v in json.load(handle).items()}
+
+
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
     color_columns, colors = load_colors()
     # Colour names are derived in the game from l, a, b (Search.ColorName); only the numbers ship.
@@ -456,7 +477,7 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         columns["file"].append(lua_string(t.file))
         columns["names"].append(lua_string(display) if display else "nil")
         # Padded as Search.PadText does, so the game reads it as is.
-        columns["text"].append(lua_string(" " + search_text(names, t.file, t.desc).replace("|", " | ") + " "))
+        columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc, t.tags).replace("|", " | ") + " "))
         columns["src"].append(str(sum(SOURCE_BITS[s] for s in t.src)))
         columns["cls"].append(str(t.cls or 0))
         columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
@@ -517,9 +538,9 @@ def write_locale(flavor, locale, english, translated):
             continue
         names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
         en_names = [n for _, _, n in sorted(en.names)[:MAX_NAMES]]
-        text = merge_text(search_text(names, t.file, t.desc), search_text(en_names, en.file, en.desc))
+        text = merge_text(search_text(names, t.words, t.desc, t.tags), search_text(en_names, en.words, en.desc, en.tags))
         display = "|".join(names[:MAX_DISPLAY_NAMES])
-        if names == en_names and text == search_text(en_names, en.file, en.desc):
+        if names == en_names and text == search_text(en_names, en.words, en.desc, en.tags):
             continue
         ids.append(str(file_id))
         names_col.append(lua_string(display) if display else "nil")

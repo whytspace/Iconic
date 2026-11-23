@@ -45,7 +45,7 @@ Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped fi
 
 Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
 
-`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming). Change both together; the data spec catches drift.
+`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together; the data spec catches drift.
 
 ## Icon colours
 
@@ -76,6 +76,33 @@ In search, a colour chip is one shade with a weight (`chipScore` in `Search.lua`
 - Colour words are presets: one shade each (`Search.COLOR_PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
 
 Grouping by colour names each dominant colour after the nearest reference shade (`COLOR_REFS` in `Search.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
+
+## Icon tags
+
+`scripts/icon_tags.json` holds words for what each icon shows ("rose", "thorns", "jellyfish"), one line per file ID, subject first. They may repeat words of the file name: `build_data.py` adds them to each icon's file-name search words without repeats, so tags and file name count the same. Claude Code subagents write them by looking at the icons; `scripts/tag_icons.py` prepares their work and collects it. Commit the file: tagging all icons uses about 25M tokens.
+
+Only icons Blizzard's picker offers get tags. In both clients that is exactly the `Interface\Icons` files named `inv_…`, `ability_…` or `spell_…`, in any case (`PICKER_NAME`).
+
+After a patch, once `extract_icons.py` has the new images, tag only the icons that have no tags yet:
+
+```sh
+devc python3 -I scripts/tag_icons.py prepare --chunks 10   # chunks of 100 untagged icons in .cache/tags/chunks/
+devc python3 scripts/tag_icons.py status
+```
+
+Then ask Claude Code to start one Sonnet subagent per chunk, about ten at a time, each with this instruction:
+
+> Run `python3 /absolute/path/to/Iconic/scripts/tag_icons.py prompt c012` and follow the instructions it prints exactly.
+
+Use the checkout's absolute path: subagents don't always start in the repository.
+
+The prompt is `scripts/tag_prompt.md`. A chunk costs about 80k tokens and takes a minute or two. When the agents are done, merge their results and commit `scripts/icon_tags.json`:
+
+```sh
+devc python3 scripts/tag_icons.py merge
+```
+
+`merge` splits two-word names into single words and lists entries it rejects; rerun `prompt` for those chunks or fix them by hand. Before changing the prompt, tag a few chunks with both versions and compare them by eye. The prompt makes the agent tag what the picture shows, use the file name as a hint, and add other readings of the same picture. Without the file name, agents mistake small belts for gloves. Told to trust it, they call a withered rose a "talisman". Told to avoid its words, they call a net "scales".
 
 ## Translations
 

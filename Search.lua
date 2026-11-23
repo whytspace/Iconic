@@ -101,10 +101,10 @@ function Search.Tokens(text)
   return tokens
 end
 
--- Search text for an icon without data: only its file name is known.
+-- Search text for an icon without data: only its file name is known. Camel-case words split as in build_data.py.
 function Search.FileText(file)
   local list = {}
-  for _, token in ipairs(Search.Tokens(gsub(file or "", "%d+", " "))) do
+  for _, token in ipairs(Search.Tokens(gsub(gsub(file or "", "(%l)(%u)", "%1 %2"), "%d+", " "))) do
     if not FILE_NOISE[token] then
       list[#list + 1] = token
     end

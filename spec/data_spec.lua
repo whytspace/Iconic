@@ -39,6 +39,15 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
     end)
 
+    it("finds icons by their picture tags", function()
+      -- 538517 (spell_druid_tirelesspursuit) shows a werewolf; only its tags say so.
+      local found
+      for i, row in ipairs(ns.Search.Find(data.index, rows, "werewolf", opts)) do
+        found = found or (i <= 3 and data.index.key[row] == 538517)
+      end
+      assert.is_true(found, "538517 not in the top 3 for 'werewolf'")
+    end)
+
     it("has icons and lookups", function()
       assert.is_true(#rows > 25000)
       assert.are.equal("Hunter", data.classes[3])
