@@ -36,6 +36,11 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 
 ![Colour search](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/colours.png)
 
+## Install
+
+- **CurseForge:** install [Iconic – Icon Search](https://www.curseforge.com/wow/addons/iconic-icon-search) with the CurseForge app.
+- **Manually:** download `Iconic-vN.zip` from the [latest release](https://github.com/whytspace/Iconic/releases/latest) and unpack both folders, `Iconic` and `Iconic_Data`, into `World of Warcraft/_retail_/Interface/AddOns` (`_forever_` for WoW Forever).
+
 ## Getting started
 
 1. Open the macro window (`/macro`) and create or edit a macro. Iconic replaces the icon grid.
