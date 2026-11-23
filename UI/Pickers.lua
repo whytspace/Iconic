@@ -19,6 +19,30 @@ function TemplateAdapter.Anchor(popup, viewFrame)
   viewFrame:SetFrameLevel(grid:GetFrameLevel() + 5)
 end
 
+-- Places the icon count and branding in the button bar, left of Okay.
+function TemplateAdapter.AnchorFooter(popup, footer)
+  local box = popup.BorderBox
+  local okay = box and box.OkayButton
+  if not okay then
+    footer:Hide()
+    return
+  end
+  -- Above the popup's border art, shown with the view.
+  local view = footer:GetParent()
+  footer:SetParent(box)
+  footer:SetFrameLevel(box:GetFrameLevel() + 10)
+  footer:SetShown(view:IsShown())
+  view:HookScript("OnShow", function()
+    footer:Show()
+  end)
+  view:HookScript("OnHide", function()
+    footer:Hide()
+  end)
+  footer:ClearAllPoints()
+  footer:SetPoint("BOTTOMLEFT", box, "BOTTOMLEFT", 16, 12)
+  footer:SetPoint("TOPRIGHT", okay, "TOPLEFT", -12, -1)
+end
+
 -- Textures in the popup's own order, and the extra (spellbook/equipment/outfit) ones.
 function TemplateAdapter.GetTextures(popup)
   local provider = popup.iconDataProvider
@@ -166,6 +190,7 @@ function Pickers.Attach(popup, overrides)
         end,
       })
       adapter.Anchor(popup, state.view.frame)
+      adapter.AnchorFooter(popup, state.view.footer)
       adapter.HookSelected(popup, function()
         state.view:RevealSelected()
       end, function()

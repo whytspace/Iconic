@@ -93,7 +93,7 @@ function Browser:Create()
 
   local close = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
   close:SetSize(80, 22)
-  close:SetPoint("RIGHT", frame, "BOTTOMRIGHT", -10, 26)
+  close:SetPoint("RIGHT", frame, "BOTTOMRIGHT", -10, 20)
   close:SetText(CLOSE)
   close:SetScript("OnClick", function()
     frame:Hide()
@@ -112,6 +112,13 @@ function Browser:Create()
     end
   end)
   self.choose = choose
+
+  local footer = self.view.footer
+  footer.brand:Hide()
+  footer:SetWidth(200)
+  footer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -12, 32)
+  footer.count:ClearAllPoints()
+  footer.count:SetPoint("RIGHT")
 
   frame:SetScript("OnHide", function()
     self.onChoose = nil

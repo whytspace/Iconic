@@ -12,6 +12,7 @@ local SEARCH_DELAY = 0.2
 local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
 local MAX_SUGGESTED_ROWS = 3
+local FOOTER_HEIGHT = 16
 
 local View = {}
 View.__index = View
@@ -789,6 +790,14 @@ function View:SetTextures(textures, extras)
   end)
 end
 
+local function formatCount(count)
+  return BreakUpLargeNumbers and BreakUpLargeNumbers(count) or tostring(count)
+end
+
+function View:UpdateFooter(shown, total)
+  self.footer.count:SetText(L["%s of %s icons"]:format(formatCount(shown), formatCount(total)))
+end
+
 -- Icons to suggest while the search is empty: textures, or { query = text } for that text's results.
 -- Takes effect with the next SetTextures or Refresh.
 function View:SetSuggestions(entries)
@@ -934,6 +943,7 @@ function View:Refresh(keepScroll)
     })
   end
 
+  self:UpdateFooter(#rows, #self.rows)
   local perRow = self:PerRow()
   local settings = ns.db and ns.db.settings
   local recent = not hasQuery
@@ -1201,6 +1211,16 @@ function ns.CreateView(parent, opts)
   -- Full width so section bands reach the frame edge; rows are inset instead.
   self.scrollBox:SetPoint("TOPLEFT", toolbar, "BOTTOMLEFT", -2, -8)
   self.scrollBox:SetPoint("BOTTOMRIGHT", -28, 4)
+
+  -- Icon count and branding, placed by the picker adapter or the browser.
+  local footer = CreateFrame("Frame", nil, frame)
+  footer:SetHeight(FOOTER_HEIGHT)
+  footer.count = footer:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  footer.count:SetPoint("LEFT")
+  footer.brand = footer:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  footer.brand:SetPoint("RIGHT")
+  footer.brand:SetText(L["Iconic"])
+  self.footer = footer
   self.scrollBar = CreateFrame("EventFrame", nil, frame, "MinimalScrollBar")
   self.scrollBar:SetPoint("TOPLEFT", self.scrollBox, "TOPRIGHT", 8, 0)
   self.scrollBar:SetPoint("BOTTOMLEFT", self.scrollBox, "BOTTOMRIGHT", 8, 0)

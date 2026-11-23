@@ -21,7 +21,7 @@ end
 -- Replaces the icon grid of another add-on's picker with Iconic's. `frame` is the picker frame, or a
 -- function returning it once it exists. Frames built on IconSelectorPopupFrameTemplate need no adapter;
 -- others pass functions overriding Pickers.TemplateAdapter (each gets the frame first):
---   Anchor(frame, viewFrame), GetTextures(frame) -> textures, extras, GetIcon(frame) -> texture,
+--   Anchor(frame, viewFrame), AnchorFooter(frame, footer), GetTextures(frame) -> textures, extras, GetIcon(frame) -> texture,
 --   SetIcon(frame, texture, position), IsDragging(frame) -> bool, HideNative(frame),
 --   HookStateChanges(frame, onChange), HookConfirm(frame, onConfirm),
 --   ShowSelectedState(frame, state) with state "visible", "hidden" or "absent", HookSelected(frame, onClick, onTextReset),
