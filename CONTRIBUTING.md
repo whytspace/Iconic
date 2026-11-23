@@ -118,11 +118,30 @@ The script runs on the host and reads the retail Screenshots folder; set `SHOTS_
 
 Update `CHANGELOG.md` for player-facing changes. One flat list; start each entry with **[New]**, **[Change]**, or **[Fix]**, ordered New, Change, Fix. Phrase **[Fix]** entries as the misbehavior that stopped ("…no longer…").
 
+End an entry that comes from an issue with a full Markdown link, `([#2](https://github.com/whytspace/Iconic/issues/2))`. A bare `#2` links only on GitHub; the changelog also goes to CurseForge and ships in the zip.
+
 ## Project rules
 
 - Support WoW Forever and current retail. Guard APIs that only one client has.
 - Use `WowScrollBox`, `MinimalScrollBar` and `MenuUtil`. Avoid legacy UI systems.
 - Pure logic needs unit tests. Verify UI changes in-game with `/reload`.
+
+## When WoW updates
+
+After a patch to WoW Forever or retail:
+
+1. Update `## Interface` in `Iconic.toc` and `Iconic_Data/Iconic_Data.toc` (both the same). The number is the client version as `MMmmpp`: 12.1.5 → `120105`, 1.60.1 → `16001`. This prints it for each installed client (`wow` retail, `wowf` WoW Forever):
+
+   ```sh
+   awk -F'|' 'NR>1 { split($13, v, "."); printf "%s %d\n", $15, v[1]*10000 + v[2]*100 + v[3] }' "/Applications/Games/World of Warcraft/.build.info"
+   ```
+
+   An upcoming patch's number that isn't installed yet is listed on [wago.tools/builds](https://wago.tools/builds).
+2. Let the launcher finish patching, then extract the icons: `devc python3 -I scripts/extract_icons.py`.
+3. Rebuild the colours: `devc python3 -I scripts/build_colors.py --sheets`.
+4. Rebuild the data with fresh tables: `devc python3 scripts/build_data.py --refresh`.
+5. Run the checks, `/reload` in both clients and open an icon picker.
+6. Commit and cut a release (see Releases).
 
 ## Releases
 
