@@ -50,4 +50,4 @@ Icon names and categories come from the game's data tables via [wago.tools](http
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [GNU GPLv3](LICENSE). Forks must stay open and credit "Iconic by whytspace".
