@@ -129,7 +129,7 @@ Update `CHANGELOG.md` for player-facing changes. One flat list; start each entry
 Start from a clean `main` branch:
 
 ```sh
-scripts/release.sh patch
+scripts/release.sh
 ```
 
-The script bumps both TOC versions and the changelog, runs the checks, commits and tags. It does not push. Pushing a `v*` tag builds the zip (with `Iconic_Data` as its own folder) and publishes the GitHub release. CurseForge also needs `## X-Curse-Project-ID` in `Iconic.toc` and the `CF_API_TOKEN` repository secret.
+Versions are a plain counter (`v1`, `v2`, …), no semantic versioning. The script bumps both TOC versions and the changelog, runs the checks, commits and tags. It does not push. Pushing a `v*` tag builds the zip (with `Iconic_Data` as its own folder) and publishes the GitHub release. CurseForge also needs `## X-Curse-Project-ID` in `Iconic.toc` and the `CF_API_TOKEN` repository secret.

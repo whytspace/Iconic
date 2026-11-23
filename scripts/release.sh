@@ -3,17 +3,14 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/release.sh patch|minor|major
+Usage: scripts/release.sh
 
-Creates a local release commit and annotated tag.
-
-  patch    bump X.Y.Z to X.Y.(Z+1)
-  minor    bump X.Y.Z to X.(Y+1).0
-  major    bump X.Y.Z to (X+1).0.0
+Creates a local release commit and annotated tag with the next version number
+(v1, v2, v3, ...).
 
 The script does not push. Publish with:
   git push origin main
-  git push origin vX.Y.Z
+  git push origin vN
 EOF
 }
 
@@ -22,9 +19,8 @@ die() {
   exit 1
 }
 
-release_type="${1:-}"
-case "$release_type" in
-  patch | minor | major) ;;
+case "${1:-}" in
+  "") ;;
   -h | --help)
     usage
     exit 0
@@ -49,25 +45,10 @@ status="$(git status --porcelain)"
 [ -z "$status" ] || die "worktree must be clean before cutting a release"
 
 current_version="$(awk -F': *' '/^## Version:/ { print $2; exit }' "$toc")"
-[[ "$current_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "expected semantic ## Version in $toc, got '$current_version'"
+# A leading major from the old X.Y.Z scheme counts as the previous number.
+[[ "$current_version" =~ ^([0-9]+)(\.[0-9]+\.[0-9]+)?$ ]] || die "expected a numeric ## Version in $toc, got '$current_version'"
 
-IFS=. read -r major minor patch <<<"$current_version"
-case "$release_type" in
-  patch)
-    patch=$((patch + 1))
-    ;;
-  minor)
-    minor=$((minor + 1))
-    patch=0
-    ;;
-  major)
-    major=$((major + 1))
-    minor=0
-    patch=0
-    ;;
-esac
-
-version="$major.$minor.$patch"
+version="$((BASH_REMATCH[1] + 1))"
 tag="v$version"
 today="$(date +%Y-%m-%d)"
 
