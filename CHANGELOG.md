@@ -5,6 +5,9 @@
 - **[New]** Suggested icons appear first, fitting what you're editing: your class, spec or talent tree icons and the set's items for equipment sets, the spells and items in a macro, the items in a bank or guild bank tab, the appearances of a transmog outfit, and icons matching the name. ([#13](https://github.com/whytspace/Iconic/issues/13))
 - **[New]** Options → AddOns → Iconic can turn off suggested and recently used icons. ([#13](https://github.com/whytspace/Iconic/issues/13))
 - **[New]** The icon picker shows how many icons match out of all, such as "312 of 33,097 icons". ([#4](https://github.com/whytspace/Iconic/issues/4))
+- **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
+- **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))
+- **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))
 
 ## 1.0.0 - 2026-11-22
 

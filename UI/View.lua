@@ -13,6 +13,7 @@ local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
 local MAX_SUGGESTED_ROWS = 3
 local FOOTER_HEIGHT = 16
+local GRID_PAD_TOP, GRID_PAD_BOTTOM = 7, 6
 
 local View = {}
 View.__index = View
@@ -1175,7 +1176,7 @@ function ns.CreateView(parent, opts)
   self.search = CreateFrame("EditBox", nil, toolbar, "IconicSearchBoxTemplate")
   self.search:ClearAllPoints()
   self.search:SetHeight(self.filter:GetHeight())
-  self.search:SetPoint("LEFT", 16, 0)
+  self.search:SetPoint("LEFT", opts and opts.searchLeft or 16, 0)
   self.search:SetPoint("RIGHT", self.colorBar, "LEFT", -10, 0)
   self.search:SetAutoFocus(false)
   self.search.Instructions:SetText(L["Search…"])
@@ -1209,8 +1210,9 @@ function ns.CreateView(parent, opts)
 
   self.scrollBox = CreateFrame("Frame", nil, frame, "WowScrollBoxList")
   -- Full width so section bands reach the frame edge; rows are inset instead.
-  self.scrollBox:SetPoint("TOPLEFT", toolbar, "BOTTOMLEFT", -2, -8)
-  self.scrollBox:SetPoint("BOTTOMRIGHT", -28, 4)
+  -- The grid scrolls up to the toolbar line and down to the frame edge; padding keeps the resting gaps.
+  self.scrollBox:SetPoint("TOPLEFT", toolbar, "BOTTOMLEFT", -2, -1)
+  self.scrollBox:SetPoint("BOTTOMRIGHT", -28, -2)
 
   -- Icon count and branding, placed by the picker adapter or the browser.
   local footer = CreateFrame("Frame", nil, frame)
@@ -1222,10 +1224,10 @@ function ns.CreateView(parent, opts)
   footer.brand:SetText(L["Iconic"])
   self.footer = footer
   self.scrollBar = CreateFrame("EventFrame", nil, frame, "MinimalScrollBar")
-  self.scrollBar:SetPoint("TOPLEFT", self.scrollBox, "TOPRIGHT", 8, 0)
-  self.scrollBar:SetPoint("BOTTOMLEFT", self.scrollBox, "BOTTOMRIGHT", 8, 0)
+  self.scrollBar:SetPoint("TOPLEFT", self.scrollBox, "TOPRIGHT", 8, -GRID_PAD_TOP)
+  self.scrollBar:SetPoint("BOTTOMLEFT", self.scrollBox, "BOTTOMRIGHT", 8, GRID_PAD_BOTTOM)
 
-  local listView = CreateScrollBoxListLinearView()
+  local listView = CreateScrollBoxListLinearView(GRID_PAD_TOP, GRID_PAD_BOTTOM)
   listView:SetElementExtentCalculator(function(_, elementData)
     if elementData.header then
       return HEADER_HEIGHT + (elementData.gap and SECTION_GAP or 0)

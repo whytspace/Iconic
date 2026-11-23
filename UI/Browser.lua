@@ -5,6 +5,9 @@ local Catalog = ns.Catalog
 
 local Browser = {}
 local FOOTER_HEIGHT = 52
+local LOGO_SIZE = 50
+-- Room for the portrait left of the search box.
+local SEARCH_LEFT = 56
 ns.Browser = Browser
 
 -- Every icon Blizzard offers in its pickers, spellbook icons first; also returns those extra icons.
@@ -23,7 +26,13 @@ end
 
 function Browser:Create()
   local frame = CreateFrame("Frame", "IconicBrowserFrame", UIParent, "ButtonFrameTemplate")
-  ButtonFrameTemplate_HidePortrait(frame)
+  -- The logo, smaller than the portrait circle, on black.
+  local portrait = frame:GetPortrait()
+  portrait:SetColorTexture(0, 0, 0, 1)
+  local logo = portrait:GetParent():CreateTexture(nil, "OVERLAY", nil, 1)
+  logo:SetTexture("Interface\\AddOns\\Iconic\\Assets\\logo")
+  logo:SetSize(LOGO_SIZE, LOGO_SIZE)
+  logo:SetPoint("CENTER", portrait, "CENTER", 0, 2)
   -- No empty band under the title; a footer tall enough for the 36px preview.
   ButtonFrameTemplate_HideAttic(frame)
   FrameTemplate_SetButtonBarHeight(frame, FOOTER_HEIGHT)
@@ -41,11 +50,12 @@ function Browser:Create()
   frame:SetTitle(L["Iconic"])
 
   self.view = ns.CreateView(frame, {
+    searchLeft = SEARCH_LEFT,
     onSelect = function(texture)
       self:SetSelected(texture)
     end,
   })
-  self.view.frame:SetPoint("TOPLEFT", frame.Inset, "TOPLEFT", 6, -6)
+  self.view.frame:SetPoint("TOPLEFT", frame.Inset, "TOPLEFT", 3, -6)
   self.view.frame:SetPoint("BOTTOMRIGHT", frame.Inset, "BOTTOMRIGHT", -4, 4)
 
   local preview = CreateFrame("Button", nil, frame)

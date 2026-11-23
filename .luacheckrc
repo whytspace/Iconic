@@ -29,7 +29,6 @@ read_globals = {
   "BankPanel",
   "BreakUpLargeNumbers",
   "ButtonFrameTemplate_HideAttic",
-  "ButtonFrameTemplate_HidePortrait",
   "C_AddOns",
   "C_ClassColor",
   "C_ClassTalents",
