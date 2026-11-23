@@ -1,5 +1,16 @@
 local addon = require("spec.helpers.addon")
 
+-- Whether a row's names column holds one of the references (names are looked up in the game by reference).
+local function hasRef(index, row, refs)
+  for entry in (index.refs[row] or ""):gmatch("[^|]+") do
+    for _, ref in ipairs(refs) do
+      if entry == ref then
+        return true
+      end
+    end
+  end
+end
+
 -- Runs the shipped data files through the real search, guarding the build script and the parser together.
 for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
   describe("data " .. file, function()
@@ -16,7 +27,7 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       opts = { synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS) }
     end)
 
-    it("finds icons by German and English names with the German data", function()
+    it("finds icons by German and English words with the German data", function()
       local german = ns.Catalog.Parse(addon.rawData(file))
       ns.Catalog.ApplyLocale(german, addon.rawData(file:gsub("%.lua$", "_deDE.lua"), "IconicDataLocale"))
       local textures = {}
@@ -25,18 +36,22 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
       local germanRows = ns.Catalog.Rows(german, textures)
       assert.are.equal("Jäger", german.classes[3])
+      -- Names come from the game in its language; the German and English search words find the same icons.
+      local top = {}
       for _, query in ipairs({ "pyroschlag", "pyroblast" }) do
-        local found
+        top[query] = {}
         for i, row in ipairs(ns.Search.Find(german.index, germanRows, query, opts)) do
           if i > 3 then
             break
           end
-          for _, name in ipairs(ns.Catalog.Names(german.index, row)) do
-            found = found or name == "Pyroschlag"
-          end
+          top[query][german.index.key[row]] = true
         end
-        assert.is_true(found, "Pyroschlag not in the top 3 for " .. query)
       end
+      local shared
+      for key in pairs(top.pyroschlag) do
+        shared = shared or top.pyroblast[key]
+      end
+      assert.is_true(shared, "no icon in the top 3 for both pyroschlag and pyroblast")
     end)
 
     it("finds icons by their picture tags", function()
@@ -58,10 +73,8 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       local results = ns.Search.Find(data.index, rows, "target", opts)
       local rank
       for i = 1, math.min(3, #results) do
-        for _, name in ipairs(ns.Catalog.Names(data.index, results[i])) do
-          if name == "Hunter's Mark" then
-            rank = rank or i
-          end
+        if hasRef(data.index, results[i], { "s1130", "s257284" }) then
+          rank = rank or i
         end
       end
       assert.is_not_nil(rank, "Hunter's Mark not in the top 3 for 'target'")
@@ -106,20 +119,30 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       assert.is_true(ns.Catalog.HasClass(data.index.cls[row], 3))
     end)
 
-    it("tokenizes names like the build script", function()
+    it("tokenizes file names like the build script", function()
       local index = data.index
       local checked = 0
       for row = 1, index.count, 31 do
-        local first = ns.Catalog.Names(index, row)[1]
-        if first then
-          local field = " " .. index.text[row]:match("^ ([^|]*) |") .. " "
-          for _, token in ipairs(ns.Search.Tokens(first)) do
-            assert.is_truthy(field:find(" " .. token .. " ", 1, true), first .. " -> " .. token .. " in" .. field)
-          end
-          checked = checked + 1
+        local field = " " .. select(5, index.text[row]:match("^ (.-) | (.-) | (.-) | (.-) | (.-) |")) .. " "
+        for token in ns.Search.FileText(index.file[row]):gsub("|", ""):gmatch("%S+") do
+          assert.is_truthy(
+            field:find(" " .. token .. " ", 1, true),
+            index.file[row] .. " -> " .. token .. " in" .. field
+          )
+        end
+        checked = checked + 1
+      end
+      assert.is_true(checked > 500)
+    end)
+
+    it("stores names as game references or text", function()
+      local index, refs = data.index, 0
+      for row = 1, index.count do
+        for entry in (index.refs[row] or ""):gmatch("[^|]+") do
+          refs = refs + (entry:match("^[sic]%d+$") and 1 or 0)
         end
       end
-      assert.is_true(checked > 50)
+      assert.is_true(refs > 10000)
     end)
   end)
 end

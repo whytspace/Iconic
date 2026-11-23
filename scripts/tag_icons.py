@@ -23,11 +23,11 @@ WAGO_CACHE = os.path.join(ROOT, ".cache", "wago")
 ICONS = os.path.join(ROOT, ".cache", "icons")
 CHUNKS = os.path.join(ROOT, ".cache", "tags", "chunks")
 TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from build_data import PICKER_NAME  # noqa: E402
 PROMPT = os.path.join(ROOT, "scripts", "tag_prompt.md")
 CHUNK_SIZE = 100
 
-# Both clients' icon pickers offer exactly the Interface\Icons files named like this (checked against in-game exports).
-PICKER_NAME = re.compile(r"(inv|ability|spell)_", re.IGNORECASE)
 WORD = re.compile(r"[a-z]+")
 
 

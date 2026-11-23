@@ -12,7 +12,6 @@ Catalog.SOURCES = {
   { key = "I", bit = 2, label = "Items" },
   { key = "M", bit = 4, label = "Mounts" },
   { key = "P", bit = 8, label = "Pets" },
-  { key = "A", bit = 16, label = "Achievements" },
   { key = "C", bit = 32, label = "Currencies" },
 }
 
@@ -72,7 +71,7 @@ function Catalog.NewIndex()
     id = {},
     texture = {},
     file = {},
-    names = {},
+    refs = {},
     text = {},
     src = {},
     cls = {},
@@ -98,7 +97,7 @@ local function addRow(index, key, id, texture, file)
   return row
 end
 
-local COLUMNS = { "file", "names", "text", "src", "cls", "cats", "profs", "spells" }
+local COLUMNS = { "file", "refs", "text", "src", "cls", "cats", "profs", "spells" }
 
 -- Search words per item category number (class * 256 + subclass) the icons use: its own and its class's name, padded
 -- like search text (" a b "), for Search.Find.
@@ -155,7 +154,7 @@ function Catalog.Parse(raw)
   for row = 1, #ids do
     local id = ids[row]
     key[row], texture[row], byKey[id] = id, id, row
-    byFile[file[row]] = id
+    byFile[file[row]:lower()] = id
   end
   index.count = #ids
   index.categoryWords = categoryWords(data)
@@ -176,11 +175,11 @@ function Catalog.ApplyLocale(data, raw)
     data.professions, data.professionIcons = lookup(raw.professions)
   end
   local index, icons = data.index, raw.icons or {}
-  local names, text = icons.names or {}, icons.text or {}
+  local refs, text = icons.refs or {}, icons.text or {}
   for i, id in ipairs(icons.id or {}) do
     local row = index.byKey[id]
     if row then
-      index.names[row] = names[i] or index.names[row]
+      index.refs[row] = refs[i] or index.refs[row]
       index.text[row] = text[i] or index.text[row]
     end
   end
@@ -260,7 +259,8 @@ local DIMENSION_MATCHERS = {
   source = function(index, row, selected)
     local src = index.src[row]
     for key in pairs(selected) do
-      if hasBit(src, SOURCE_BITS[key]) then
+      -- A saved filter may name a source that is gone (achievements).
+      if SOURCE_BITS[key] and hasBit(src, SOURCE_BITS[key]) then
         return true
       end
     end
@@ -813,14 +813,47 @@ function Catalog.MacroTerms(body)
   return terms
 end
 
--- Display names of a row as a list.
+-- Name of a names-column entry: a reference the game resolves in the player's language ("s133" spell, "i6948" item,
+-- "c1792" currency) or the name itself. Second result: true while the game is still loading it.
+function Catalog.NameOf(entry)
+  local kind, id = entry:match("^([sic])(%d+)$")
+  id = tonumber(id)
+  if not kind then
+    return entry
+  elseif kind == "s" then
+    if C_Spell and C_Spell.GetSpellName then
+      local name = C_Spell.GetSpellName(id)
+      if not name and C_Spell.RequestLoadSpellData then
+        C_Spell.RequestLoadSpellData(id)
+        return nil, true
+      end
+      return name
+    end
+    return GetSpellInfo and (GetSpellInfo(id))
+  elseif kind == "i" then
+    local name = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
+    if not name and C_Item and C_Item.RequestLoadItemDataByID then
+      C_Item.RequestLoadItemDataByID(id)
+      return nil, true
+    end
+    return name
+  end
+  local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo and C_CurrencyInfo.GetCurrencyInfo(id)
+  return info and info.name
+end
+
+-- Display names of a row as a list, and true when some are still loading.
 function Catalog.Names(index, row)
-  local names = index.names[row]
-  local list = {}
+  local names = index.refs[row]
+  local list, pending = {}, false
   if names then
-    for name in names:gmatch("[^|]+") do
-      list[#list + 1] = name
+    for entry in names:gmatch("[^|]+") do
+      local name, loading = Catalog.NameOf(entry)
+      if name and name ~= "" then
+        list[#list + 1] = name
+      end
+      pending = pending or loading or false
     end
   end
-  return list
+  return list, pending
 end

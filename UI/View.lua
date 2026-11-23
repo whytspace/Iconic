@@ -19,6 +19,29 @@ local SUGGEST_WIDTH = 320
 local View = {}
 View.__index = View
 
+-- Calls `fn` once the game has loaded spell or item names it was asked for (Catalog.NameOf); a later wait for the
+-- same key replaces an earlier one.
+-- The events that answer C_Item.RequestLoadItemDataByID and C_Spell.RequestLoadSpellData.
+local NAME_EVENTS = { "ITEM_DATA_LOAD_RESULT", "SPELL_DATA_LOAD_RESULT" }
+local nameWaits = {}
+local nameEvents = CreateFrame("Frame")
+nameEvents:SetScript("OnEvent", function()
+  for _, event in ipairs(NAME_EVENTS) do
+    nameEvents:UnregisterEvent(event)
+  end
+  local waits = nameWaits
+  nameWaits = {}
+  for _, fn in pairs(waits) do
+    fn()
+  end
+end)
+function ns.AfterNames(key, fn)
+  nameWaits[key] = fn
+  for _, event in ipairs(NAME_EVENTS) do
+    nameEvents:RegisterEvent(event)
+  end
+end
+
 local function isSpellKnown(spellId)
   if C_SpellBook and C_SpellBook.IsSpellKnown then
     return C_SpellBook.IsSpellKnown(spellId)
@@ -813,7 +836,14 @@ function View:ShowTooltip(owner, row)
   local index = self.data.index
   row = row or owner.row
   GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-  local names = Catalog.Names(index, row)
+  local names, pending = Catalog.Names(index, row)
+  if pending then
+    ns.AfterNames("tooltip", function()
+      if GameTooltip:IsOwned(owner) then
+        self:ShowTooltip(owner, row)
+      end
+    end)
+  end
   GameTooltip:SetText(names[1] or index.file[row] or tostring(index.key[row]), 1, 1, 1)
   for i = 2, math.min(#names, 5) do
     GameTooltip:AddLine(names[i], 0.8, 0.8, 0.8)

@@ -21,6 +21,9 @@
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Icons scroll right up to the toolbar and down to the window edge. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Change]** Words joined in icon file names are searched one by one, such as "mists" in SoothingMists. ([#16](https://github.com/whytspace/Iconic/issues/16))
+- **[Change]** Icon tooltips get spell and item names from the game, so the icon data takes about 5 MB less; a name the game hasn't loaded yet appears a moment later. ([#16](https://github.com/whytspace/Iconic/issues/16))
+- **[Change]** The icon data leaves out the about 3,000 icons no picker offers, so Iconic loads with about a fifth less memory. ([#16](https://github.com/whytspace/Iconic/issues/16))
+- **[Change]** Achievement titles no longer find icons and the Achievements filter is gone: titles like "School's Out Forever" rarely say what their icon shows. ([#16](https://github.com/whytspace/Iconic/issues/16))
 - **[Fix]** The `/iconic` window no longer stays above every other window; the one you clicked last is on top.
 - **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Fix]** Pressing Shift, Ctrl or Alt over a unit or other tooltip no longer causes Lua errors. ([#17](https://github.com/whytspace/Iconic/issues/17))

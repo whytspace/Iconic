@@ -4,7 +4,6 @@ ns.Locales.deDE = {
   ["%s of %s icons"] = "%s von %s Symbolen",
   ["A searchable icon picker for World of Warcraft."] = "Eine durchsuchbare Symbolauswahl für World of Warcraft.",
   ["About"] = "Über",
-  ["Achievements"] = "Erfolge",
   ["All icons"] = "Alle Symbole",
   ["Always"] = "Immer",
   ["Amber"] = "Bernstein",

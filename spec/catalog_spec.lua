@@ -37,7 +37,7 @@ describe("Catalog", function()
   it("applies a translation's names, search text and labels", function()
     Catalog.ApplyLocale(data, {
       classes = "3\tJäger\n",
-      icons = { id = { 10, 999 }, names = { "Mal des Jägers", "Unbekannt" }, text = { " mal jager | hunter ", " x " } },
+      icons = { id = { 10, 999 }, refs = { "Mal des Jägers", "Unbekannt" }, text = { " mal jager | hunter ", " x " } },
     })
     local row = data.index.byKey[10]
     assert.are.equal("Jäger", data.classes[3])
@@ -245,5 +245,64 @@ describe("Catalog", function()
 
   it("counts active filters", function()
     assert.are.equal(3, Catalog.ActiveFilterCount({ usable = true, class = { [3] = true, [8] = true } }))
+  end)
+
+  describe("names from game references", function()
+    local requested, Game
+
+    before_each(function()
+      requested = {}
+      Game = addon.load({
+        C_Spell = {
+          GetSpellName = function(id)
+            return ({ [133] = "Feuerball" })[id]
+          end,
+          RequestLoadSpellData = function(id)
+            requested[#requested + 1] = id
+          end,
+        },
+        C_Item = {
+          GetItemNameByID = function(id)
+            return ({ [6948] = "Ruhestein" })[id]
+          end,
+          RequestLoadItemDataByID = function(id)
+            requested[#requested + 1] = id
+          end,
+        },
+        C_CurrencyInfo = {
+          GetCurrencyInfo = function(id)
+            return id == 1792 and { name = "Ehre" } or nil
+          end,
+        },
+      }).Catalog
+    end)
+
+    it("looks up spells, items and currencies in the game's language", function()
+      assert.are.equal("Feuerball", Game.NameOf("s133"))
+      assert.are.equal("Ruhestein", Game.NameOf("i6948"))
+      assert.are.equal("Ehre", Game.NameOf("c1792"))
+    end)
+
+    it("requests spells the game hasn't loaded and reports them as pending", function()
+      local name, pending = Game.NameOf("s116")
+      assert.is_nil(name)
+      assert.is_true(pending)
+      assert.are.same({ 116 }, requested)
+    end)
+
+    it("keeps names stored as text", function()
+      assert.are.equal("Some Name", Game.NameOf("Some Name"))
+    end)
+
+    it("requests items the game hasn't loaded and reports them as pending", function()
+      local name, pending = Game.NameOf("i19019")
+      assert.is_nil(name)
+      assert.is_true(pending)
+      assert.are.same({ 19019 }, requested)
+      local index = { refs = { "s133|i19019|i6948" } }
+      local names, anyPending = Game.Names(index, 1)
+      assert.are.same({ "Feuerball", "Ruhestein" }, names)
+      assert.is_true(anyPending)
+    end)
   end)
 end)

@@ -165,7 +165,18 @@ function Browser:SetSelected(texture)
   self.idBox:SetText(self.idBox.value)
   local row = data and data.index.byKey[id or texture or ""]
   self.selectedRow = row
-  self.nameText:SetText(row and (Catalog.Names(data.index, row)[1] or data.index.file[row]) or "")
+  local names, pending = {}, false
+  if row then
+    names, pending = Catalog.Names(data.index, row)
+  end
+  if pending then
+    ns.AfterNames("browser", function()
+      if self.selected == texture then
+        self:SetSelected(texture)
+      end
+    end)
+  end
+  self.nameText:SetText(row and (names[1] or data.index.file[row]) or "")
   self.choose:SetEnabled(texture ~= nil)
 end
 

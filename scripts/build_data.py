@@ -36,7 +36,7 @@ SKILL_CATEGORY_PROFESSION = 11
 SECONDARY_PROFESSIONS = {129, 185, 356, 794}  # First Aid, Cooking, Fishing, Archaeology
 
 # Name tiers, best first; also the order names appear in the data.
-TIER_PLAYER_SPELL, TIER_MOUNT, TIER_PET, TIER_ITEM, TIER_ACHIEVEMENT, TIER_CURRENCY, TIER_SPELL = range(7)
+TIER_PLAYER_SPELL, TIER_MOUNT, TIER_PET, TIER_ITEM, TIER_CURRENCY, TIER_SPELL = range(6)
 
 JUNK_NAME = re.compile(
     r"\[|\(old\)|\b(dnt|dnd|test|testing|unused|deprecated|nyi|qa|ph|placeholder|debug)\b|^zz|^old |^monster - ",
@@ -68,6 +68,8 @@ LOCALE_DESC_STOPWORDS = {
 # Must match FILE_NOISE in Search.lua.
 FILE_NOISE = {"inv", "misc", "ability", "spell", "icon", "achievement"}
 CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
+# Both clients' icon pickers offer exactly the Interface\Icons files named like this (checked against in-game exports).
+PICKER_NAME = re.compile(r"(inv|ability|spell)_", re.IGNORECASE)
 TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
 
 PLAYABLE_CLASSES = {
@@ -223,11 +225,12 @@ class Icon:
         self.profs = set()
         self.spells = set()
 
-    def add_name(self, tier, name):
+    def add_name(self, tier, name, ref=None):
+        """`ref` is how the game looks the name up (Catalog.NameOf): s/i/c and an ID; the name itself when it can't."""
         name = clean_name(name)
         if name and name.lower() not in self.seen:
             self.seen.add(name.lower())
-            self.names.append((tier, len(self.names), name))
+            self.names.append((tier, len(self.names), name, ref or name))
 
     def add_desc(self, text):
         known = set(self.desc)
@@ -247,7 +250,7 @@ def build(flavor, refresh, locale=None):
     for name in [
         "ManifestInterfaceData", "SpellName", "Spell", "SpellMisc", "SkillLineAbility", "SkillLine",
         "SkillRaceClassInfo", "ChrClasses", "Item", "ItemSparse", "ItemModifiedAppearance", "ItemAppearance",
-        "ItemClass", "ItemSubClass", "Achievement", "Mount", "BattlePetSpecies", "CurrencyTypes",
+        "ItemClass", "ItemSubClass", "Mount", "BattlePetSpecies", "CurrencyTypes",
     ]:
         tables[name], version = fetch(name, branch, refresh, locale)
         versions.add(version)
@@ -256,7 +259,7 @@ def build(flavor, refresh, locale=None):
     icons = {}
     for row in tables["ManifestInterfaceData"]:
         path = row["FilePath"].lower().replace("/", "\\")
-        if path.startswith("interface\\icons"):
+        if path.startswith("interface\\icons") and PICKER_NAME.match(row["FileName"]):
             icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"], flags=re.IGNORECASE), stopwords)
     for file_id, tags in load_tags().items():
         if file_id in icons:
@@ -330,21 +333,21 @@ def build(flavor, refresh, locale=None):
         else:
             continue
         target.src.add("S")
-        target.add_name(TIER_PLAYER_SPELL, spell_names.get(spell_id))
+        target.add_name(TIER_PLAYER_SPELL, spell_names.get(spell_id), f"s{spell_id}")
         target.add_desc(spell_desc.get(spell_id))
 
     for row in tables["Mount"]:
         target = icon(spell_icon.get(num(row["SourceSpellID"])))
         if target:
             target.src.add("M")
-            target.add_name(TIER_MOUNT, row["Name_lang"])
+            target.add_name(TIER_MOUNT, row["Name_lang"], f"s{num(row['SourceSpellID'])}")
 
     for row in tables["BattlePetSpecies"]:
         summon = num(row["SummonSpellID"])
         target = icon(row["IconFileDataID"]) or icon(spell_icon.get(summon))
         if target:
             target.src.add("P")
-            target.add_name(TIER_PET, spell_names.get(summon))
+            target.add_name(TIER_PET, spell_names.get(summon), f"s{summon}")
 
     item_names = {num(r["ID"]): r["Display_lang"] for r in tables["ItemSparse"]}
     appearance_icon = {num(r["ID"]): num(r["DefaultIconFileDataID"]) for r in tables["ItemAppearance"]}
@@ -358,25 +361,19 @@ def build(flavor, refresh, locale=None):
         if target and clean_name(name):
             target.src.add("I")
             target.cats.add(f"{num(row['ClassID'])}:{num(row['SubclassID'])}")
-            target.add_name(TIER_ITEM, name)
-
-    for row in tables["Achievement"]:
-        target = icon(row["IconFileID"])
-        if target and clean_name(row["Title_lang"]):
-            target.src.add("A")
-            target.add_name(TIER_ACHIEVEMENT, row["Title_lang"])
+            target.add_name(TIER_ITEM, name, f"i{item_id}")
 
     for row in tables["CurrencyTypes"]:
         target = icon(row["InventoryIconFileID"])
         if target and clean_name(row["Name_lang"]):
             target.src.add("C")
-            target.add_name(TIER_CURRENCY, row["Name_lang"])
+            target.add_name(TIER_CURRENCY, row["Name_lang"], f"c{num(row['ID'])}")
 
     for spell_id, file_id in spell_icon.items():
         target = icon(file_id)
         if target:
             target.src.add("S")
-            target.add_name(TIER_SPELL, spell_names.get(spell_id))
+            target.add_name(TIER_SPELL, spell_names.get(spell_id), f"s{spell_id}")
 
     for target in icons.values():
         parts = target.file.split("_")
@@ -421,7 +418,7 @@ def lookup_body(mapping):
 
 
 # Must match Catalog.SOURCES in Catalog.lua.
-SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "A": 16, "C": 32}
+SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "C": 32}  # 16 was achievements
 
 
 def load_colors():
@@ -466,16 +463,17 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
     color_columns = [color_columns[k] for k in keep]
     colors = {file_id: [values[k] if k < len(values) else "" for k in keep] for file_id, values in colors.items()}
     ids = sorted(icons)
-    columns = {name: [] for name in ("id", "file", "names", "text", "src", "cls", "cats", "profs", "spells")}
+    columns = {name: [] for name in ("id", "file", "refs", "text", "src", "cls", "cats", "profs", "spells")}
     # Dominant colours: l, a, b (OKLab * 100) and w (weight, 0 for no colour).
     shares = {name: [] for name in color_columns}
     for file_id in ids:
         t = icons[file_id]
-        names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
-        display = "|".join(names[:MAX_DISPLAY_NAMES])
+        ranked = sorted(t.names)[:MAX_NAMES]
+        names = [n for _, _, n, _ in ranked]
+        display = "|".join(ref for _, _, _, ref in ranked[:MAX_DISPLAY_NAMES])
         columns["id"].append(str(file_id))
-        columns["file"].append(lua_string(t.file))
-        columns["names"].append(lua_string(display) if display else "nil")
+        columns["file"].append(lua_string(t.words))
+        columns["refs"].append(lua_string(display) if display else "nil")
         # Padded as Search.PadText does, so the game reads it as is.
         columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc, t.tags).replace("|", " | ") + " "))
         columns["src"].append(str(sum(SOURCE_BITS[s] for s in t.src)))
@@ -536,14 +534,17 @@ def write_locale(flavor, locale, english, translated):
         t, en = icons.get(file_id), en_icons[file_id]
         if not t or not (t.names or t.desc):
             continue
-        names = [n for _, _, n in sorted(t.names)[:MAX_NAMES]]
-        en_names = [n for _, _, n in sorted(en.names)[:MAX_NAMES]]
+        ranked, en_ranked = sorted(t.names)[:MAX_NAMES], sorted(en.names)[:MAX_NAMES]
+        names = [n for _, _, n, _ in ranked]
+        en_names = [n for _, _, n, _ in en_ranked]
         text = merge_text(search_text(names, t.words, t.desc, t.tags), search_text(en_names, en.words, en.desc, en.tags))
-        display = "|".join(names[:MAX_DISPLAY_NAMES])
-        if names == en_names and text == search_text(en_names, en.words, en.desc, en.tags):
+        # Only names kept as text differ by language; references are looked up in the player's language.
+        display = "|".join(ref for _, _, _, ref in ranked[:MAX_DISPLAY_NAMES])
+        en_display = "|".join(ref for _, _, _, ref in en_ranked[:MAX_DISPLAY_NAMES])
+        if text == search_text(en_names, en.words, en.desc, en.tags) and display == en_display:
             continue
         ids.append(str(file_id))
-        names_col.append(lua_string(display) if display else "nil")
+        names_col.append(lua_string(display) if display and display != en_display else "nil")
         text_col.append(lua_string(" " + text.replace("|", " | ") + " "))
 
     path = os.path.join(OUT_DIR, f"{os.path.splitext(FLAVORS[flavor]['file'])[0]}_{locale}.lua")
@@ -555,7 +556,11 @@ def write_locale(flavor, locale, english, translated):
         out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
         out.write(f"  professions = {long_string(lookup_body(professions))},\n")
         out.write("  icons = {\n")
-        for name, values in (("id", ids), ("names", names_col), ("text", text_col)):
+        columns = [("id", ids), ("refs", names_col), ("text", text_col)]
+        # Display names are references looked up in the game's language, so a translation rarely has its own.
+        if all(v == "nil" for v in names_col):
+            columns.remove(("refs", names_col))
+        for name, values in columns:
             out.write(f"    {name} = {{\n")
             for value in values:
                 out.write(f"{value},\n")

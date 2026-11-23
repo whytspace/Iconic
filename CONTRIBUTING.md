@@ -33,7 +33,7 @@ Use the WoW Forever client's AddOns folder the same way. The Git setting prevent
 
 ## Icon data
 
-`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes `Iconic_Data/Forever.lua` and `Iconic_Data/Retail.lua`. Rerun it after a game patch and commit the result:
+`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes `Iconic_Data/Forever.lua` and `Iconic_Data/Retail.lua`. It keeps only the icons Blizzard's picker offers (`PICKER_NAME`), since Iconic shows no others. Rerun it after a game patch and commit the result:
 
 ```sh
 devc python3 scripts/build_data.py            # both versions, cached downloads
@@ -43,7 +43,7 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
-Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
 
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together; the data spec catches drift.
 
@@ -111,7 +111,7 @@ German (`deDE`) is the first translation; others follow the same steps:
 - Interface texts: `Locales/<locale>.lua`, loaded from `Iconic.toc`. `spec/locale_spec.lua` fails while a text the code uses has no translation. Extra colour words go into `ns.LocaleColorHints`.
 - Icon data: add the locale to `LOCALES` in `scripts/build_data.py` and its two files to `Iconic_Data/Iconic_Data.toc` with `[AllowLoadTextLocale <locale>]`, so only that client loads them.
 
-Each `<Flavor>_<locale>.lua` holds translated display names, labels and search text for icons whose text differs. Its search text has the translated words first and the English ones after, so both find an icon. `Catalog.ApplyLocale` merges it into the English data at load.
+Each `<Flavor>_<locale>.lua` holds translated labels and search text for icons whose text differs; display names come from the game in its language. Its search text has the translated words first and the English ones after, so both find an icon. `Catalog.ApplyLocale` merges it into the English data at load.
 
 `Search.Normalize` and `normalize` in `build_data.py` fold accented letters (ä → a, ß → ss), so "jager" finds "Jäger". Stemming stays English-only and applies the same way to every language's words.
 

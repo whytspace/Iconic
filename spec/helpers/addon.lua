@@ -101,7 +101,7 @@ M.COLOR_LAB = COLOR_LAB
 -- colors = "green:62 red:18 35/-9/7:20" }; each colour becomes a dominant colour with that weight, at a named
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
-  local icons = { id = {}, file = {}, names = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
+  local icons = { id = {}, file = {}, refs = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
@@ -116,7 +116,7 @@ function M.fakeData(ns, rows)
     local names = r.names or {}
     icons.id[row] = tonumber(r[1])
     icons.file[row] = r[2]
-    icons.names[row] = #names > 0 and table.concat(names, "|") or nil
+    icons.refs[row] = #names > 0 and table.concat(names, "|") or nil
     icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc))
     local src = 0
     for letter in (r.src or ""):gmatch(".") do

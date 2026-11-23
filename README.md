@@ -35,7 +35,7 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 
 ## Finding icons
 
-- **Words:** names of spells, items, mounts, pets, achievements and currencies, spell descriptions and icon file names. Related words count too ("target" finds marks), and typos still find close matches.
+- **Words:** names of spells, items, mounts, pets and currencies, spell descriptions and icon file names. Related words count too ("target" finds marks), and typos still find close matches.
 - **Colours:** up to three colour chips next to the search box, from the colour picker or by typing a colour such as "green" and taking the suggestion. Icons rank by how much of each colour they have. Looking for an icon that's red and green? Iconic has you covered.
 - **Filters:** source, class, item category and profession, or only your own spells and items. The grid can be grouped the same ways.
 - **Suggested** icons come first: the items of the equipment set or bank tab you're editing, the spells in your macro, your spec icons and more.

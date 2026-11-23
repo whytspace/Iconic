@@ -72,6 +72,7 @@ read_globals = {
   "GetMacroInfo",
   "GetNumMacros",
   "GetPhysicalScreenSize",
+  "GetSpellInfo",
   "GuildBankPopupFrame",
   "HideUIPanel",
   "hooksecurefunc",
