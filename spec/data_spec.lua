@@ -58,6 +58,22 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       assert.is_not_nil(rank, "Hunter's Mark not in the top 3 for 'target'")
     end)
 
+    it("finds every icon of an item category by its name", function()
+      local shield, missing = 4 * 256 + 6, 0
+      local found = {}
+      for _, row in ipairs((ns.Search.Find(data.index, rows, "shield", opts))) do
+        found[row] = true
+      end
+      for row = 1, data.index.count do
+        for _, number in ipairs(data.index.cats[row] or {}) do
+          if number == shield and not found[row] then
+            missing = missing + 1
+          end
+        end
+      end
+      assert.are.equal(0, missing)
+    end)
+
     it("lists only playable classes", function()
       for classId in pairs(data.classes) do
         assert.is_true(classId <= 13, "unexpected class " .. classId .. " " .. data.classes[classId])

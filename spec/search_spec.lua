@@ -116,6 +116,26 @@ describe("Search", function()
     assert.are.same({}, keys((find("zzzz"))))
   end)
 
+  describe("item categories", function()
+    before_each(function()
+      data = Catalog.Parse(addon.fakeData(ns, {
+        { "1", "inv_shield_01", names = { "Ward of the Violet Citadel" }, src = "I", cats = "4:6" },
+        { "2", "inv_shield_02", names = { "Kite Shield" }, src = "I", cats = "4:6" },
+        { "3", "spell_holy_powerwordshield", names = { "Power Word: Shield" }, src = "S" },
+        { "4", "inv_misc_cape_01", names = { "Tattered Cloak" }, src = "I", cats = "4:0" },
+      }))
+      rows = Catalog.Rows(data, { 1, 2, 3, 4 })
+    end)
+
+    it("finds icons by their item category's name, below icons named so", function()
+      assert.are.same({ 2, 3, 1 }, keys((find("shield"))))
+    end)
+
+    it("finds icons by their parent category's name", function()
+      assert.are.same({ 1, 2, 4 }, keys((find("armor"))))
+    end)
+  end)
+
   describe("colours", function()
     local function chip(name, weight)
       return { target = addon.COLOR_LAB[name], weight = weight }
@@ -157,6 +177,16 @@ describe("Search", function()
     it("ranks by the weighted average of the chips", function()
       assert.are.same({ 7, 6 }, keys((find("", chips(chip("red"), chip("green"))))))
       assert.are.same({ 6, 7 }, keys((find("", chips(chip("red"), chip("green", 0.3))))))
+    end)
+
+    it("weighs word matches against colour", function()
+      data = Catalog.Parse(addon.fakeData(ns, {
+        { "1", "inv_shield_01", names = { "Emerald Shield" }, colors = "green:40" },
+        { "2", "inv_chest_01", names = { "Guardian Plate" }, colors = "green:70" },
+      }))
+      rows = Catalog.Rows(data, { 1, 2 })
+      assert.are.same({ 1, 2 }, keys((find("shield", chips(chip("green"))))))
+      assert.are.same({ 2, 1 }, keys((find("", chips(chip("green"))))))
     end)
 
     it("treats a typed colour word as text", function()

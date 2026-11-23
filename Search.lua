@@ -8,9 +8,15 @@ local byte, find, gsub, lower, sub = string.byte, string.find, string.gsub, stri
 -- Weights per search-text field: name buckets (1st, 2nd, 3rd-4th, rest), file name, description.
 -- Names and file name compete for the best hit; the description adds on top.
 local FIELD_WEIGHTS = { 10, 8, 6, 4, 6, 3 }
+-- Weight of a hit on an icon's item category name (index.categoryWords): below its names, above its description.
+local CATEGORY_WEIGHT = 5
+local NO_CATS = {}
 local DESC_FIELD = 6
 local QUALITY_EXACT, QUALITY_PREFIX, QUALITY_SYNONYM, QUALITY_FUZZY = 1, 0.7, 0.6, 0.5
 local BONUS_PHRASE, BONUS_USABLE, BONUS_PLAYER, SCORE_ID = 5, 2, 2, 1000
+-- With words and colour chips, the share of the word match in the order; colour closeness has the rest. Both are
+-- taken relative to the best result.
+local TEXT_SHARE = 0.5
 
 -- Must match STOPWORDS in scripts/build_data.py.
 local STOPWORDS = {}
@@ -506,6 +512,28 @@ local function chipScore(index, row, chips, bands)
   return total / weights
 end
 
+-- Per category number, the best hit of a token's variants on the category's words, weighted like a field.
+local function categoryHits(categoryWords, variants)
+  local hits = {}
+  for number, words in pairs(categoryWords or {}) do
+    local best = 0
+    for i = 1, #variants, 2 do
+      local term, quality = variants[i], variants[i + 1]
+      local p = find(words, " " .. term, 1, true)
+      if p then
+        local exact = byte(words, p + #term + 1) == 32
+        if exact or #term >= 3 then
+          best = math.max(best, CATEGORY_WEIGHT * quality * (exact and 1 or QUALITY_PREFIX))
+        end
+      end
+    end
+    if best > 0 then
+      hits[number] = best
+    end
+  end
+  return hits
+end
+
 -- One pass over the candidate rows. `index` holds the columns (see Catalog.NewIndex).
 local function run(index, rows, query, opts, loose)
   local tokens = Search.Tokens(query)
@@ -515,12 +543,13 @@ local function run(index, rows, query, opts, loose)
   local phrase = #tokens > 1 and (" " .. table.concat(tokens, " ") .. " ") or nil
 
   local vocabulary = loose and opts.vocabulary and opts.vocabulary() or nil
-  local variants = {}
+  local variants, catHits = {}, {}
   for i, token in ipairs(tokens) do
     variants[i] = variantsFor(token, synonyms, vocabulary)
+    catHits[i] = categoryHits(index.categoryWords, variants[i])
   end
 
-  local texts, ids, keys, spells = index.text, index.id, index.key, index.spells
+  local texts, ids, keys, spells, cats = index.text, index.id, index.key, index.spells, index.cats
   local chips = opts.chips and #opts.chips > 0 and opts.chips or nil
   local bands = {}
   for i, chip in ipairs(chips or {}) do
@@ -542,6 +571,12 @@ local function run(index, rows, query, opts, loose)
       local matched = 0
       for i = 1, #tokens do
         local s = tokenScore(text, variants[i])
+        for _, number in ipairs(cats[row] or NO_CATS) do
+          local hit = catHits[i][number]
+          if hit and hit > s then
+            s = hit
+          end
+        end
         if s > 0 then
           matched = matched + 1
           score = score + s
@@ -576,9 +611,21 @@ local function run(index, rows, query, opts, loose)
   for i, row in ipairs(rows) do
     position[row] = i
   end
+  -- Order by colour alone without words; with words, by a blend of word match and colour.
+  local order = chips and closeness
+  if chips and #tokens > 0 then
+    local bestScore, bestClose = 0, 0
+    for _, row in ipairs(results) do
+      bestScore, bestClose = math.max(bestScore, scores[row]), math.max(bestClose, closeness[row])
+    end
+    order = {}
+    for _, row in ipairs(results) do
+      order[row] = TEXT_SHARE * scores[row] / bestScore + (1 - TEXT_SHARE) * closeness[row] / bestClose
+    end
+  end
   table.sort(results, function(a, b)
-    if chips and closeness[a] ~= closeness[b] then
-      return closeness[a] > closeness[b]
+    if order and order[a] ~= order[b] then
+      return order[a] > order[b]
     end
     if scores[a] ~= scores[b] then
       return scores[a] > scores[b]

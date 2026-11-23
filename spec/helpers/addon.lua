@@ -151,7 +151,7 @@ function M.fakeData(ns, rows)
     flavor = "test",
     build = "0",
     classes = "3\tHunter\n8\tMage\n",
-    itemClasses = "0\tConsumable\n2\tWeapon\n2:7\tOne-Handed Swords\n4\tArmor\n",
+    itemClasses = "0\tConsumable\n2\tWeapon\n2:7\tOne-Handed Swords\n4\tArmor\n4:6\tShields\n",
     professions = "185\tCooking\n",
     icons = icons,
   }

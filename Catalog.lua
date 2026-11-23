@@ -100,6 +100,23 @@ end
 
 local COLUMNS = { "file", "names", "text", "src", "cls", "cats", "profs", "spells" }
 
+-- Search words per item category number (class * 256 + subclass) the icons use: its own and its class's name, padded
+-- like search text (" a b "), for Search.Find.
+local function categoryWords(data)
+  local words, labels, Search = {}, data.itemClasses or {}, ns.Search
+  for _, list in pairs(data.index.cats) do
+    for _, number in ipairs(list) do
+      if not words[number] then
+        local class = math.floor(number / 256)
+        local name = (labels[class .. ":" .. number % 256] or "") .. " " .. (labels[class] or "")
+        words[number] = " " .. table.concat(Search.Tokens(name), " ") .. " "
+      end
+    end
+  end
+  return words
+end
+Catalog.CategoryWords = categoryWords
+
 -- Turns the table a data add-on leaves in the global IconicData into lookups and an index. The index takes
 -- over the data's columns, so `raw` must not be parsed twice.
 function Catalog.Parse(raw)
@@ -141,6 +158,7 @@ function Catalog.Parse(raw)
     byFile[file[row]] = id
   end
   index.count = #ids
+  index.categoryWords = categoryWords(data)
   return data
 end
 
@@ -152,6 +170,7 @@ function Catalog.ApplyLocale(data, raw)
   end
   if raw.itemClasses then
     data.itemClasses = lookup(raw.itemClasses)
+    data.index.categoryWords = categoryWords(data)
   end
   if raw.professions then
     data.professions, data.professionIcons = lookup(raw.professions)
