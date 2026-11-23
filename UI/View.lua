@@ -92,10 +92,6 @@ local SWATCH = "Interface\\AddOns\\Iconic\\Assets\\swatch"
 local COLOR_WHEEL = "Interface\\AddOns\\Iconic\\Assets\\colorwheel"
 local SWATCH_ROW_SIZE, SUGGESTION_ICON_SIZE = 12, 19
 
-local function hexToRGB(hex)
-  return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
-end
-
 -- Class name in its class color, with the class icon.
 local function classLabel(classId, name)
   local info = C_CreatureInfo and C_CreatureInfo.GetClassInfo and C_CreatureInfo.GetClassInfo(classId)
@@ -445,33 +441,23 @@ function View:CreateSignButton(parent, plus, tooltip, onClick)
   return button
 end
 
-local MAX_CHIPS, CHIP_SIZE, CHIP_GAP = 3, 22, 8
+local MAX_CHIPS, CHIP_SIZE, CHIP_GAP, CHIP_MIN_SWATCH = 3, 22, 8, 8
+local MIN_WEIGHT = 0.1
 -- Size of the red X on colour chips and on the filter button (Blizzard's is 23).
 local RESET_SIZE = 20
 
--- A chip's colour as { r, g, b } (0-1): the picked colour, or the swatch shade of a named colour.
-local function chipColor(chip)
-  if chip.color then
-    return chip.color
-  end
-  for _, color in ipairs(Search.COLORS) do
-    if color.key == chip.key then
-      local r, g, b = hexToRGB(color.hex)
-      return { r = r / 255, g = g / 255, b = b / 255 }
-    end
-  end
+-- A colour chip: its colour { r, g, b } (0-1), OKLab target, weight (0.1-1) and the preset it came from, if any.
+local function newChip(color, weight, preset)
+  return { color = color, target = Search.PickTarget(color.r, color.g, color.b), weight = weight or 1, preset = preset }
 end
 
 local function chipLabel(chip)
-  if chip.color then
-    local c = chip.color
-    return ("#%02X%02X%02X"):format(c.r * 255 + 0.5, c.g * 255 + 0.5, c.b * 255 + 0.5)
+  local preset = chip.preset and Search.Preset(chip.preset)
+  if preset then
+    return L[preset.label]
   end
-  for _, color in ipairs(Search.COLORS) do
-    if color.key == chip.key then
-      return L[color.label]
-    end
-  end
+  local c = chip.color
+  return ("#%02X%02X%02X"):format(c.r * 255 + 0.5, c.g * 255 + 0.5, c.b * 255 + 0.5)
 end
 
 local function createColorButton(parent, onClick, onEnter)
@@ -481,6 +467,9 @@ local function createColorButton(parent, onClick, onEnter)
   button.swatch = button:CreateTexture(nil, "ARTWORK")
   button.swatch:SetSize(20, 20)
   button.swatch:SetPoint("CENTER")
+  -- Sub-pixel sizes, so a chip shrinks smoothly with its weight.
+  button.swatch:SetSnapToPixelGrid(false)
+  button.swatch:SetTexelSnappingBias(0)
   button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   button:SetScript("OnClick", onClick)
   button:SetScript("OnEnter", function(owner)
@@ -508,7 +497,11 @@ function View:CreateColorBar(parent)
         self:OpenColorPicker(i)
       end
     end, function()
-      GameTooltip:SetText(chipLabel(self.chips[i]) or "", 1, 1, 1)
+      local chip = self.chips[i]
+      GameTooltip:SetText(chipLabel(chip), 1, 1, 1)
+      if #self.chips > 1 then
+        GameTooltip:AddLine(L["Weight: %d%%"]:format(chip.weight * 100 + 0.5), 0.9, 0.9, 0.9)
+      end
       GameTooltip:AddLine(L["Click to change; the X or right-click removes it"], 0.7, 0.7, 0.7)
     end)
     button.swatch:SetTexture(SWATCH)
@@ -544,8 +537,11 @@ function View:UpdateChips()
     local chip = self.chips[i]
     button:SetShown(chip ~= nil)
     if chip then
-      local c = chipColor(chip)
+      local weight = #self.chips > 1 and chip.weight or 1
+      local c, size = chip.color, CHIP_MIN_SWATCH + (20 - CHIP_MIN_SWATCH) * weight
       button.swatch:SetVertexColor(c.r, c.g, c.b)
+      -- Lighter chips look smaller.
+      button.swatch:SetSize(size, size)
       buttons[#buttons + 1] = button
     end
   end
@@ -560,38 +556,49 @@ function View:UpdateChips()
   self.colorBar:SetWidth(#buttons * (CHIP_SIZE + CHIP_GAP) - CHIP_GAP)
 end
 
--- Replaces all chips: a list of { key = colour key } (named) or { color = { r, g, b } } (picked).
+-- Replaces all chips: a list of { key = preset key } or { color = { r, g, b }, weight, preset }.
 function View:SetChips(chips)
   self.chips = {}
   for i, chip in ipairs(chips) do
     if chip.color then
-      self.chips[i] = { color = chip.color, target = Search.PickTarget(chip.color.r, chip.color.g, chip.color.b) }
+      self.chips[i] = newChip(chip.color, chip.weight, chip.preset)
     else
-      self.chips[i] = { key = chip.key }
+      self.chips[i] = newChip(Search.HexColor(Search.Preset(chip.key).hex), chip.weight, chip.key)
     end
   end
   self:UpdateChips()
   self:QueuePickRefresh()
 end
 
--- Sets chip `i` (or a new last chip) to a picked colour { r, g, b }.
-function View:SetChipColor(i, color)
+-- Sets chip `i` (or a new last chip) to a picked colour { r, g, b }, keeping its weight.
+function View:SetChipColor(i, color, weight)
   local chips = self.chips
   i = math.min(i, #chips + 1, MAX_CHIPS)
-  chips[i] = { color = color, target = Search.PickTarget(color.r, color.g, color.b) }
+  chips[i] = newChip(color, weight or (chips[i] and chips[i].weight))
   self:UpdateChips()
   self:QueuePickRefresh()
 end
 
--- Adds a named colour chip unless it is there already or the bar is full.
-function View:AddNamedChip(key)
+-- Sets the weight (MIN_WEIGHT-1) of chip `i`.
+function View:SetChipWeight(i, weight)
+  local chip = self.chips[i]
+  if chip then
+    self.chips[i] = newChip(chip.color, math.max(MIN_WEIGHT, math.min(1, weight)), chip.preset)
+    self:UpdateChips()
+    self:QueuePickRefresh()
+  end
+end
+
+-- Adds a chip for a colour preset unless it is there already or the bar is full.
+function View:AddPresetChip(key)
   for _, chip in ipairs(self.chips) do
-    if chip.key == key then
+    if chip.preset == key then
       return
     end
   end
-  if #self.chips < MAX_CHIPS then
-    self.chips[#self.chips + 1] = { key = key }
+  local preset = Search.Preset(key)
+  if preset and #self.chips < MAX_CHIPS then
+    self.chips[#self.chips + 1] = newChip(Search.HexColor(preset.hex), 1, key)
     self:UpdateChips()
   end
 end
@@ -615,42 +622,91 @@ function View:QueuePickRefresh()
   end)
 end
 
--- Blizzard's colour picker is shared, so its Cancel button is hidden and Okay centred only while Iconic uses it;
--- Escape still restores the old colour.
-local pickerButtons, pickerHooked
-local function hidePickerCancel()
+-- Blizzard's colour picker is shared: while Iconic uses it, its Cancel button is hidden and Okay centred, it sits beside
+-- Iconic's window, and a weight slider hangs below it. All is restored when it closes.
+local picker, weightPanel
+
+local WEIGHT_OVERLAP = 8
+
+-- Below the picker, in the same dialog border, joined to it.
+local function createWeightPanel(frame)
+  local panel = CreateFrame("Frame", nil, frame)
+  -- Overlaps the picker by its border, so one border line separates the two.
+  panel:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, WEIGHT_OVERLAP)
+  panel:SetPoint("TOPRIGHT", frame, "BOTTOMRIGHT", 0, WEIGHT_OVERLAP)
+  panel:SetHeight(96)
+  panel.border = CreateFrame("Frame", nil, panel, "DialogBorderTemplate")
+  panel.border:SetAllPoints()
+  panel.label = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  panel.label:SetPoint("TOPLEFT", 18, -16)
+  panel.label:SetText(L["Weight"])
+  panel.hint = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  panel.hint:SetPoint("TOPLEFT", panel.label, "BOTTOMLEFT", 0, -4)
+  panel.hint:SetPoint("RIGHT", -18, 0)
+  panel.hint:SetJustifyH("LEFT")
+  panel.hint:SetText(L["How much this colour counts in the colour search."])
+  panel.slider = CreateFrame("Frame", nil, panel, "MinimalSliderWithSteppersTemplate")
+  panel.slider:SetPoint("TOPLEFT", panel.hint, "BOTTOMLEFT", -2, -6)
+  panel.slider:SetPoint("RIGHT", -64, 0)
+  panel.slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(_, value)
+    if panel.view then
+      panel.view:SetPickerWeight(value / 100)
+    end
+  end, panel)
+  return panel
+end
+
+local function preparePicker(anchor)
   local frame = ColorPickerFrame
-  local cancel = frame.Footer and frame.Footer.CancelButton or _G.ColorPickerCancelButton
-  local okay = frame.Footer and frame.Footer.OkayButton or _G.ColorPickerOkayButton
-  if not (cancel and okay) or pickerButtons then
-    return
-  end
-  local points = {}
-  for i = 1, okay:GetNumPoints() do
-    points[i] = { okay:GetPoint(i) }
-  end
-  pickerButtons = { cancel = cancel, okay = okay, points = points }
-  local _, _, _, _, y = cancel:GetPoint(1)
-  cancel:Hide()
-  okay:ClearAllPoints()
-  okay:SetPoint("BOTTOM", cancel:GetParent(), "BOTTOM", 0, y or 0)
-  if not pickerHooked then
-    pickerHooked = true
+  if not picker then
+    picker = {}
     frame:HookScript("OnHide", function()
-      if pickerButtons then
-        pickerButtons.cancel:Show()
-        pickerButtons.okay:ClearAllPoints()
-        for _, point in ipairs(pickerButtons.points) do
-          pickerButtons.okay:SetPoint(unpack(point))
+      if picker.okay then
+        picker.cancel:Show()
+        picker.okay:ClearAllPoints()
+        for _, point in ipairs(picker.okayPoints) do
+          picker.okay:SetPoint(unpack(point))
         end
-        pickerButtons = nil
+      end
+      if picker.points then
+        frame:ClearAllPoints()
+        for _, point in ipairs(picker.points) do
+          frame:SetPoint(unpack(point))
+        end
+        frame:SetClampedToScreen(picker.clamped)
+        picker.points = nil
+      end
+      if weightPanel then
+        weightPanel:Hide()
+        weightPanel.view = nil
       end
     end)
   end
+  local cancel = frame.Footer and frame.Footer.CancelButton or _G.ColorPickerCancelButton
+  local okay = frame.Footer and frame.Footer.OkayButton or _G.ColorPickerOkayButton
+  if cancel and okay and cancel:IsShown() then
+    picker.cancel, picker.okay, picker.okayPoints = cancel, okay, {}
+    for i = 1, okay:GetNumPoints() do
+      picker.okayPoints[i] = { okay:GetPoint(i) }
+    end
+    local _, _, _, _, y = cancel:GetPoint(1)
+    cancel:Hide()
+    okay:ClearAllPoints()
+    okay:SetPoint("BOTTOM", cancel:GetParent(), "BOTTOM", 0, y or 0)
+  end
+  if not picker.points then
+    picker.points, picker.clamped = {}, frame:IsClampedToScreen()
+    for i = 1, frame:GetNumPoints() do
+      picker.points[i] = { frame:GetPoint(i) }
+    end
+  end
+  frame:ClearAllPoints()
+  frame:SetPoint("TOPLEFT", anchor, "TOPRIGHT", -2, -1)
+  frame:SetClampedToScreen(true)
 end
 
--- Opens Blizzard's colour picker for chip `i`, or for a new chip; the grid follows the colour while it is dragged,
--- Escape restores the chips as they were.
+-- Opens Blizzard's colour picker for chip `i`, or for a new chip; the grid follows the colour and weight while they
+-- change, and closing the picker keeps them.
 function View:OpenColorPicker(i)
   if not ColorPickerFrame and C_AddOns and C_AddOns.LoadAddOn then
     C_AddOns.LoadAddOn("Blizzard_ColorPickerFrame")
@@ -658,13 +714,12 @@ function View:OpenColorPicker(i)
   if not (ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) then
     return
   end
-  local before = {}
-  for k, chip in ipairs(self.chips) do
-    before[k] = chip
-  end
   local slot = i or #self.chips + 1
+  -- Counted before the picker opens: it reports its start colour at once, which already adds a new chip.
+  local chipCount = math.max(#self.chips, slot)
   local editing = i and self.chips[i]
-  local start = editing and chipColor(editing) or { r = 0.12, g = 0.65, b = 0.63 }
+  local start = editing and editing.color or { r = 0.12, g = 0.65, b = 0.63 }
+  self.pickerSlot, self.pickerWeight = slot, editing and editing.weight or 1
   ColorPickerFrame:SetupColorPickerAndShow({
     r = start.r,
     g = start.g,
@@ -672,17 +727,32 @@ function View:OpenColorPicker(i)
     hasOpacity = false,
     swatchFunc = function()
       local r, g, b = ColorPickerFrame:GetColorRGB()
-      -- Opening the picker reports the start colour; a named chip stays named until the colour changes.
+      -- Opening the picker reports the start colour; a preset chip keeps its name until the colour changes.
       local unchanged = math.abs(r - start.r) + math.abs(g - start.g) + math.abs(b - start.b) < 0.005
       if not (editing and unchanged) then
-        self:SetChipColor(slot, { r = r, g = g, b = b })
+        self:SetChipColor(slot, { r = r, g = g, b = b }, self.pickerWeight)
       end
     end,
-    cancelFunc = function()
-      self:SetChips(before)
+  })
+  preparePicker(self.frame:GetParent())
+  weightPanel = weightPanel or createWeightPanel(ColorPickerFrame)
+  weightPanel.view = nil
+  weightPanel.slider:Init(self.pickerWeight * 100, MIN_WEIGHT * 100, 100, 18, {
+    [MinimalSliderWithSteppersMixin.Label.Right] = function(value)
+      return ("%d%%"):format(value + 0.5)
     end,
   })
-  hidePickerCancel()
+  weightPanel.view = self
+  -- A weight only matters next to another chip.
+  weightPanel:SetShown(chipCount > 1)
+end
+
+-- The weight slider under the colour picker moved: applies to the chip being picked, or to the next one.
+function View:SetPickerWeight(weight)
+  self.pickerWeight = weight
+  if self.chips[self.pickerSlot] then
+    self:SetChipWeight(self.pickerSlot, weight)
+  end
 end
 
 function View:CreateIconButton(parent)
@@ -1043,8 +1113,8 @@ function View:UpdateSuggestions()
   -- Colours that already have a chip count as active, like ticked filters.
   local active = setmetatable({ color = {} }, { __index = self.filters })
   for _, chip in ipairs(self.chips) do
-    if chip.key then
-      active.color[chip.key] = true
+    if chip.preset then
+      active.color[chip.preset] = true
     end
   end
   local list = Catalog.Suggest(self.data, box:GetText(), self.counts, active, #buttons)
@@ -1089,18 +1159,14 @@ function View:SetSuggestionIcon(texture, suggestion)
     texture:SetTexture(self.data.professionIcons[suggestion.value])
     texture:Show()
     return
-  elseif suggestion.dim == "color" then
-    for _, color in ipairs(Search.COLORS) do
-      if color.key == suggestion.value then
-        -- Smaller than the icon slot, centred in it.
-        local r, g, b = hexToRGB(color.hex)
-        texture:SetTexture(SWATCH)
-        texture:SetSize(SWATCH_ROW_SIZE, SWATCH_ROW_SIZE)
-        texture:SetVertexColor(r / 255, g / 255, b / 255)
-        texture:Show()
-        return
-      end
-    end
+  elseif suggestion.dim == "color" and Search.Preset(suggestion.value) then
+    -- Smaller than the icon slot, centred in it.
+    local c = Search.HexColor(Search.Preset(suggestion.value).hex)
+    texture:SetTexture(SWATCH)
+    texture:SetSize(SWATCH_ROW_SIZE, SWATCH_ROW_SIZE)
+    texture:SetVertexColor(c.r, c.g, c.b)
+    texture:Show()
+    return
   end
   texture:SetTexture(nil)
   texture:Show()
@@ -1112,11 +1178,15 @@ function View:ApplySuggestion(suggestion)
     return
   end
   if suggestion.dim == "color" then
-    self:AddNamedChip(suggestion.value)
+    self:AddPresetChip(suggestion.value)
   else
     selectedSet(self.filters, suggestion.dim)[suggestion.value] = true
   end
-  self.search:SetText(Catalog.RemoveWord(self.search:GetText(), suggestion.word))
+  local text = self.search:GetText()
+  for _, word in ipairs(suggestion.words) do
+    text = Catalog.RemoveWord(text, word)
+  end
+  self.search:SetText(text)
   self.search:Close()
   self:Refresh()
 end

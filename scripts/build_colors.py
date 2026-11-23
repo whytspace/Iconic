@@ -34,7 +34,7 @@ ITERATIONS = 10  # k-means rounds
 MERGE = 0.05  # OKLab distance under which two found colours become one
 MIN_WEIGHT = 0.05  # smaller colours are dropped
 
-# Reference colours per name, in sRGB, that name an icon's colours; keys must match Search.COLORS in Search.lua.
+# Reference colours per name, in sRGB, for the contact sheets; must match COLOR_REFS in Search.lua.
 COLORS = {
     "red": [(205, 40, 40), (120, 20, 25)],
     "orange": [(230, 125, 30), (170, 85, 25)],

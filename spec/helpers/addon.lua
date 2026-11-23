@@ -98,14 +98,15 @@ M.COLOR_LAB = COLOR_LAB
 
 -- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
 -- names = {...}, desc, src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
--- colors = "green:62 red:18" }; each colour becomes a dominant colour at its reference shade with that weight.
+-- colors = "green:62 red:18 35/-9/7:20" }; each colour becomes a dominant colour with that weight, at a named
+-- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
   local icons = { id = {}, file = {}, names = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
       for k = 1, 4 do
-        for _, field in ipairs({ "l", "a", "b", "w", "name" }) do
+        for _, field in ipairs({ "l", "a", "b", "w" }) do
           colors[field .. k] = {}
         end
       end
@@ -132,11 +133,17 @@ function M.fakeData(ns, rows)
       end
     end
     local k = 0
-    for color, share in (r.colors or ""):gmatch("(%a+):(%d+)") do
+    for token in (r.colors or ""):gmatch("%S+") do
       k = k + 1
+      local color, share = token:match("^(%a+):(%d+)$")
       local lab = COLOR_LAB[color]
+      if not lab then
+        local l, a, b
+        l, a, b, share = token:match("^(%-?%d+)/(%-?%d+)/(%-?%d+):(%d+)$")
+        lab = { tonumber(l), tonumber(a), tonumber(b) }
+      end
       colors["l" .. k][row], colors["a" .. k][row], colors["b" .. k][row] = lab[1], lab[2], lab[3]
-      colors["w" .. k][row], colors["name" .. k][row] = tonumber(share), color
+      colors["w" .. k][row] = tonumber(share)
     end
   end
   icons.colors = colors

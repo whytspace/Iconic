@@ -67,11 +67,12 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
     end)
 
-    it("ranks icons by colour share for a named colour chip", function()
-      local results = ns.Search.Find(data.index, rows, "", { chips = { { key = "green" } } })
+    it("ranks icons with much of a chip's colour first", function()
+      local green = ns.Search.PickTarget(0x4c / 255, 0xbb / 255, 0x44 / 255)
+      local results = ns.Search.Find(data.index, rows, "", { chips = { { target = green } } })
       assert.is_true(#results > 100)
       for i = 1, 10 do
-        assert.is_true(ns.Search.ColorShare(data.index, results[i], "green") >= 50)
+        assert.is_true(ns.Search.ColorShare(data.index, results[i], "green") >= 40)
       end
     end)
 

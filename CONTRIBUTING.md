@@ -66,14 +66,16 @@ devc python3 -I scripts/build_colors.py --sheets
 devc python3 scripts/build_data.py
 ```
 
-Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colours, each with its weight, the part of the icon it covers; pixels near the centre and saturated pixels weigh more. Each dominant colour is also named after the nearest reference shade in `COLORS`. `--sheets` writes `.cache/colors/<colour>.png` with the icons that have the most of each named colour, for checking the result by eye.
+Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colours, each with its weight, the part of the icon it covers; pixels near the centre and saturated pixels weigh more. The data ships only their OKLab values and weights. `--sheets` writes `.cache/colors/<colour>.png` with the icons that have the most of each named colour, for checking the result by eye.
 
-In search, colours are chips (`chipScore` in `Search.lua`); every chip must match and results rank by the weakest one:
+In search, a colour chip is one shade with a weight (`chipScore` in `Search.lua`):
 
-- A named chip, from a colour word's suggestion (`Search.COLORS` labels and hints), needs `COLOR_MIN` of the icon in dominant colours with that name.
-- A picked chip is compared in OKLab: an icon's closeness is the weight of each dominant colour, counted less the farther it lies from the pick (Gaussian with radius `PICK_RADIUS`). It needs `PICK_MIN`.
+- An icon matches a chip when at least `COLOR_MIN` of it lies in the chip's band: within `HUE_WIDTH` degrees of its hue, or, for a colourless chip (black, white, grey), within `LIGHT_WIDTH` of its lightness.
+- Inside the band, colours count less the farther they lie from the chip's shade (`CLOSE_RADIUS`, down to `CLOSE_FLOOR`).
+- Icons rank by the chips' values averaged by their weights (the slider under the colour picker).
+- Colour words are presets: one shade each (`Search.COLOR_PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
 
-Grouping by colour puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
+Grouping by colour names each dominant colour after the nearest reference shade (`COLOR_REFS` in `Search.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
 
 ## Translations
 

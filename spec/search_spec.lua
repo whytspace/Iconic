@@ -53,9 +53,7 @@ describe("Search", function()
     })
     assert.are.equal("Rot", german.L["Red"])
     assert.are.equal("Gruppieren: %s", german.L["Group by: %s"])
-    local yellow = german.Search.COLORS[3]
-    assert.are.equal("yellow", yellow.key)
-    assert.is_truthy(table.concat(yellow.hints, " "):find("goldene", 1, true))
+    assert.is_truthy(table.concat(german.Search.Preset("gold").hints, " "):find("goldene", 1, true))
     assert.are.equal("Red", ns.L["Red"])
   end)
 
@@ -119,71 +117,63 @@ describe("Search", function()
   end)
 
   describe("colours", function()
+    local function chip(name, weight)
+      return { target = addon.COLOR_LAB[name], weight = weight }
+    end
+
+    local function chips(...)
+      return { chips = { ... } }
+    end
+
     before_each(function()
       data = Catalog.Parse(addon.fakeData(ns, {
         { "1", "inv_misc_gem_emerald_01", names = { "Emerald" }, colors = "green:70 teal:12" },
-        { "2", "inv_misc_herb_01", names = { "Peacebloom" }, colors = "green:35 yellow:25" },
-        { "3", "inv_misc_gem_ruby_01", names = { "Ruby" }, colors = "red:65" },
-        { "4", "inv_misc_gem_green_01", names = { "Green Gem" }, colors = "grey:60" },
-        { "5", "inv_misc_flower_01", names = { "Fireflower" }, colors = "red:30 green:28" },
+        { "2", "inv_misc_herb_01", names = { "Dark Herb" }, colors = "35/-9/7:60" },
+        { "3", "inv_misc_herb_02", names = { "Light Herb" }, colors = "85/-14/12:50" },
+        { "4", "inv_misc_gem_ruby_01", names = { "Ruby" }, colors = "red:65" },
+        { "5", "inv_misc_gem_green_01", names = { "Green Gem" }, colors = "grey:60" },
+        { "6", "inv_misc_flower_01", names = { "Fireflower" }, colors = "red:60 green:12" },
+        { "7", "inv_misc_flower_02", names = { "Peacebloom" }, colors = "red:20 green:60" },
+        { "8", "inv_misc_leaf_01", names = { "Leaf" }, colors = "green:8 brown:80" },
+        { "9", "inv_misc_coal_01", names = { "Coal" }, colors = "black:70" },
       }))
-      rows = Catalog.Rows(data, { 1, 2, 3, 4, 5 })
+      rows = Catalog.Rows(data, { 1, 2, 3, 4, 5, 6, 7, 8, 9 })
     end)
 
-    local function named(...)
-      local chips = {}
-      for i, key in ipairs({ ... }) do
-        chips[i] = { key = key }
-      end
-      return { chips = chips }
-    end
+    it("names colours by the nearest reference shade", function()
+      assert.are.equal("green", Search.ColorName(65, -15, 11))
+      assert.are.equal("grey", Search.ColorName(76, 0, 0))
+      assert.are.equal("green", data.index.colorSlots[1].name[data.index.byKey[2]])
+    end)
 
-    it("ranks icons by how much of a named colour they show", function()
-      assert.are.same({ 1, 2, 5 }, keys((find("", named("green")))))
+    it("matches every shade in the chip's hue band, closest first", function()
+      assert.are.same({ 1, 7, 3, 2, 6 }, keys((find("", chips(chip("green"))))))
+    end)
+
+    it("matches colourless chips by lightness", function()
+      assert.are.same({ 9 }, keys((find("", chips(chip("black"))))))
+    end)
+
+    it("ranks by the weighted average of the chips", function()
+      assert.are.same({ 7, 6 }, keys((find("", chips(chip("red"), chip("green"))))))
+      assert.are.same({ 6, 7 }, keys((find("", chips(chip("red"), chip("green", 0.3))))))
     end)
 
     it("treats a typed colour word as text", function()
-      assert.are.same({ 4 }, keys((find("green"))))
-    end)
-
-    it("requires every chip and ranks by the weakest", function()
-      assert.are.same({ 5 }, keys((find("", named("red", "green")))))
+      assert.are.same({ 5 }, keys((find("green"))))
     end)
 
     it("combines chips with text", function()
-      assert.are.same({ 1 }, keys((find("emerald", named("green")))))
+      assert.are.same({ 1 }, keys((find("emerald", chips(chip("green"))))))
+      assert.are.same({ 6 }, keys((find("fireflower", chips(chip("green"))))))
+      assert.are.same({}, keys((find("coal", chips(chip("green"))))))
     end)
 
-    describe("picked colour", function()
-      local green, red
-
-      before_each(function()
-        green = Search.PickTarget(60 / 255, 170 / 255, 55 / 255)
-        red = Search.PickTarget(205 / 255, 40 / 255, 40 / 255)
-      end)
-
-      it("converts a colour to OKLab scaled like the data", function()
-        local lab = addon.COLOR_LAB.red
-        for i = 1, 3 do
-          assert.is_true(math.abs(red[i] - lab[i]) < 0.5)
-        end
-      end)
-
-      it("ranks icons by how much of them is near the colour and drops distant ones", function()
-        assert.are.same({ 1, 2, 5 }, keys((find("", { chips = { { target = green } } }))))
-        assert.are.same({ 3, 5 }, keys((find("", { chips = { { target = red } } }))))
-      end)
-
-      it("filters by words and still ranks by closeness", function()
-        assert.are.same({ 1 }, keys((find("gem", { chips = { { target = green } } }))))
-        assert.are.same({ 3 }, keys((find("gem", { chips = { { target = red } } }))))
-        assert.are.same({ 5 }, keys((find("flower", { chips = { { target = red } } }))))
-        assert.are.same({}, keys((find("peacebloom", { chips = { { target = red } } }))))
-      end)
-
-      it("combines a picked colour with a named one", function()
-        assert.are.same({ 5 }, keys((find("", { chips = { { target = red }, { key = "green" } } }))))
-      end)
+    it("converts a picked colour to OKLab scaled like the data", function()
+      local red = Search.PickTarget(205 / 255, 40 / 255, 40 / 255)
+      for i = 1, 3 do
+        assert.is_true(math.abs(red[i] - addon.COLOR_LAB.red[i]) < 0.5)
+      end
     end)
   end)
 

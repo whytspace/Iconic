@@ -176,20 +176,26 @@ describe("Catalog", function()
       assert.are.same({ 1, 2, 3, 4 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
     end)
 
-    it("suggests a colour for related words and aliases", function()
-      for _, word in ipairs({ "blood", "crimson" }) do
+    it("suggests a colour for its name and aliases", function()
+      for word, preset in pairs({ blood = "red", crimson = "crimson" }) do
         local suggestion = Catalog.Suggest(data, word, Catalog.Counts(data.index, rows))[1]
         assert.are.equal("color", suggestion.dim)
-        assert.are.equal("red", suggestion.value)
-        assert.are.equal(word, suggestion.word)
+        assert.are.equal(preset, suggestion.value)
+        assert.are.same({ word }, suggestion.words)
       end
+    end)
+
+    it("suggests a two-word colour for both words", function()
+      local suggestion = Catalog.Suggest(data, "sword dark green", Catalog.Counts(data.index, rows))[1]
+      assert.are.equal("darkgreen", suggestion.value)
+      assert.are.same({ "dark", "green" }, suggestion.words)
     end)
 
     it("counts icons per colour", function()
       local counts = Catalog.Counts(data.index, rows)
       assert.are.equal(2, counts.color.green)
       assert.are.equal(2, counts.color.red)
-      assert.is_nil(counts.color.grey)
+      assert.are.equal(1, counts.color.grey)
     end)
   end)
 
@@ -222,8 +228,8 @@ describe("Catalog", function()
 
     it("reports the query word to drop", function()
       local suggestion = Catalog.Suggest(data, "fire hunter", counts)[1]
-      assert.are.equal("hunter", suggestion.word)
-      assert.are.equal("fire", Catalog.RemoveWord("fire Hunter", suggestion.word))
+      assert.are.same({ "hunter" }, suggestion.words)
+      assert.are.equal("fire", Catalog.RemoveWord("fire Hunter", suggestion.words[1]))
     end)
   end)
 

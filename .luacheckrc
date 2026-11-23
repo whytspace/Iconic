@@ -84,6 +84,7 @@ read_globals = {
   "ItemRefTooltip",
   "MacroEditButton",
   "MacroFrame",
+  "MinimalSliderWithSteppersMixin",
   "MacroNewButton",
   "MacroPopupFrame",
   "MenuResponse",

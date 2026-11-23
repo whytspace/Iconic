@@ -125,13 +125,13 @@ function Catalog.Parse(raw)
     if not colors["w" .. k] then
       break
     end
-    index.colorSlots[k] = {
-      l = colors["l" .. k],
-      a = colors["a" .. k],
-      b = colors["b" .. k],
-      w = colors["w" .. k],
-      name = colors["name" .. k],
-    }
+    local slot = { l = colors["l" .. k], a = colors["a" .. k], b = colors["b" .. k], w = colors["w" .. k], name = {} }
+    for row = 1, #slot.w do
+      if slot.w[row] > 0 then
+        slot.name[row] = ns.Search.ColorName(slot.l[row], slot.a[row], slot.b[row])
+      end
+    end
+    index.colorSlots[k] = slot
   end
   index.hasColors = #index.colorSlots > 0
   local key, texture, byKey, byFile, file = index.key, index.texture, index.byKey, data.byFile, index.file
@@ -606,15 +606,18 @@ local function filterCandidates(data)
   for prof, name in pairs(data.professions or {}) do
     add("profession", prof, name, L["Profession"])
   end
-  for _, color in ipairs(ns.Search.COLORS) do
-    add("color", color.key, L[color.label], L["Color"], color.hints)
+  for _, preset in ipairs(ns.Search.COLOR_PRESETS) do
+    add("color", preset.key, L[preset.label], L["Color"], preset.hints)
+    -- Icons are counted per colour name; a preset counts those of the name its shade falls under.
+    list[#list].countKey = preset.name
   end
   return list
 end
 
--- Filter values a query's words point at, best first: { dim, value, label, group, word, count }. A word
--- matches when it equals or starts a word of the value's label; only values with icons and not yet
--- active are offered. `word` is the query word to drop when the suggestion is taken.
+-- Filter values a query's words point at, best first: { dim, value, label, group, words, count }. A word
+-- matches when it equals or starts a word of the value's label; a label whose every word is matched ranks above
+-- one matched in part. Only values with icons and not yet active are offered. `words` are the query words to drop
+-- when the suggestion is taken.
 function Catalog.Suggest(data, query, counts, filters, max)
   local Search = ns.Search
   local words = {}
@@ -628,25 +631,33 @@ function Catalog.Suggest(data, query, counts, filters, max)
   end
   local results = {}
   for _, candidate in ipairs(filterCandidates(data)) do
-    local count = counts and counts[candidate.dim] and counts[candidate.dim][candidate.value] or 0
+    local count = counts and counts[candidate.dim] and counts[candidate.dim][candidate.countKey or candidate.value] or 0
     local active = filters and filters[candidate.dim] and filters[candidate.dim][candidate.value]
     if count > 0 and not active then
       local best, bestWord
       local labelWords = Search.Tokens(candidate.label)
+      local tokenCount, whole, filled, used = #labelWords, {}, 0, {}
       for _, hint in ipairs(candidate.hints or {}) do
         labelWords[#labelWords + 1] = Search.Stem(hint)
       end
-      for _, labelWord in ipairs(labelWords) do
+      for i, labelWord in ipairs(labelWords) do
         for _, word in ipairs(words) do
           local stem = Search.Stem(word)
           local score = (labelWord == stem and 3) or (labelWord:sub(1, #stem) == stem and 2) or nil
           if score and (not best or score > best) then
             best, bestWord = score, word
           end
+          if score and i <= tokenCount and not whole[i] and not used[word] then
+            whole[i], used[word], filled = word, true, filled + 1
+          end
         end
       end
+      local matchedWords = { bestWord }
+      if tokenCount > 1 and filled == tokenCount then
+        best, matchedWords = 3 + tokenCount, whole
+      end
       if best then
-        candidate.score, candidate.word, candidate.count = best, bestWord, count
+        candidate.score, candidate.words, candidate.count = best, matchedWords, count
         results[#results + 1] = candidate
       end
     end
