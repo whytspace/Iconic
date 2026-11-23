@@ -142,6 +142,23 @@ Pickers.ADAPTERS.bank = {
   end,
 }
 
+-- Baganator's bank windows, one per skin, each with its own copies of Blizzard's bank tab settings menu.
+function Pickers.AttachBaganator()
+  local skins = Baganator and Baganator.API and Baganator.API.Skins
+  local skin = skins and skins.GetCurrentSkin and skins.GetCurrentSkin()
+  if not skin then
+    return
+  end
+  for _, kind in ipairs({ "Single", "Category" }) do
+    local view = _G["Baganator_" .. kind .. "ViewBankViewFrame" .. skin]
+    for _, tabs in ipairs({ view and view.Character or false, view and view.Warband or false }) do
+      if tabs and tabs.TabSettingsMenu then
+        Pickers.Attach(tabs.TabSettingsMenu, Pickers.ADAPTERS.bank)
+      end
+    end
+  end
+end
+
 Pickers.ADAPTERS.guildBank = {
   GetSuggestions = function(popup)
     local list = {}

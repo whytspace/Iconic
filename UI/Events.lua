@@ -10,6 +10,7 @@ local events = CreateFrame("Frame")
 events:RegisterEvent("ADDON_LOADED")
 events:RegisterEvent("PLAYER_LOGIN")
 events:RegisterEvent("MODIFIER_STATE_CHANGED")
+events:RegisterEvent("BANKFRAME_OPENED")
 
 events:SetScript("OnEvent", function(_, event, name)
   if event == "ADDON_LOADED" then
@@ -27,6 +28,8 @@ events:SetScript("OnEvent", function(_, event, name)
     ns.Pickers.RetryPending()
   elseif event == "MODIFIER_STATE_CHANGED" then
     ns.OnModifierChanged()
+  elseif event == "BANKFRAME_OPENED" then
+    ns.Pickers.AttachBaganator()
   end
 end)
 

@@ -10,6 +10,7 @@
 - **[New]** More colour words suggest a chip, such as "dark green", "lime", "crimson" or "navy", each with its own shade. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[New]** The colour picker opens beside the Iconic window. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[New]** A gear button in the `/iconic` window opens Iconic's settings.
+- **[New]** Baganator's bank tab icon picker gets Iconic too. ([#7](https://github.com/whytspace/Iconic/issues/7))
 - **[Change]** Colour chips find every shade of their colour and rank the closest first, whether picked or from a colour word; icons with a smaller part in that colour are found too. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** Closing the colour picker keeps the colour; remove a chip with its X or a right-click. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** The `/iconic` window shows the Iconic logo in its top-left corner. ([#14](https://github.com/whytspace/Iconic/issues/14))

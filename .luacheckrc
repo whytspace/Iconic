@@ -27,6 +27,7 @@ globals = {
 }
 
 read_globals = {
+  "Baganator",
   "BankPanel",
   "BreakUpLargeNumbers",
   "ButtonFrameTemplate_HideAttic",
