@@ -127,6 +127,16 @@ scripts/process-shots.sh browser         # after /iconic shot tour browser
 
 The script runs on the host and reads the retail Screenshots folder; set `SHOTS_DIR` for WoW Forever. ImageMagick is required. `pngquant` and `oxipng` are optional.
 
+### Demo animation
+
+`docs/images/demo.webp` comes from `/iconic shot demo`. It opens the character window's equipment sets, starts a new set (never saved), and plays the animation's steps letter by letter (steps and display times in `UI/Demo.lua`). After every step it captures a black+white pair like `/iconic shot tour`, keeping the colour picker in the shot, and stores each frame's display time in `IconicDB.demoFrames`. That takes a few minutes; keep the mouse off the windows. `/iconic shot stop` ends it early. Then `/reload`, so the game writes the saved variables, and:
+
+```sh
+scripts/make-demo.sh
+```
+
+It mattes the newest screenshot pairs (`scripts/matte.sh`, shared with `process-shots.sh`), crops all frames to the recorded area, draws WoW's mouse pointer (`scripts/pointer.png`) at the spot each step recorded, gliding between spots, and joins them with `img2webp` (`brew install webp`). `QUALITY`, `MAX_WIDTH` and `POINTER_SIZE` adjust the result.
+
 ## Changelog
 
 Update `CHANGELOG.md` for player-facing changes. One flat list; start each entry with **[New]**, **[Change]**, or **[Fix]**, ordered New, Change, Fix. Phrase **[Fix]** entries as the misbehavior that stopped ("…no longer…").

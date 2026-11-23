@@ -750,6 +750,11 @@ function View:OpenColorPicker(i)
   weightPanel:SetShown(chipCount > 1)
 end
 
+-- The weight slider under the colour picker, once it exists (for /iconic shot demo).
+function View:WeightSlider()
+  return weightPanel and weightPanel.slider
+end
+
 -- The weight slider under the colour picker moved: applies to the chip being picked, or to the next one.
 function View:SetPickerWeight(weight)
   self.pickerWeight = weight

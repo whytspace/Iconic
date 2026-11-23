@@ -53,14 +53,18 @@ local function topLevel(frame)
   return frame
 end
 
--- Fades every other shown UI frame (action bars, minimap, help tips) and returns a restore function.
-local function fadeOthers(target)
-  local keep = topLevel(target)
+-- Fades every other shown UI frame (action bars, minimap, help tips) except `extra` frames, and returns a restore
+-- function.
+local function fadeOthers(target, extra)
+  local keep = { [topLevel(target)] = true }
+  for _, frame in ipairs(extra or {}) do
+    keep[topLevel(frame)] = true
+  end
   local faded = {}
   for _, child in ipairs({ UIParent:GetChildren() }) do
     pcall(function()
       if
-        child ~= keep
+        not keep[child]
         and child ~= Shot.backdrop
         and not (child.IsForbidden and child:IsForbidden())
         and child:IsShown()
@@ -79,8 +83,9 @@ local function fadeOthers(target)
   end
 end
 
--- Captures the target (default: open browser or picker) on black, then white; onDone(err) runs after.
-function Shot:Capture(target, onDone)
+-- Captures the target (default: open browser or picker) on black, then white, keeping the `extra` frames visible;
+-- onDone(err) runs after.
+function Shot:Capture(target, onDone, extra)
   if self.busy then
     return
   end
@@ -119,7 +124,7 @@ function Shot:Capture(target, onDone)
     frame:Show()
   end
 
-  restore = fadeOthers(target)
+  restore = fadeOthers(target, extra)
   paint(0)
   step(RENDER_DELAY, function()
     Screenshot()

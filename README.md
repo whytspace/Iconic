@@ -14,7 +14,13 @@ This is where **Iconic** comes in. It adds a search box, filters and categories 
 
 > ⚠️ **Early version:** please report bugs on [GitHub](https://github.com/whytspace/Iconic/issues).
 
-![Iconic in the macro window](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png)
+*"Avenger Tank" is ready. Now it needs an icon… something purple.*<br>
+*A shield, maybe?*<br>
+*With a hint of gold. Just a hint.*
+
+![Finding an icon for a new equipment set with Iconic](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/demo.webp)
+
+**A few seconds, and there it is.**
 
 Iconic replaces the icon grid wherever the game lets you choose an icon:
 
@@ -24,6 +30,8 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 - Guild bank tabs
 - Transmog outfits
 - Other add-ons that use it
+
+![Iconic in the macro window](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png)
 
 ## Finding icons
 

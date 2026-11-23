@@ -30,3 +30,7 @@ ignore:
   - luacov.report.out
   - Assets/*.png
   - Assets/*.svg
+  # Maintainer tools, also cut from Iconic.toc and UI/Events.lua by @do-not-package@.
+  - UI/Demo.lua
+  - UI/Screenshot.lua
+  - UI/ScreenshotTour.lua

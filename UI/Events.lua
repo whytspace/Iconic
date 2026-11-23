@@ -38,10 +38,17 @@ SlashCmdList.ICONIC = function(msg)
   local command = strtrim(msg or ""):lower()
   if command == "settings" then
     ns.OpenSettings()
+    --@do-not-package@
+    -- Maintainer tools (README screenshots and animation); the packager strips them from releases.
   elseif command == "shot" then
     ns.Screenshot:Capture()
+  elseif command == "shot demo" then
+    ns.Demo:Run()
+  elseif command == "shot stop" then
+    ns.Demo:Stop()
   elseif command:match("^shot tour") then
     ns.ScreenshotTour:Run(command:match("^shot tour%s+(%S+)"))
+    --@end-do-not-package@
   else
     ns.Browser:Toggle()
   end

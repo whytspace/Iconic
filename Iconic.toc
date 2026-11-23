@@ -24,7 +24,10 @@ UI/Browser.lua
 UI/Tooltips.lua
 UI/About.lua
 UI/Settings.lua
+#@do-not-package@
 UI/Screenshot.lua
 UI/ScreenshotTour.lua
+UI/Demo.lua
+#@end-do-not-package@
 UI/API.lua
 UI/Events.lua
