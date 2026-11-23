@@ -1,0 +1,34 @@
+name: Search result
+description: A search didn't find the icon you expected.
+type: Bug
+labels: [search]
+body:
+  - type: input
+    id: query
+    attributes:
+      label: What did you search for?
+      placeholder: frost bolt
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Which icon did you expect?
+      description: Its name or icon ID. Icon tooltips show the ID (Options → AddOns → Iconic).
+      placeholder: Frostbolt, 135846
+    validations:
+      required: true
+  - type: textarea
+    id: found
+    attributes:
+      label: What was found instead?
+      description: A screenshot helps.
+  - type: dropdown
+    id: client
+    attributes:
+      label: Game version
+      options:
+        - Retail
+        - WoW Forever
+    validations:
+      required: true
