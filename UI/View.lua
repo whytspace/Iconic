@@ -937,7 +937,7 @@ function View:RevealSelected()
       self:Refresh(true)
     end
   end
-  self:ScrollToSelected()
+  self:ScrollToSelected(true)
 end
 
 function View:Select(row)
@@ -949,21 +949,26 @@ function View:Select(row)
   end
 end
 
-function View:ScrollToSelected()
+-- Scrolls to the selected icon's first occurrence; with `cycle`, to the one after the last scrolled-to, wrapping.
+function View:ScrollToSelected(cycle)
   local key = self.selectedKey
   if not key or not self.provider then
     return
   end
-  local target = self.provider:FindElementDataByPredicate(function(elementData)
-    if elementData.rows then
-      for _, row in ipairs(elementData.rows) do
-        if self.data.index.key[row] == key then
-          return true
+  local matches, last = {}, nil
+  for _, elementData in self.provider:EnumerateEntireRange() do
+    for _, row in ipairs(elementData.rows or {}) do
+      if self.data.index.key[row] == key then
+        matches[#matches + 1] = elementData
+        if elementData == self.scrollTarget then
+          last = #matches
         end
+        break
       end
     end
-    return false
-  end)
+  end
+  local target = matches[cycle and last and last % #matches + 1 or 1]
+  self.scrollTarget = target
   if target then
     self.scrollBox:ScrollToElementData(target, ScrollBoxConstants.AlignCenter)
   end

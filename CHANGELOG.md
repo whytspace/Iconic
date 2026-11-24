@@ -11,6 +11,7 @@
 - **[New]** The colour picker opens beside the Iconic window. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[New]** A gear button in the `/iconic` window opens Iconic's settings.
 - **[New]** Baganator's bank tab icon picker gets Iconic too. ([#7](https://github.com/whytspace/Iconic/issues/7))
+- **[Change]** Clicking the icon under "Currently Selected" again scrolls to its next place in the picker, such as from recently used to all icons, then back to the first.
 - **[Change]** Colour chips find every shade of their colour and rank the closest first, whether picked or from a colour word; icons with a smaller part in that colour are found too. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** Searches with colour chips rank icons by how well the words match and by colour, not colour alone, and item category names such as "Shield" are searched too. ([#15](https://github.com/whytspace/Iconic/issues/15))
 - **[Change]** The search suggestions are wider, so long ones such as item categories are no longer cut off.
