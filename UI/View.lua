@@ -580,11 +580,11 @@ function View.Create(parent, opts)
   self.toolbar = toolbar
 
   -- Right to left: expand all, collapse all, group by, filter, color chips; the search box takes the rest.
-  self.expandAll = self:CreateSignButton(toolbar, true, L["Expand all sections"], function()
+  self.expandAll = self:CreateSignButton(toolbar, true, L["Expand all groups"], function()
     self:SetAllCollapsed(false)
   end)
   self.expandAll:SetPoint("RIGHT", -10, 0)
-  self.collapseAll = self:CreateSignButton(toolbar, false, L["Collapse all sections"], function()
+  self.collapseAll = self:CreateSignButton(toolbar, false, L["Collapse all groups"], function()
     self:SetAllCollapsed(true)
   end)
   self.collapseAll:SetPoint("RIGHT", self.expandAll, "LEFT", -4, 0)
