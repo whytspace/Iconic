@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-	<!-- One filter suggestion under the search box; styled like the profession recipe search preview. -->
-	<Button name="IconicSuggestionTemplate" mixin="SearchBoxListElementMixin" virtual="true">
+	<!-- One filter hint under the search box; styled like the profession recipe search preview. -->
+	<Button name="IconicHintTemplate" mixin="SearchBoxListElementMixin" virtual="true">
 		<Size x="200" y="27"/>
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="3">
@@ -35,10 +35,10 @@
 		</Scripts>
 	</Button>
 
-	<!-- Blizzard's search box with a suggestion list underneath. -->
+	<!-- Blizzard's search box with a hint list underneath. -->
 	<EditBox name="IconicSearchBoxTemplate" inherits="SearchBoxListTemplate" virtual="true">
 		<KeyValues>
-			<KeyValue key="buttonTemplate" value="IconicSuggestionTemplate" type="string"/>
+			<KeyValue key="buttonTemplate" value="IconicHintTemplate" type="string"/>
 			<KeyValue key="showAllButtonTemplate" value="SearchBoxListAllButtonTemplate" type="string"/>
 			<KeyValue key="minCharacters" value="2" type="number"/>
 		</KeyValues>

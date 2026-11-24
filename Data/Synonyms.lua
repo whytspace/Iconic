@@ -176,4 +176,7 @@ ns.SYNONYMS = {
   { "enchant", "enchanting", "dust", "essence", "rod" },
   { "engineering", "gadget", "gizmo", "device", "invention", "goblin", "gnomish" },
   { "cooking", "cook", "chef", "kitchen" },
+
+  -- spellings
+  { "gray", "grey" },
 }

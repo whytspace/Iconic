@@ -15,8 +15,9 @@ import re
 import sys
 import urllib.request
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(ROOT, ".cache", "wago")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import CACHE, PICKER_NAME, ROOT, WAGO_CACHE, log, manifest_icons  # noqa: E402
+
 OUT_DIR = os.path.join(ROOT, "Iconic_Data")
 
 FLAVORS = {
@@ -27,6 +28,7 @@ FLAVORS = {
 # Translations shipped next to the English data; each needs its lines in Iconic_Data/Iconic_Data.toc.
 LOCALES = ["deDE"]
 
+FETCH_TIMEOUT = 120  # seconds without data before a download fails
 MAX_NAMES = 16
 MAX_DESC_TOKENS = 48
 
@@ -67,8 +69,6 @@ LOCALE_DESC_STOPWORDS = {
 # Must match FILE_NOISE in Search.lua.
 FILE_NOISE = {"inv", "misc", "ability", "spell", "icon", "achievement"}
 CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
-# Both clients' icon pickers offer exactly the Interface\Icons files named like this (checked against in-game exports).
-PICKER_NAME = re.compile(r"(inv|ability|spell)_", re.IGNORECASE)
 TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
 
 PLAYABLE_CLASSES = {
@@ -93,26 +93,37 @@ FILE_ITEM_CATEGORIES = [
 ]
 
 
-def log(*args):
-    print(*args, file=sys.stderr, flush=True)
+def download(url, path, version_path):
+    """Store a wago.tools CSV and its build version; the CSV lands last, so it never exists without its version."""
+    log(f"download {url}")
+    req = urllib.request.Request(url, headers={"User-Agent": "Iconic-data-build"})
+    with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
+        status = resp.status
+        content_type = resp.headers.get("Content-Type", "")
+        disposition = resp.headers.get("Content-Disposition", "")
+        body = resp.read()
+    header = next(csv.reader(io.StringIO(body[:4096].decode("utf-8", "replace"))), [])
+    if status != 200 or "html" in content_type.lower() or "ID" not in header:
+        sys.exit(f"{url} did not return a CSV table (HTTP {status}, {content_type or 'no content type'})")
+    match = re.search(r"\.(\d+\.\d+\.\d+\.\d+)\.csv", disposition)
+    with open(path + ".part", "wb") as out:
+        out.write(body)
+    with open(version_path + ".part", "w") as out:
+        out.write(match.group(1) if match else "unknown")
+    if os.path.exists(path):
+        os.remove(path)
+    os.replace(version_path + ".part", version_path)
+    os.replace(path + ".part", path)
 
 
 def fetch(table, branch, refresh, locale=None):
-    os.makedirs(CACHE, exist_ok=True)
+    os.makedirs(WAGO_CACHE, exist_ok=True)
     suffix = f"-{locale}" if locale else ""
-    path = os.path.join(CACHE, f"{branch}-{table}{suffix}.csv")
+    path = os.path.join(WAGO_CACHE, f"{branch}-{table}{suffix}.csv")
     version_path = path + ".version"
-    if refresh or not os.path.exists(path):
+    if refresh or not (os.path.exists(path) and os.path.exists(version_path)):
         url = f"https://wago.tools/db2/{table}/csv?branch={branch}" + (f"&locale={locale}" if locale else "")
-        log(f"download {url}")
-        req = urllib.request.Request(url, headers={"User-Agent": "Iconic-data-build"})
-        with urllib.request.urlopen(req) as resp, open(path + ".part", "wb") as out:
-            disposition = resp.headers.get("Content-Disposition", "")
-            out.write(resp.read())
-        os.replace(path + ".part", path)
-        match = re.search(r"\.(\d+\.\d+\.\d+\.\d+)\.csv", disposition)
-        with open(version_path, "w") as v:
-            v.write(match.group(1) if match else "unknown")
+        download(url, path, version_path)
     with open(version_path) as v:
         version = v.read().strip()
     with open(path, encoding="utf-8", newline="") as handle:
@@ -120,11 +131,29 @@ def fetch(table, branch, refresh, locale=None):
     return rows, version
 
 
+def version_key(version):
+    try:
+        return tuple(int(p) for p in version.split("."))
+    except ValueError:
+        return None
+
+
+def newest_version(versions):
+    """The highest build version, compared numerically; "unknown" only when no table has one."""
+    known = [v for v in versions if version_key(v) is not None]
+    return max(known, key=version_key) if known else "unknown"
+
+
 def num(value):
     try:
         return int(value)
     except (TypeError, ValueError):
         return 0
+
+
+def one_line(text):
+    """Text for a tab and newline separated lookup body."""
+    return re.sub(r"[\t\r\n]+", " ", text or "").strip()
 
 
 def clean_name(name):
@@ -209,7 +238,7 @@ def search_text(names, file, desc):
 
 
 class Icon:
-    __slots__ = ("file", "words", "tags", "names", "seen", "desc", "src", "cls", "cats", "profs", "spells", "stopwords")
+    __slots__ = ("file", "words", "tags", "names", "seen", "desc", "sources", "class_mask", "categories", "professions", "spells", "stopwords")
 
     def __init__(self, file, stopwords=DESC_STOPWORDS):
         self.file = file.lower()
@@ -219,10 +248,10 @@ class Icon:
         self.names = []
         self.seen = set()
         self.desc = []
-        self.src = set()
-        self.cls = 0
-        self.cats = set()
-        self.profs = set()
+        self.sources = set()
+        self.class_mask = 0
+        self.categories = set()
+        self.professions = set()
         self.spells = set()
 
     def add_name(self, tier, name, ref=None):
@@ -242,52 +271,65 @@ class Icon:
                 self.desc.append(token)
 
 
-def build(flavor, refresh, locale=None):
-    branch = FLAVORS[flavor]["branch"]
-    stopwords = DESC_STOPWORDS | LOCALE_DESC_STOPWORDS.get(locale, set())
-    tables = {}
-    versions = set()
-    for name in [
-        "ManifestInterfaceData", "SpellName", "Spell", "SpellMisc", "SkillLineAbility", "SkillLine",
-        "SkillRaceClassInfo", "ChrClasses", "Item", "ItemSparse", "ItemModifiedAppearance", "ItemAppearance",
-        "ItemClass", "ItemSubClass", "Mount", "BattlePetSpecies", "CurrencyTypes",
-    ]:
-        tables[name], version = fetch(name, branch, refresh, locale)
-        versions.add(version)
-    build_version = max(versions)
+TABLES = [
+    "ManifestInterfaceData", "SpellName", "Spell", "SpellMisc", "SkillLineAbility", "SkillLine", "SkillRaceClassInfo",
+    "ChrClasses", "Item", "ItemSparse", "ItemModifiedAppearance", "ItemAppearance", "ItemClass", "ItemSubClass",
+    "Mount", "BattlePetSpecies", "CurrencyTypes",
+]
 
-    icons = {}
-    for row in tables["ManifestInterfaceData"]:
-        path = row["FilePath"].lower().replace("/", "\\")
-        if path.startswith("interface\\icons") and PICKER_NAME.match(row["FileName"]):
-            icons[num(row["ID"])] = Icon(re.sub(r"\.blp$", "", row["FileName"], flags=re.IGNORECASE), stopwords)
+
+class Icons(dict):
+    """File ID -> Icon of every picker icon."""
+
+    def at(self, file_id):
+        return self.get(num(file_id))
+
+
+def load_tables(branch, refresh, locale):
+    tables, versions = {}, []
+    for name in TABLES:
+        tables[name], version = fetch(name, branch, refresh, locale)
+        versions.append(version)
+    return tables, newest_version(versions)
+
+
+def picker_icons(tables, stopwords):
+    icons = Icons()
+    for file_id, name in manifest_icons(tables["ManifestInterfaceData"]):
+        if PICKER_NAME.match(name):
+            icons[file_id] = Icon(name, stopwords)
     for file_id, tags in load_tags().items():
         if file_id in icons:
             icons[file_id].tags = tags
-    log(f"{flavor}{' ' + locale if locale else ''}: {len(icons)} icons")
+    return icons
 
-    def icon(file_id):
-        return icons.get(num(file_id))
 
-    classes = {}
-    class_by_token = {}
+def playable_classes(tables):
+    """Class ID -> name, and class file token -> class ID."""
+    classes, class_by_token = {}, {}
     for row in tables["ChrClasses"]:
         class_id = num(row["ID"])
         # Only playable classes; the table also holds internal ones such as "Adventurer".
         if 0 < class_id <= 32 and row["Filename"].upper() in PLAYABLE_CLASSES:
-            classes[class_id] = row["Name_lang"]
+            classes[class_id] = one_line(row["Name_lang"])
             class_by_token[row["Filename"].upper()] = class_id
+    return classes, class_by_token
 
+
+class Spells:
+    def __init__(self, tables):
+        self.names = {num(r["ID"]): r["Name_lang"] for r in tables["SpellName"]}
+        self.desc = {num(r["ID"]): r["Description_lang"] for r in tables["Spell"]}
+        self.icon = {}
+        for row in tables["SpellMisc"]:
+            spell_id, file_id = num(row["SpellID"]), num(row["SpellIconFileDataID"])
+            if file_id and (spell_id not in self.icon or num(row["DifficultyID"]) == 0):
+                self.icon[spell_id] = file_id
+
+
+def add_skills(tables, icons, spells, classes):
+    """Class and profession spells; returns profession ID -> name and icon."""
     playable_mask = sum(1 << (class_id - 1) for class_id in classes)
-
-    spell_names = {num(r["ID"]): r["Name_lang"] for r in tables["SpellName"]}
-    spell_desc = {num(r["ID"]): r["Description_lang"] for r in tables["Spell"]}
-    spell_icon = {}
-    for row in tables["SpellMisc"]:
-        spell_id, file_id = num(row["SpellID"]), num(row["SpellIconFileDataID"])
-        if file_id and (spell_id not in spell_icon or num(row["DifficultyID"]) == 0):
-            spell_icon[spell_id] = file_id
-
     skill_lines = {num(r["ID"]): r for r in tables["SkillLine"]}
     skill_class_mask = {}
     for row in tables["SkillRaceClassInfo"]:
@@ -314,7 +356,7 @@ def build(flavor, refresh, locale=None):
     professions = {}
     for row in tables["SkillLineAbility"]:
         spell_id, skill_id = num(row["Spell"]), num(row["SkillLine"])
-        target = icon(spell_icon.get(spell_id))
+        target = icons.at(spells.icon.get(spell_id))
         line = skill_lines.get(skill_id)
         if not target or not line:
             continue
@@ -323,32 +365,40 @@ def build(flavor, refresh, locale=None):
         if category == SKILL_CATEGORY_CLASS:
             mask = (num(row["ClassMask"]) or skill_class_mask.get(skill_id, 0)) & playable_mask
             if mask > 0 and bin(mask).count("1") <= 3:
-                target.cls |= mask
+                target.class_mask |= mask
                 target.spells.add(spell_id)
         elif prof:
             line = skill_lines[prof]
             # Name, then the profession's icon for the filter menu.
-            professions[prof] = f"{line['DisplayName_lang']}\t{num(line['SpellIconFileID']) or ''}".rstrip("\t")
-            target.profs.add(prof)
+            name, icon_id = one_line(line["DisplayName_lang"]), num(line["SpellIconFileID"]) or ""
+            professions[prof] = f"{name}\t{icon_id}".rstrip("\t")
+            target.professions.add(prof)
         else:
             continue
-        target.src.add("S")
-        target.add_name(TIER_PLAYER_SPELL, spell_names.get(spell_id), f"s{spell_id}")
-        target.add_desc(spell_desc.get(spell_id))
+        target.sources.add("S")
+        target.add_name(TIER_PLAYER_SPELL, spells.names.get(spell_id), f"s{spell_id}")
+        target.add_desc(spells.desc.get(spell_id))
+    return professions
 
+
+def add_mounts(tables, icons, spells):
     for row in tables["Mount"]:
-        target = icon(spell_icon.get(num(row["SourceSpellID"])))
+        target = icons.at(spells.icon.get(num(row["SourceSpellID"])))
         if target:
-            target.src.add("M")
+            target.sources.add("M")
             target.add_name(TIER_MOUNT, row["Name_lang"], f"s{num(row['SourceSpellID'])}")
 
+
+def add_pets(tables, icons, spells):
     for row in tables["BattlePetSpecies"]:
         summon = num(row["SummonSpellID"])
-        target = icon(row["IconFileDataID"]) or icon(spell_icon.get(summon))
+        target = icons.at(row["IconFileDataID"]) or icons.at(spells.icon.get(summon))
         if target:
-            target.src.add("P")
-            target.add_name(TIER_PET, spell_names.get(summon), f"s{summon}")
+            target.sources.add("P")
+            target.add_name(TIER_PET, spells.names.get(summon), f"s{summon}")
 
+
+def add_items(tables, icons):
     item_names = {num(r["ID"]): r["Display_lang"] for r in tables["ItemSparse"]}
     appearance_icon = {num(r["ID"]): num(r["DefaultIconFileDataID"]) for r in tables["ItemAppearance"]}
     item_appearance = {}
@@ -356,50 +406,77 @@ def build(flavor, refresh, locale=None):
         item_appearance[num(row["ItemID"])] = num(row["ItemAppearanceID"])
     for row in tables["Item"]:
         item_id = num(row["ID"])
-        target = icon(row["IconFileDataID"]) or icon(appearance_icon.get(item_appearance.get(item_id)))
+        target = icons.at(row["IconFileDataID"]) or icons.at(appearance_icon.get(item_appearance.get(item_id)))
         name = item_names.get(item_id)
         if target and clean_name(name):
-            target.src.add("I")
-            target.cats.add(f"{num(row['ClassID'])}:{num(row['SubclassID'])}")
+            target.sources.add("I")
+            target.categories.add(f"{num(row['ClassID'])}:{num(row['SubclassID'])}")
             target.add_name(TIER_ITEM, name, f"i{item_id}")
 
+
+def add_currencies(tables, icons):
     for row in tables["CurrencyTypes"]:
-        target = icon(row["InventoryIconFileID"])
+        target = icons.at(row["InventoryIconFileID"])
         if target and clean_name(row["Name_lang"]):
-            target.src.add("C")
+            target.sources.add("C")
             target.add_name(TIER_CURRENCY, row["Name_lang"], f"c{num(row['ID'])}")
 
-    for spell_id, file_id in spell_icon.items():
-        target = icon(file_id)
-        if target:
-            target.src.add("S")
-            target.add_name(TIER_SPELL, spell_names.get(spell_id), f"s{spell_id}")
 
+def add_other_spells(icons, spells):
+    for spell_id, file_id in spells.icon.items():
+        target = icons.at(file_id)
+        if target:
+            target.sources.add("S")
+            target.add_name(TIER_SPELL, spells.names.get(spell_id), f"s{spell_id}")
+
+
+def add_file_name_fallbacks(icons, class_by_token):
+    """Class and item category from the file name, for icons that got none from the tables."""
     for target in icons.values():
-        parts = target.file.split("_")
-        if not target.cls:
-            for part in parts:
+        if not target.class_mask:
+            for part in target.file.split("_"):
                 class_id = class_by_token.get(CLASS_FILE_TOKENS.get(part, ""))
                 if class_id:
-                    target.cls |= 1 << (class_id - 1)
-        if not target.cats:
+                    target.class_mask |= 1 << (class_id - 1)
+        if not target.categories:
             for prefix, category in FILE_ITEM_CATEGORIES:
                 if target.file.startswith(prefix):
-                    target.cats.add(category)
+                    target.categories.add(category)
                     break
 
+
+def item_class_names(tables, icons):
+    """Names of item classes ("2") and of the item subclasses icons use ("2:7")."""
     item_classes = {}
     for row in tables["ItemClass"]:
-        if row["ClassName_lang"]:
-            item_classes[str(num(row["ClassID"]))] = row["ClassName_lang"]
-    used_cats = set().union(*(t.cats for t in icons.values()))
+        name = one_line(row["ClassName_lang"])
+        if name:
+            item_classes[str(num(row["ClassID"]))] = name
+    used_cats = set().union(*(t.categories for t in icons.values()))
     for row in tables["ItemSubClass"]:
         key = f"{num(row['ClassID'])}:{num(row['SubClassID'])}"
-        name = row["DisplayName_lang"] or row["VerboseName_lang"]
+        name = one_line(row["DisplayName_lang"] or row["VerboseName_lang"])
         if key in used_cats and name:
             item_classes[key] = name
+    return item_classes
 
-    return build_version, branch, icons, classes, item_classes, professions
+
+def build(flavor, refresh, locale=None):
+    branch = FLAVORS[flavor]["branch"]
+    tables, build_version = load_tables(branch, refresh, locale)
+    icons = picker_icons(tables, DESC_STOPWORDS | LOCALE_DESC_STOPWORDS.get(locale, set()))
+    log(f"{flavor}{' ' + locale if locale else ''}: {len(icons)} icons")
+    classes, class_by_token = playable_classes(tables)
+    spells = Spells(tables)
+    # Name tiers sort names, but within a tier the order of these calls counts.
+    professions = add_skills(tables, icons, spells, classes)
+    add_mounts(tables, icons, spells)
+    add_pets(tables, icons, spells)
+    add_items(tables, icons)
+    add_currencies(tables, icons)
+    add_other_spells(icons, spells)
+    add_file_name_fallbacks(icons, class_by_token)
+    return build_version, branch, icons, classes, item_class_names(tables, icons), professions
 
 
 def long_string(body):
@@ -423,7 +500,7 @@ SOURCE_BITS = {"S": 1, "I": 2, "M": 4, "P": 8, "C": 32}  # 16 was achievements
 
 def load_colors():
     """Column names and file ID -> values from .cache/icon_colors.csv, written by build_colors.py."""
-    path = os.path.join(ROOT, ".cache", "icon_colors.csv")
+    path = os.path.join(CACHE, "icon_colors.csv")
     if not os.path.exists(path):
         sys.exit(f"missing {path}; run scripts/build_colors.py first")
     with open(path, encoding="utf-8", newline="") as handle:
@@ -456,14 +533,27 @@ def load_tags():
         return {int(k): v for k, v in json.load(handle).items()}
 
 
+def write_lookups(out, classes, item_classes, professions):
+    out.write(f"  classes = {long_string(lookup_body(classes))},\n")
+    out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
+    out.write(f"  professions = {long_string(lookup_body(professions))},\n")
+
+
+def write_column(out, name, values, indent="    "):
+    out.write(f"{indent}{name} = {{\n")
+    for value in values:
+        out.write(f"{value},\n")
+    out.write(f"{indent}}},\n")
+
+
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
     color_columns, colors = load_colors()
-    # Color names are derived in the game from l, a, b (Search.ColorName); only the numbers ship.
+    # Color names are derived in the game from l, a, b (Color.Name); only the numbers ship.
     keep = [k for k, name in enumerate(color_columns) if not name.startswith("name")]
     color_columns = [color_columns[k] for k in keep]
     colors = {file_id: [values[k] if k < len(values) else "" for k in keep] for file_id, values in colors.items()}
     ids = sorted(icons)
-    columns = {name: [] for name in ("id", "refs", "text", "tags", "src", "cls", "cats", "profs", "spells")}
+    columns = {name: [] for name in ("id", "refs", "text", "tags", "sourceMask", "classMask", "categories", "professions", "spells")}
     # Dominant colors: l, a, b (OKLab * 100) and w (weight, 0 for no color).
     shares = {name: [] for name in color_columns}
     for file_id in ids:
@@ -476,21 +566,15 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         # Padded as Search.PadText does, so the game reads it as is.
         columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc).replace("|", " | ") + " "))
         columns["tags"].append(lua_string(" ".join(t.tags)) if t.tags else "nil")
-        columns["src"].append(str(sum(SOURCE_BITS[s] for s in t.src)))
-        columns["cls"].append(str(t.cls or 0))
-        columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
-        columns["profs"].append(lua_numbers(sorted(t.profs)))
+        columns["sourceMask"].append(str(sum(SOURCE_BITS[s] for s in t.sources)))
+        columns["classMask"].append(str(t.class_mask or 0))
+        columns["categories"].append(lua_numbers(sorted(category_number(c) for c in t.categories)))
+        columns["professions"].append(lua_numbers(sorted(t.professions)))
         columns["spells"].append(lua_numbers(sorted(t.spells)))
         values = colors.get(file_id, [])
         for k, (name, column) in enumerate(shares.items()):
             value = values[k] if k < len(values) else ""
             column.append(value or "0")
-
-    def column(out, name, values, indent):
-        out.write(f"{indent}{name} = {{\n")
-        for value in values:
-            out.write(f"{value},\n")
-        out.write(f"{indent}}},\n")
 
     path = os.path.join(OUT_DIR, FLAVORS[flavor]["file"])
     with open(path, "w", encoding="utf-8", newline="\n") as out:
@@ -498,16 +582,14 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         out.write("IconicData = {\n")
         out.write(f'  flavor = "{flavor}",\n')
         out.write(f'  build = "{build_version}",\n')
-        out.write(f"  classes = {long_string(lookup_body(classes))},\n")
-        out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
-        out.write(f"  professions = {long_string(lookup_body(professions))},\n")
+        write_lookups(out, classes, item_classes, professions)
         # One column per field, one row per icon, read by Catalog.Parse without parsing.
         out.write("  icons = {\n")
         for name, values in columns.items():
-            column(out, name, values, "    ")
+            write_column(out, name, values)
         out.write("    colors = {\n")
         for name, values in shares.items():
-            column(out, name, values, "      ")
+            write_column(out, name, values, "      ")
         out.write("    },\n  },\n}\n")
     log(f"{flavor}: wrote {path} ({os.path.getsize(path) // 1024} KB)")
 
@@ -521,14 +603,17 @@ def text_delta(translated, english):
     return "|".join(fields)
 
 
-def load_translated_words(locale):
-    """Translated search token -> English words, from scripts/search_words_<locale>.json (English word -> words):
-    every picture tag and synonym word. The game stems the English words itself, keeping them readable."""
+def load_search_words(locale):
+    """English word -> translated words, from scripts/search_words_<locale>.json: every picture tag and synonym word."""
     path = os.path.join(ROOT, "scripts", f"search_words_{locale}.json")
     if not os.path.exists(path):
         return {}
     with open(path, encoding="utf-8") as handle:
-        translations = json.load(handle)
+        return json.load(handle)
+
+
+def translated_words_of(translations):
+    """Translated search token -> English words. The game stems the English words itself, keeping them readable."""
     words = {}
     for english, translated in translations.items():
         en = normalize(english)
@@ -539,15 +624,11 @@ def load_translated_words(locale):
     return {token: targets for token, targets in words.items() if targets}
 
 
-def load_tag_names(locale):
+def tag_names_of(translations):
     """English picture tag -> its first translation, shown in tooltips."""
-    path = os.path.join(ROOT, "scripts", f"search_words_{locale}.json")
-    if not os.path.exists(path):
-        return {}
-    with open(path, encoding="utf-8") as handle:
-        translations = json.load(handle)
     tags = {tag for words in load_tags().values() for tag in words}
-    return {tag: translations[tag][0] for tag in sorted(tags) if translations.get(tag) and translations[tag][0] != tag}
+    names = {tag: one_line(translations[tag][0]) for tag in sorted(tags) if translations.get(tag)}
+    return {tag: name for tag, name in names.items() if name and name != tag}
 
 
 def write_locale(flavor, locale, english, translated):
@@ -577,12 +658,12 @@ def write_locale(flavor, locale, english, translated):
         out.write(f"-- Generated by scripts/build_data.py from wago.tools ({branch} {build_version} {locale}). Do not edit.\n")
         out.write("IconicDataLocale = {\n")
         out.write(f'  locale = "{locale}",\n')
-        out.write(f"  classes = {long_string(lookup_body(classes))},\n")
-        out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
-        out.write(f"  professions = {long_string(lookup_body(professions))},\n")
-        translated_words = "".join(f"{w}\t{' '.join(en)}\n" for w, en in sorted(load_translated_words(locale).items()))
+        write_lookups(out, classes, item_classes, professions)
+        search_words = load_search_words(locale)
+        word_pairs = sorted(translated_words_of(search_words).items())
+        translated_words = "".join(f"{w}\t{' '.join(en)}\n" for w, en in word_pairs)
         out.write(f"  translatedWords = {long_string(translated_words)},\n")
-        tag_names = "".join(f"{tag}\t{name}\n" for tag, name in load_tag_names(locale).items())
+        tag_names = "".join(f"{tag}\t{name}\n" for tag, name in tag_names_of(search_words).items())
         out.write(f"  tagNames = {long_string(tag_names)},\n")
         out.write("  icons = {\n")
         columns = [("id", ids), ("refs", names_col), ("text", text_col)]
@@ -590,10 +671,7 @@ def write_locale(flavor, locale, english, translated):
         if all(v == "nil" for v in names_col):
             columns.remove(("refs", names_col))
         for name, values in columns:
-            out.write(f"    {name} = {{\n")
-            for value in values:
-                out.write(f"{value},\n")
-            out.write("    },\n")
+            write_column(out, name, values)
         out.write("  },\n}\n")
     log(f"{flavor} {locale}: wrote {path} ({os.path.getsize(path) // 1024} KB, {len(ids)} icons)")
 

@@ -6,12 +6,22 @@ local helpersDir = (debug.getinfo(1, "S").source:sub(2)):match("^(.*)/[^/]*$")
 local root = helpersDir:gsub("/spec/helpers$", "")
 M.root = root
 
-local function tocFiles()
+-- Lua files in load order: Iconic.toc's entries, with each XML file's <Script file="..."> entries (relative to the
+-- XML file). Without `withUI`, only the non-UI files at the top level.
+function M.tocFiles(withUI)
   local files = {}
   for line in io.lines(root .. "/Iconic.toc") do
     line = line:gsub("%s+$", "")
-    if line ~= "" and not line:match("^#") and line:match("%.lua$") and not line:match("^UI/") then
-      files[#files + 1] = line
+    local nonUI = not line:find("/") or line:match("^Data/") or line:match("^Locales/")
+    if line ~= "" and not line:match("^#") and (withUI or nonUI) then
+      if line:match("%.lua$") then
+        files[#files + 1] = line
+      elseif line:match("%.xml$") then
+        local dir = line:match("^(.*/)") or ""
+        for script in io.open(root .. "/" .. line):read("*a"):gmatch('<Script file="([^"]+)"') do
+          files[#files + 1] = dir .. script
+        end
+      end
     end
   end
   return files
@@ -30,7 +40,7 @@ function M.load(globals)
   for name, value in pairs(globals or {}) do
     env[name] = value
   end
-  for _, file in ipairs(tocFiles()) do
+  for _, file in ipairs(M.tocFiles()) do
     local chunk = assert(loadfile(root .. "/" .. file))
     setfenv(chunk, env)
     chunk("Iconic", ns)
@@ -103,12 +113,22 @@ local COLOR_LAB = {
 M.COLOR_LAB = COLOR_LAB
 
 -- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
--- names = {...}, desc, tags = "wolf beast", src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
--- colors = "green:62 red:18 35/-9/7:20" }; each color becomes a dominant color with that weight, at a named
+-- names = {...}, desc, tags = "wolf beast", sources = "IS", classMask = "4", categories = "2:7 4:1", professions = "185",
+-- spells = "1130", colors = "green:62 red:18 35/-9/7:20" }; each color becomes a dominant color with that weight, at a named
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
   fileIds = {}
-  local icons = { id = {}, refs = {}, text = {}, tags = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
+  local icons = {
+    id = {},
+    refs = {},
+    text = {},
+    tags = {},
+    sourceMask = {},
+    classMask = {},
+    categories = {},
+    professions = {},
+    spells = {},
+  }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
@@ -126,14 +146,14 @@ function M.fakeData(ns, rows)
     icons.refs[row] = #names > 0 and table.concat(names, "|") or nil
     icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc))
     icons.tags[row] = r.tags
-    local src = 0
-    for letter in (r.src or ""):gmatch(".") do
-      src = src + SOURCE_BITS[letter]
+    local mask = 0
+    for letter in (r.sources or ""):gmatch(".") do
+      mask = mask + SOURCE_BITS[letter]
     end
-    icons.src[row] = src
-    icons.cls[row] = tonumber(r.cls) or 0
-    icons.cats[row] = list(r.cats, category)
-    icons.profs[row] = list(r.profs, tonumber)
+    icons.sourceMask[row] = mask
+    icons.classMask[row] = tonumber(r.classMask) or 0
+    icons.categories[row] = list(r.categories, category)
+    icons.professions[row] = list(r.professions, tonumber)
     icons.spells[row] = list(r.spells, tonumber)
     if next(colors) then
       for k = 1, 4 do

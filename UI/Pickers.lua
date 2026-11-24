@@ -1,6 +1,6 @@
 local ADDON_NAME, ns = ...
 
-local Pickers = { attached = {}, pending = {}, ADAPTERS = {} }
+local Pickers = { attached = {}, pending = {} }
 ns.Pickers = Pickers
 
 local L = ns.L
@@ -123,7 +123,7 @@ function TemplateAdapter.ShowSelectedState(popup, selectedState)
 end
 
 -- Calls `onClick` when the selected icon is clicked, and `onTextReset` after Blizzard rewrites its text.
-function TemplateAdapter.HookSelected(popup, onClick, onTextReset)
+function TemplateAdapter.HookSelectedIconClick(popup, onClick, onTextReset)
   local area = popup.BorderBox and popup.BorderBox.SelectedIconArea
   if area and area.SelectedIconButton then
     area.SelectedIconButton:HookScript("OnClick", onClick)
@@ -180,7 +180,7 @@ function Pickers.Attach(popup, overrides)
 
   local function onShow()
     if not state.view then
-      state.view = ns.CreateView(popup, {
+      state.view = ns.View.Create(popup, {
         settingsButton = true,
         onSelect = function(texture, position)
           adapter.SetIcon(popup, texture, position)
@@ -192,7 +192,7 @@ function Pickers.Attach(popup, overrides)
       })
       adapter.Anchor(popup, state.view.frame)
       adapter.AnchorFooter(popup, state.view.footer)
-      adapter.HookSelected(popup, function()
+      adapter.HookSelectedIconClick(popup, function()
         state.view:RevealSelected()
       end, function()
         if state.selectedState then
@@ -225,49 +225,56 @@ function Pickers.Attach(popup, overrides)
   return state
 end
 
--- Blizzard pickers: the frame to look up and, for load-on-demand UIs, the add-on that creates it.
-Pickers.BLIZZARD = {
-  {
-    key = "macro",
-    addon = "Blizzard_MacroUI",
-    frame = function()
-      return MacroPopupFrame
-    end,
-  },
-  {
-    key = "gear",
-    frame = function()
-      return GearManagerPopupFrame
-    end,
-  },
-  {
-    key = "guildBank",
-    addon = "Blizzard_GuildBankUI",
-    frame = function()
-      return GuildBankPopupFrame
-    end,
-  },
-  {
-    key = "bank",
-    frame = function()
-      return BankPanel and BankPanel.TabSettingsMenu
-    end,
-  },
-  {
-    key = "transmog",
-    addon = "Blizzard_Transmog",
-    frame = function()
-      return TransmogFrame and TransmogFrame.OutfitPopup
-    end,
-  },
-}
+-- Adapters for pickers of the game's own UI and of other add-ons, one file each in Adapters/ (Pickers.AddAdapter).
+Pickers.adapters = {}
+local eventAdapters = {}
+local adapterEvents = CreateFrame("Frame")
 
--- Attaches every Blizzard picker that exists now; call again after an add-on loads.
-function Pickers.AttachBlizzard()
-  for _, entry in ipairs(Pickers.BLIZZARD) do
-    local ok, popup = pcall(entry.frame)
-    if ok and popup and popup.IconSelector then
-      Pickers.Attach(popup, Pickers.ADAPTERS[entry.key])
+local function attachAdapter(spec)
+  local ok, frames = pcall(spec.frames)
+  for _, popup in ipairs(ok and frames or {}) do
+    Pickers.Attach(popup, spec.overrides)
+  end
+end
+
+adapterEvents:SetScript("OnEvent", function(_, event)
+  if ns.db then
+    for _, spec in ipairs(eventAdapters[event]) do
+      attachAdapter(spec)
+    end
+  end
+end)
+
+-- Registers an adapter: { addon, frames, overrides, events }. `addon` is the add-on whose pickers it handles (nil for
+-- the game's always-loaded UI); frames() returns the picker frames that exist now; `overrides` replace
+-- TemplateAdapter functions; `events` name further events after which its pickers may exist.
+function Pickers.AddAdapter(spec)
+  Pickers.adapters[#Pickers.adapters + 1] = spec
+  for _, event in ipairs(spec.events or {}) do
+    eventAdapters[event] = eventAdapters[event] or {}
+    table.insert(eventAdapters[event], spec)
+    adapterEvents:RegisterEvent(event)
+  end
+end
+
+local function isLoaded(addon)
+  return not addon or not (C_AddOns and C_AddOns.IsAddOnLoaded) or C_AddOns.IsAddOnLoaded(addon)
+end
+
+-- Attaches the pickers of every adapter whose add-on is loaded.
+function Pickers.AttachAll()
+  for _, spec in ipairs(Pickers.adapters) do
+    if isLoaded(spec.addon) then
+      attachAdapter(spec)
+    end
+  end
+end
+
+-- Attaches the pickers of the adapters for add-on `name`, and of the game's own UI, which may have just loaded.
+function Pickers.OnAddonLoaded(name)
+  for _, spec in ipairs(Pickers.adapters) do
+    if not spec.addon or spec.addon == name then
+      attachAdapter(spec)
     end
   end
 end

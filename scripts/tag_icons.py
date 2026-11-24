@@ -12,41 +12,20 @@ tags.json once an agent has written it.
 """
 
 import argparse
-import csv
 import json
 import os
 import re
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WAGO_CACHE = os.path.join(ROOT, ".cache", "wago")
-ICONS = os.path.join(ROOT, ".cache", "icons")
-CHUNKS = os.path.join(ROOT, ".cache", "tags", "chunks")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import CACHE, ICON_CACHE as ICONS, PICKER_NAME, ROOT, cached_icon_names, log  # noqa: E402
+
+CHUNKS = os.path.join(CACHE, "tags", "chunks")
 TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
-sys.path.insert(0, os.path.join(ROOT, "scripts"))
-from build_data import PICKER_NAME  # noqa: E402
 PROMPT = os.path.join(ROOT, "scripts", "tag_prompt.md")
 CHUNK_SIZE = 100
 
 WORD = re.compile(r"[a-z]+")
-
-
-def log(*args):
-    print(*args, file=sys.stderr, flush=True)
-
-
-def icon_names():
-    """File ID → file name (without .blp) of every Interface\\Icons file in the cached retail and WoW Forever manifests."""
-    names = {}
-    for branch in ("wow", "wowf"):
-        path = os.path.join(WAGO_CACHE, f"{branch}-ManifestInterfaceData.csv")
-        if not os.path.exists(path):
-            sys.exit(f"missing {path}; run scripts/build_data.py first")
-        with open(path, encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle):
-                if row["FilePath"].lower().replace("/", "\\").startswith("interface\\icons"):
-                    names.setdefault(int(row["ID"]), re.sub(r"\.blp$", "", row["FileName"], flags=re.IGNORECASE))
-    return names
 
 
 def wanted(names):
@@ -124,10 +103,9 @@ def read_chunk(path, ids):
 def prepare(args):
     from PIL import Image
 
-    sys.path.insert(0, os.path.join(ROOT, "scripts"))
     from build_colors import open_icon
 
-    names = icon_names()
+    names = cached_icon_names()
     tags = load_tags()
     want = wanted(names)
     pending = set()
@@ -186,7 +164,7 @@ def prompt(args):
 
 
 def status(_args):
-    names = icon_names()
+    names = cached_icon_names()
     tags = load_tags()
     want = wanted(names)
     print(f"tagged {len(want & set(tags))} of {len(want)} picker icons")
@@ -201,7 +179,7 @@ def status(_args):
 
 
 def merge(_args):
-    want = wanted(icon_names())
+    want = wanted(cached_icon_names())
     tags = load_tags()
     merged = 0
     for name, path, ids in chunks():

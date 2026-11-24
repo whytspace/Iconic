@@ -3,6 +3,8 @@ local ADDON_NAME, ns = ...
 local Search = {}
 ns.Search = Search
 
+local Color = ns.Color
+
 local byte, find, gsub, lower, sub = string.byte, string.find, string.gsub, string.lower, string.sub
 
 -- Weights per search-text field: name buckets (1st, 2nd, 3rd-4th, rest), file name, description.
@@ -122,7 +124,7 @@ end
 
 -- Synonym groups ({ {"cloak", "cape", ...}, ... }) become token -> { other tokens }. `translated` (translated token ->
 -- "english words") lets a translation's words count as the English words they stand for. The map also keeps a
--- readable word per token (Search.Readable).
+-- readable word per token (Search.DisplayWord).
 function Search.BuildSynonyms(groups, translated)
   local map, readable = {}, {}
   local function token(word)
@@ -168,7 +170,7 @@ function Search.BuildSynonyms(groups, translated)
 end
 
 -- The word to show for a search token, such as "iris" for "iri".
-function Search.Readable(synonyms, token)
+function Search.DisplayWord(synonyms, token)
   local readable = synonyms and synonyms[READABLE]
   return readable and readable[token] or token
 end
@@ -251,15 +253,15 @@ local function prefixAllowed(term, quality)
   return #term >= 3 and quality ~= QUALITY_SYNONYM
 end
 
--- Best name/file hit and description hit of one term in a padded search text.
+-- Best name/file hit and description hit of one term in a padded search text, and the field of the name hit.
 local function termScore(text, term, quality)
   local needle = " " .. term
   local p = find(text, needle, 1, true)
   if not p then
-    return 0, 0
+    return 0, 0, nil
   end
   local allowPrefix = prefixAllowed(term, quality)
-  local name, desc = 0, 0
+  local name, desc, nameField = 0, 0, nil
   local len = #needle
   while p do
     local exact = byte(text, p + len) == 32
@@ -271,12 +273,12 @@ local function termScore(text, term, quality)
           desc = score
         end
       elseif score > name then
-        name = score
+        name, nameField = score, field
       end
     end
     p = find(text, needle, p + len, true)
   end
-  return name, desc
+  return name, desc, nameField
 end
 
 -- Score of one query token over its variants (itself, synonyms, typo variants): the best name hit plus
@@ -319,279 +321,66 @@ local function addWord(variants, seen, from, synonyms, word, quality, parent)
   end
 end
 
+-- Translated words a partly typed token starts, or none when it starts more than MAX_PREFIX_WORDS.
+local function startedWords(translated, token)
+  local started = {}
+  if #token < 3 then
+    return started
+  end
+  for _, word in ipairs(translated.words) do
+    if find(word, token, 1, true) == 1 then
+      started[#started + 1] = word
+      if #started > MAX_PREFIX_WORDS then
+        return {}
+      end
+    end
+  end
+  return started
+end
+
+-- A translated word counts as its English words typed. A partly typed one counts as their prefix, but a complete
+-- word doesn't reach longer ones: "schwert" isn't "schwertlilie".
+local function addTranslations(variants, seen, from, synonyms, token)
+  local translated = synonyms[TRANSLATED]
+  if not translated then
+    return
+  end
+  local own = translated.english[token]
+  if own then
+    for _, en in ipairs(own) do
+      addWord(variants, seen, from, synonyms, en, QUALITY_EXACT, token)
+    end
+    return
+  end
+  for _, word in ipairs(startedWords(translated, token)) do
+    for _, en in ipairs(translated.english[word]) do
+      addWord(variants, seen, from, synonyms, en, QUALITY_PREFIX, token)
+    end
+  end
+end
+
+-- Words of the vocabulary within the token's typo budget.
+local function addTypos(variants, seen, from, token, vocabulary)
+  local budget = fuzzyBudget(token)
+  if budget == 0 then
+    return
+  end
+  for _, word in ipairs(vocabulary) do
+    if word ~= token and couldBeTypo(token, word) and Search.Distance(token, word, budget) <= budget then
+      addTerm(variants, seen, from, word, QUALITY_FUZZY, token)
+    end
+  end
+end
+
 -- The query token's variants as { term, quality, ... }, and term -> the term it was reached from.
 local function variantsFor(token, synonyms, vocabulary)
   local variants, seen, from = {}, {}, {}
   addWord(variants, seen, from, synonyms, token, QUALITY_EXACT)
-  -- A translated word counts as its English words typed. A partly typed one counts as their prefix, but a complete
-  -- word doesn't reach longer ones: "schwert" isn't "schwertlilie".
-  local translated = synonyms[TRANSLATED]
-  if translated then
-    local own = translated.english[token]
-    for _, en in ipairs(own or {}) do
-      addWord(variants, seen, from, synonyms, en, QUALITY_EXACT, token)
-    end
-    local started = {}
-    if not own and #token >= 3 then
-      for _, word in ipairs(translated.words) do
-        if find(word, token, 1, true) == 1 then
-          started[#started + 1] = word
-          if #started > MAX_PREFIX_WORDS then
-            break
-          end
-        end
-      end
-    end
-    if #started <= MAX_PREFIX_WORDS then
-      for _, word in ipairs(started) do
-        for _, en in ipairs(translated.english[word]) do
-          addWord(variants, seen, from, synonyms, en, QUALITY_PREFIX, token)
-        end
-      end
-    end
-  end
+  addTranslations(variants, seen, from, synonyms, token)
   if vocabulary then
-    local budget = fuzzyBudget(token)
-    if budget > 0 then
-      for _, word in ipairs(vocabulary) do
-        if word ~= token and couldBeTypo(token, word) and Search.Distance(token, word, budget) <= budget then
-          addTerm(variants, seen, from, word, QUALITY_FUZZY, token)
-        end
-      end
-    end
+    addTypos(variants, seen, from, token, vocabulary)
   end
   return variants, from
-end
-
--- Minimum share (0-100) of an icon in a chip's color band for the chip to match.
-local COLOR_MIN = 10
-Search.COLOR_MIN = COLOR_MIN
-
--- Color names in display order (keys as in scripts/build_colors.py), with a hex shade for group swatches.
-Search.COLORS = {
-  { key = "red", label = "Red", hex = "dd3333" },
-  { key = "orange", label = "Orange", hex = "e67d1e" },
-  { key = "yellow", label = "Yellow", hex = "ebd237" },
-  { key = "green", label = "Green", hex = "4cbb44" },
-  { key = "teal", label = "Teal", hex = "1ea5a0" },
-  { key = "blue", label = "Blue", hex = "4b7ce8" },
-  { key = "purple", label = "Purple", hex = "a060e0" },
-  { key = "pink", label = "Pink", hex = "f078be" },
-  { key = "brown", label = "Brown", hex = "a87848" },
-  { key = "black", label = "Black", hex = "707070" },
-  { key = "white", label = "White", hex = "ffffff" },
-  { key = "gray", label = "Gray", hex = "a0a0a0" },
-}
-
--- Color words that suggest a chip: each is one shade (hex), with other words that suggest it.
-Search.COLOR_PRESETS = {
-  { key = "red", label = "Red", hex = "dd3333", hints = { "blood", "scarlet" } },
-  { key = "darkred", label = "Dark red", hex = "8b1e1e" },
-  { key = "crimson", label = "Crimson", hex = "b0182f" },
-  { key = "ruby", label = "Ruby", hex = "c21e56" },
-  { key = "orange", label = "Orange", hex = "e67d1e" },
-  { key = "copper", label = "Copper", hex = "b8733d" },
-  { key = "rust", label = "Rust", hex = "a0461e" },
-  { key = "amber", label = "Amber", hex = "f0a020" },
-  { key = "yellow", label = "Yellow", hex = "ebd237" },
-  { key = "gold", label = "Gold", hex = "d4a72c", hints = { "golden" } },
-  { key = "green", label = "Green", hex = "4cbb44", hints = { "verdant" } },
-  { key = "darkgreen", label = "Dark green", hex = "1f5f2a" },
-  { key = "lightgreen", label = "Light green", hex = "9be07a" },
-  { key = "lime", label = "Lime", hex = "a6e22e" },
-  { key = "olive", label = "Olive", hex = "7d7a2a" },
-  { key = "emerald", label = "Emerald", hex = "1f9e5a", hints = { "jade" } },
-  { key = "fel", label = "Fel", hex = "8fe000" },
-  { key = "teal", label = "Teal", hex = "1ea5a0", hints = { "aqua" } },
-  { key = "turquoise", label = "Turquoise", hex = "30d5c8" },
-  { key = "cyan", label = "Cyan", hex = "2ad4e6" },
-  { key = "blue", label = "Blue", hex = "4b7ce8", hints = { "azure" } },
-  { key = "darkblue", label = "Dark blue", hex = "1f2f78", hints = { "navy" } },
-  { key = "lightblue", label = "Light blue", hex = "8cc4f0", hints = { "sky" } },
-  { key = "sapphire", label = "Sapphire", hex = "1f4fb0" },
-  { key = "purple", label = "Purple", hex = "a060e0", hints = { "amethyst" } },
-  { key = "violet", label = "Violet", hex = "8a4fd6" },
-  { key = "lavender", label = "Lavender", hex = "b9a0e8" },
-  { key = "darkpurple", label = "Dark purple", hex = "4a2370", hints = { "void" } },
-  { key = "pink", label = "Pink", hex = "f078be" },
-  { key = "magenta", label = "Magenta", hex = "d0309a" },
-  { key = "rose", label = "Rose", hex = "e67fa0" },
-  { key = "brown", label = "Brown", hex = "a87848", hints = { "wood" } },
-  { key = "darkbrown", label = "Dark brown", hex = "4a2f1c" },
-  { key = "bronze", label = "Bronze", hex = "a8743a" },
-  { key = "leather", label = "Leather", hex = "8b5a33" },
-  { key = "black", label = "Black", hex = "262626", hints = { "obsidian", "onyx", "ebon" } },
-  { key = "gray", label = "Gray", hex = "a0a0a0", hints = { "grey", "steel", "stone" } },
-  { key = "silver", label = "Silver", hex = "c0c0c8" },
-  { key = "white", label = "White", hex = "ffffff", hints = { "pale", "ivory", "snow" } },
-}
-
--- The client language's extra color words (Locales/*.lua), by preset key.
-for _, preset in ipairs(Search.COLOR_PRESETS) do
-  local extra = ns.LocaleColorHints and ns.LocaleColorHints[ns.locale]
-  for _, hint in ipairs(extra and extra[preset.key] or {}) do
-    preset.hints = preset.hints or {}
-    preset.hints[#preset.hints + 1] = hint
-  end
-end
-
--- A chip's color band, in OKLab x100 as the data stores it: colors within HUE_WIDTH degrees of its hue, or, for a
--- chip under ACHROMATIC chroma (gray, black, white), colorless ones within LIGHT_WIDTH of its lightness.
-local HUE_WIDTH, ACHROMATIC, LIGHT_WIDTH = 30, 5, 20
--- Inside the band, a color counts fully at the chip's shade and down to CLOSE_FLOOR of its weight far from it.
-local CLOSE_RADIUS, CLOSE_FLOOR = 12, 0.3
-
--- OKLab of an sRGB color with channels from 0 to 1.
-local function oklab(r, g, b)
-  local function linear(c)
-    return c <= 0.04045 and c / 12.92 or ((c + 0.055) / 1.055) ^ 2.4
-  end
-  local function cbrt(v)
-    return v < 0 and -((-v) ^ (1 / 3)) or v ^ (1 / 3)
-  end
-  r, g, b = linear(r), linear(g), linear(b)
-  local l = cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
-  local m = cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
-  local s = cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
-  return 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
-    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
-    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
-end
-
--- Reference shades (sRGB 0-255) per color name; a dominant color takes the name of the nearest one.
--- Must match COLORS in scripts/build_colors.py.
-local COLOR_REFS = {
-  red = { { 205, 40, 40 }, { 120, 20, 25 } },
-  orange = { { 230, 125, 30 }, { 170, 85, 25 } },
-  yellow = { { 235, 210, 55 }, { 190, 160, 40 } },
-  green = { { 60, 170, 55 }, { 30, 90, 30 }, { 150, 210, 70 } },
-  teal = { { 30, 165, 160 }, { 20, 95, 100 } },
-  blue = { { 45, 95, 215 }, { 25, 45, 120 }, { 110, 170, 240 } },
-  purple = { { 130, 60, 195 }, { 70, 30, 105 } },
-  pink = { { 240, 120, 190 }, { 200, 60, 140 } },
-  brown = { { 115, 72, 40 }, { 150, 105, 65 } },
-  black = { { 18, 18, 20 } },
-  white = { { 235, 235, 230 } },
-  gray = { { 176, 176, 176 }, { 125, 125, 125 }, { 75, 75, 78 } },
-}
-local refNames, refL, refA, refB = {}, {}, {}, {}
-for _, color in ipairs(Search.COLORS) do
-  for _, rgb in ipairs(COLOR_REFS[color.key]) do
-    local L, a, b = oklab(rgb[1] / 255, rgb[2] / 255, rgb[3] / 255)
-    refNames[#refNames + 1], refL[#refNames + 1], refA[#refNames + 1], refB[#refNames + 1] =
-      color.key, L * 100, a * 100, b * 100
-  end
-end
-local nameCache = {}
-
--- Color name of an OKLab color scaled like the data (x100): the name of the nearest reference shade.
-function Search.ColorName(L, a, b)
-  local key = (L * 512 + a + 256) * 512 + b + 256
-  local name = nameCache[key]
-  if name then
-    return name
-  end
-  local best, bestD = 1, math.huge
-  for i = 1, #refNames do
-    local dL, da, db = L - refL[i], a - refA[i], b - refB[i]
-    local d = dL * dL + da * da + db * db
-    if d < bestD then
-      best, bestD = i, d
-    end
-  end
-  nameCache[key] = refNames[best]
-  return refNames[best]
-end
-
--- A picked sRGB color (channels 0-1) as an OKLab target scaled like the data, for a color chip.
-function Search.PickTarget(r, g, b)
-  local L, a, bb = oklab(r, g, b)
-  return { L * 100, a * 100, bb * 100 }
-end
-
--- "rrggbb" as sRGB channels 0-1.
-function Search.HexColor(hex)
-  return {
-    r = tonumber(hex:sub(1, 2), 16) / 255,
-    g = tonumber(hex:sub(3, 4), 16) / 255,
-    b = tonumber(hex:sub(5, 6), 16) / 255,
-  }
-end
-
-local presetByKey = {}
-for _, preset in ipairs(Search.COLOR_PRESETS) do
-  presetByKey[preset.key] = preset
-  local c = Search.HexColor(preset.hex)
-  local L, a, b = oklab(c.r, c.g, c.b)
-  -- The color name its shade falls under, for icon counts.
-  preset.name = Search.ColorName(L * 100, a * 100, b * 100)
-end
-
-function Search.Preset(key)
-  return presetByKey[key]
-end
-
-local CLOSE_SPREAD = 2 * CLOSE_RADIUS * CLOSE_RADIUS
-local deg, atan2, sqrt, exp, abs = math.deg, math.atan2, math.sqrt, math.exp, math.abs
-
--- A chip's band, worked out once per search: hue and chroma of its target.
-local function chipBand(chip)
-  local t = chip.target
-  local chroma = sqrt(t[2] * t[2] + t[3] * t[3])
-  return { L = t[1], a = t[2], b = t[3], hue = chroma >= ACHROMATIC and deg(atan2(t[3], t[2])) or nil }
-end
-
--- A chip's part of an icon: nil when under COLOR_MIN of the icon lies in its band, else the band's weight, each
--- color counted less the farther it lies from the chip's shade.
-local function chipValue(index, row, band)
-  local share, value, slots = 0, 0, index.colorSlots
-  for k = 1, #slots do
-    local slot = slots[k]
-    local w = slot.w[row]
-    if w and w > 0 then
-      local L, a, b = slot.l[row], slot.a[row], slot.b[row]
-      local chroma = sqrt(a * a + b * b)
-      local inBand
-      if band.hue then
-        local diff = abs(deg(atan2(b, a)) - band.hue) % 360
-        inBand = chroma >= ACHROMATIC and (diff <= HUE_WIDTH or diff >= 360 - HUE_WIDTH)
-      else
-        inBand = chroma < ACHROMATIC and abs(L - band.L) <= LIGHT_WIDTH
-      end
-      if inBand then
-        local dL, da, db = L - band.L, a - band.a, b - band.b
-        share = share + w
-        value = value + w * (CLOSE_FLOOR + (1 - CLOSE_FLOOR) * exp(-(dL * dL + da * da + db * db) / CLOSE_SPREAD))
-      end
-    end
-  end
-  return share >= COLOR_MIN and value or nil, share
-end
-
--- Share (0-100) of a named color in an index row: the weight of its dominant colors with that name.
-function Search.ColorShare(index, row, color)
-  local share = 0
-  for _, slot in ipairs(index.colorSlots) do
-    if slot.name[row] == color then
-      share = share + slot.w[row]
-    end
-  end
-  return share
-end
-
--- Color part of a score, or nil when a chip misses: the chips' values averaged by their weights (default 1).
--- `bands` are the chips' chipBand.
-local function chipScore(index, row, chips, bands)
-  local total, weights = 0, 0
-  for i = 1, #chips do
-    local value = chipValue(index, row, bands[i])
-    if not value then
-      return nil
-    end
-    local weight = chips[i].weight or 1
-    total, weights = total + weight * value, weights + weight
-  end
-  return total / weights
 end
 
 -- Per category number, the best hit of a token's variants on the category's words, weighted like a field.
@@ -616,86 +405,45 @@ local function categoryHits(categoryWords, variants)
   return hits
 end
 
--- One pass over the candidate rows. `index` holds the columns (see Catalog.NewIndex).
-local function run(index, rows, query, opts, loose)
-  local tokens = Search.Tokens(query)
-  local synonyms = opts.synonyms or {}
-  local usable = opts.usable
-  local idQuery = tonumber(Search.Normalize(query))
-  local phrase = #tokens > 1 and (" " .. table.concat(tokens, " ") .. " ") or nil
-
-  local vocabulary = loose and opts.vocabulary and opts.vocabulary() or nil
-  local variants, catHits = {}, {}
-  for i, token in ipairs(tokens) do
-    variants[i] = variantsFor(token, synonyms, vocabulary)
-    catHits[i] = categoryHits(index.categoryWords, variants[i])
-  end
-
-  local texts, ids, keys, spells, cats = index.text, index.id, index.key, index.spells, index.cats
-  local chips = opts.chips and #opts.chips > 0 and opts.chips or nil
-  local bands = {}
-  for i, chip in ipairs(chips or {}) do
-    bands[i] = chipBand(chip)
-  end
-  local scores, closeness, results = {}, {}, {}
-  for _, row in ipairs(rows) do
-    local score = 0
-    local colorPart = chips and chipScore(index, row, chips, bands)
-    if chips and not colorPart then
-      score = 0
-    elseif idQuery and ids[row] == idQuery then
-      score = SCORE_ID
-    elseif #tokens == 0 then
-      -- Color chips alone keep every icon that has their colors.
-      score = chips and 1 or 0
-    else
-      local text = texts[row]
-      local matched = 0
-      for i = 1, #tokens do
-        local s = tokenScore(text, variants[i])
-        for _, number in ipairs(cats[row] or NO_CATS) do
-          local hit = catHits[i][number]
-          if hit and hit > s then
-            s = hit
-          end
-        end
-        if s > 0 then
-          matched = matched + 1
-          score = score + s
-        elseif not loose then
-          score = 0
-          break
-        end
-      end
-      if score > 0 then
-        if loose then
-          score = score * matched / #tokens
-        end
-        if phrase and find(text, phrase, 1, true) then
-          score = score + BONUS_PHRASE
-        end
+-- Word part of a row's score: each token's best hit on its text or item categories, plus the phrase bonus. Without
+-- `loose` every token must hit; with it, the score shrinks with the share of tokens that hit.
+local function wordScore(text, rowCats, q, loose)
+  local score, matched, tokenCount = 0, 0, #q.variants
+  for i = 1, tokenCount do
+    local s = tokenScore(text, q.variants[i])
+    for _, number in ipairs(rowCats or NO_CATS) do
+      local hit = q.catHits[i][number]
+      if hit and hit > s then
+        s = hit
       end
     end
-    if score > 0 then
-      if usable and usable[keys[row]] then
-        score = score + BONUS_USABLE
-      end
-      if spells[row] then
-        score = score + BONUS_PLAYER
-      end
-      scores[row] = score
-      closeness[row] = colorPart
-      results[#results + 1] = row
+    if s > 0 then
+      matched = matched + 1
+      score = score + s
+    elseif not loose then
+      return 0
     end
   end
+  if score > 0 then
+    if loose then
+      score = score * matched / tokenCount
+    end
+    if q.phrase and find(text, q.phrase, 1, true) then
+      score = score + BONUS_PHRASE
+    end
+  end
+  return score
+end
 
+-- Sorts results: by color alone without words; with words, by a blend of word match and color; ties by score,
+-- then by their order in `rows`.
+local function sortResults(results, rows, scores, closeness, chips, hasWords)
   local position = {}
   for i, row in ipairs(rows) do
     position[row] = i
   end
-  -- Order by color alone without words; with words, by a blend of word match and color.
   local order = chips and closeness
-  if chips and #tokens > 0 then
+  if chips and hasWords then
     local bestScore, bestClose = 0, 0
     for _, row in ipairs(results) do
       bestScore, bestClose = math.max(bestScore, scores[row]), math.max(bestClose, closeness[row])
@@ -714,13 +462,62 @@ local function run(index, rows, query, opts, loose)
     end
     return position[a] < position[b]
   end)
+end
+
+-- One pass over the candidate rows. `index` holds the columns (see Catalog.NewIndex).
+local function run(index, rows, query, opts, loose)
+  local tokens = Search.Tokens(query)
+  local synonyms = opts.synonyms or {}
+  local usable = opts.usable
+  local idQuery = tonumber(Search.Normalize(query))
+
+  local vocabulary = loose and opts.vocabulary and opts.vocabulary() or nil
+  local q = { variants = {}, catHits = {}, phrase = #tokens > 1 and (" " .. table.concat(tokens, " ") .. " ") or nil }
+  for i, token in ipairs(tokens) do
+    q.variants[i] = variantsFor(token, synonyms, vocabulary)
+    q.catHits[i] = categoryHits(index.categoryWords, q.variants[i])
+  end
+
+  local texts, ids, keys, spells, categories = index.text, index.id, index.key, index.spells, index.categories
+  local chips = opts.chips and #opts.chips > 0 and opts.chips or nil
+  local bands = {}
+  for i, chip in ipairs(chips or {}) do
+    bands[i] = Color.ChipBand(chip)
+  end
+  local scores, closeness, results = {}, {}, {}
+  for _, row in ipairs(rows) do
+    local score
+    local colorPart = chips and Color.ChipScore(index, row, chips, bands)
+    if chips and not colorPart then
+      score = 0
+    elseif idQuery and ids[row] == idQuery then
+      score = SCORE_ID
+    elseif #tokens == 0 then
+      -- Color chips alone keep every icon that has their colors.
+      score = chips and 1 or 0
+    else
+      score = wordScore(texts[row], categories[row], q, loose)
+    end
+    if score > 0 then
+      if usable and usable[keys[row]] then
+        score = score + BONUS_USABLE
+      end
+      if spells[row] then
+        score = score + BONUS_PLAYER
+      end
+      scores[row] = score
+      closeness[row] = colorPart
+      results[#results + 1] = row
+    end
+  end
+  sortResults(results, rows, scores, closeness, chips, #tokens > 0)
   return results, scores
 end
 
 -- Ranked rows matching every query token; when none do, a looser pass (any token, typos) and
 -- `isLoose = true`. Returns rows, isLoose, scores (row -> score).
 -- opts: synonyms (from BuildSynonyms), usable (key -> true), vocabulary (function returning a token list),
--- chips (color chips, see chipScore: keeps icons with every chip's color and ranks them by the weakest first).
+-- chips (color chips, see Color.ChipScore: keeps icons with every chip's color and ranks them by the weakest first).
 function Search.Find(index, rows, query, opts)
   opts = opts or {}
   local results, scores = run(index, rows, query, opts, false)
@@ -762,31 +559,17 @@ function Search.Explain(index, row, query, opts)
   for _, term in ipairs(queryTerms(query, opts.synonyms)) do
     local best, where, via = 0, nil, nil
     for i = 1, #term.variants, 2 do
-      local variant, quality = term.variants[i], term.variants[i + 1]
-      local needle = " " .. variant
-      local p = find(text, needle, 1, true)
-      while p do
-        local exact = byte(text, p + #needle) == 32
-        if exact or prefixAllowed(variant, quality) then
-          local field = fieldAt(text, p)
-          local score = FIELD_WEIGHTS[field] * quality * (exact and 1 or QUALITY_PREFIX)
-          if score > best then
-            best = score
-            via = i > 1 and variant or nil
-            if field <= 4 then
-              where = "name"
-            elseif field == DESC_FIELD then
-              where = "description"
-            else
-              where = "tag"
-            end
-          end
-        end
-        p = find(text, needle, p + #needle, true)
+      local variant = term.variants[i]
+      local name, desc, nameField = termScore(text, variant, term.variants[i + 1])
+      if name > best then
+        best, via, where = name, i > 1 and variant or nil, nameField <= 4 and "name" or "tag"
+      end
+      if desc > best then
+        best, via, where = desc, i > 1 and variant or nil, "description"
       end
     end
     for number, hit in pairs(categoryHits(index.categoryWords, term.variants)) do
-      for _, own in ipairs(index.cats[row] or NO_CATS) do
+      for _, own in ipairs(index.categories[row] or NO_CATS) do
         if own == number and hit > best then
           best, where, via = hit, "category", nil
         end
@@ -798,7 +581,7 @@ function Search.Explain(index, row, query, opts)
         path = {}
         local step = via
         while step and step ~= term.token do
-          table.insert(path, 1, Search.Readable(opts.synonyms, step))
+          table.insert(path, 1, Search.DisplayWord(opts.synonyms, step))
           step = term.from[step]
         end
       end
@@ -807,8 +590,8 @@ function Search.Explain(index, row, query, opts)
   end
   for _, chip in ipairs(opts.chips or {}) do
     local t = chip.target
-    local _, share = chipValue(index, row, chipBand(chip))
-    found[#found + 1] = { color = chip.preset or Search.ColorName(t[1], t[2], t[3]), share = math.floor(share + 0.5) }
+    local _, share = Color.ChipValue(index, row, Color.ChipBand(chip))
+    found[#found + 1] = { color = chip.preset or Color.Name(t[1], t[2], t[3]), share = math.floor(share + 0.5) }
   end
   return found
 end

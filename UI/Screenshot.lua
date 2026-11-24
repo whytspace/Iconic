@@ -2,8 +2,8 @@ local ADDON_NAME, ns = ...
 
 local L = ns.L
 
-local Shot = {}
-ns.Screenshot = Shot
+local Screenshot = {}
+ns.Screenshot = Screenshot
 
 -- Wait for a recolor to render; the client drops a second screenshot taken too soon after the first.
 local RENDER_DELAY = 0.5
@@ -13,14 +13,13 @@ local function print(message)
   DEFAULT_CHAT_FRAME:AddMessage("|cffffd100Iconic:|r " .. message)
 end
 
--- The browser if open, else the window of an open Blizzard picker (the macro window for macros).
+-- The browser if open, else the window of an open picker (the macro window for macros).
 local function findTarget()
   if IconicBrowserFrame and IconicBrowserFrame:IsShown() then
     return IconicBrowserFrame
   end
-  for _, entry in ipairs(ns.Pickers.BLIZZARD) do
-    local ok, popup = pcall(entry.frame)
-    if ok and popup and popup:IsShown() then
+  for popup in pairs(ns.Pickers.attached) do
+    if popup:IsShown() then
       local owner = popup:GetParent()
       return owner and owner ~= UIParent and owner or popup
     end
@@ -30,13 +29,13 @@ end
 -- A solid backdrop just below the target in its own strata; the target is never restrata'd,
 -- as that corrupts Blizzard's macro list.
 local function backdrop(target)
-  local frame = Shot.backdrop
+  local frame = Screenshot.backdrop
   if not frame then
     frame = CreateFrame("Frame", nil, UIParent)
     frame:SetAllPoints(UIParent)
     frame.texture = frame:CreateTexture(nil, "BACKGROUND")
     frame.texture:SetAllPoints()
-    Shot.backdrop = frame
+    Screenshot.backdrop = frame
   end
   frame:SetFrameStrata(target:GetFrameStrata())
   frame:SetFrameLevel(math.max(0, target:GetFrameLevel() - 1))
@@ -65,7 +64,7 @@ local function fadeOthers(target, extra)
     pcall(function()
       if
         not keep[child]
-        and child ~= Shot.backdrop
+        and child ~= Screenshot.backdrop
         and not (child.IsForbidden and child:IsForbidden())
         and child:IsShown()
         and not KEEP_STRATA[child:GetFrameStrata()]
@@ -85,7 +84,7 @@ end
 
 -- Captures the target (default: open browser or picker) on black, then white, keeping the `extra` frames visible;
 -- onDone(err) runs after.
-function Shot:Capture(target, onDone, extra)
+function Screenshot:Capture(target, onDone, extra)
   if self.busy then
     return
   end

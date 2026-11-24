@@ -15,7 +15,14 @@ local function load(owner)
   function tooltip:RefreshData()
     self.refreshed = self.refreshed + 1
   end
-  local env = setmetatable({ GameTooltip = tooltip, Enum = { TooltipDataType = { Spell = 1 } } }, { __index = _G })
+  local frame = { SetScript = function() end, RegisterEvent = function() end }
+  local env = setmetatable({
+    GameTooltip = tooltip,
+    Enum = { TooltipDataType = { Spell = 1 } },
+    CreateFrame = function()
+      return frame
+    end,
+  }, { __index = _G })
   local ns = { L = {}, db = { settings = { tooltipGame = "shift", tooltipPicker = "shift" } } }
   local chunk = assert(loadfile(addon.root .. "/UI/Tooltips.lua"))
   setfenv(chunk, env)
@@ -23,7 +30,7 @@ local function load(owner)
   return ns, tooltip
 end
 
-describe("WatchModifiers", function()
+describe("Tooltips.WatchModifiers", function()
   local ns, tooltip, env, frame, owned, shift
 
   before_each(function()
@@ -40,7 +47,7 @@ describe("WatchModifiers", function()
     function frame.SetScript(self, _, fn)
       self.onUpdate = fn
     end
-    env = getfenv(ns.WatchModifiers)
+    env = getfenv(ns.Tooltips.WatchModifiers)
     env.CreateFrame = function()
       return frame
     end
@@ -58,7 +65,7 @@ describe("WatchModifiers", function()
   it("redraws an Iconic tooltip when a modifier changes, then stops with the tooltip", function()
     setup()
     local redrawn = 0
-    ns.WatchModifiers({}, function()
+    ns.Tooltips.WatchModifiers({}, function()
       redrawn = redrawn + 1
     end)
     frame:onUpdate()
@@ -73,7 +80,7 @@ describe("WatchModifiers", function()
 
   it("never rebuilds a game tooltip", function()
     setup()
-    ns.WatchModifiers({}, function() end)
+    ns.Tooltips.WatchModifiers({}, function() end)
     shift = true
     frame:onUpdate()
     assert.are.equal(0, tooltip.refreshed)

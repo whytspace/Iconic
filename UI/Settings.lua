@@ -2,6 +2,10 @@ local ADDON_NAME, ns = ...
 
 local L = ns.L
 
+-- Iconic's page in the game's settings; the local name avoids shadowing Blizzard's `Settings`.
+local SettingsPage = {}
+ns.SettingsPage = SettingsPage
+
 local MODE_LABELS = {
   always = "Always",
   shift = "While holding Shift",
@@ -18,7 +22,7 @@ local function modeOptions()
   return container:GetData()
 end
 
-function ns.SetupSettings()
+function SettingsPage.Setup()
   if not (Settings and Settings.RegisterVerticalLayoutCategory) then
     return
   end
@@ -103,25 +107,25 @@ function ns.SetupSettings()
   )
   Settings.CreateCheckbox(category, recent, L["Icons you picked recently appear first."])
 
-  Settings.RegisterCanvasLayoutSubcategory(category, ns.CreateAboutPanel(), L["About"])
+  Settings.RegisterCanvasLayoutSubcategory(category, ns.About.CreatePanel(), L["About"])
   Settings.RegisterAddOnCategory(category)
-  ns.settingsCategory = category
+  SettingsPage.category = category
 end
 
-function ns.OpenSettings()
-  if ns.settingsCategory then
-    Settings.OpenToCategory(ns.settingsCategory:GetID())
+function SettingsPage.Open()
+  if SettingsPage.category then
+    Settings.OpenToCategory(SettingsPage.category:GetID())
   end
 end
 
 -- A small gear button on `parent` that opens Iconic's settings.
-function ns.CreateSettingsButton(parent)
+function SettingsPage.CreateButton(parent)
   local button = CreateFrame("Button", nil, parent)
   button:SetSize(15, 16)
   button:SetNormalAtlas("questlog-icon-setting")
   button:SetHighlightAtlas("questlog-icon-setting", "ADD")
   button:GetHighlightTexture():SetAlpha(0.4)
-  button:SetScript("OnClick", ns.OpenSettings)
+  button:SetScript("OnClick", SettingsPage.Open)
   button:SetScript("OnEnter", function(owner)
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
     GameTooltip:SetText(L["Settings"])

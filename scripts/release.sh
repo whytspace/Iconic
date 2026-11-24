@@ -36,6 +36,7 @@ data_toc="Iconic_Data/Iconic_Data.toc"
 changelog="CHANGELOG.md"
 
 [ -f "$toc" ] || die "missing $toc"
+[ -f "$data_toc" ] || die "missing $data_toc"
 [ -f "$changelog" ] || die "missing $changelog"
 
 branch="$(git branch --show-current)"

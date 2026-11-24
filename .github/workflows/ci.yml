@@ -5,26 +5,30 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Lua 5.1
-        uses: leafo/gh-actions-lua@v13
+        uses: leafo/gh-actions-lua@32909a2dea0a48c433aec79e7fcd31b4cd55800f # v13
         with:
           luaVersion: "5.1"
 
       - name: Set up LuaRocks
-        uses: leafo/gh-actions-luarocks@v6
+        uses: leafo/gh-actions-luarocks@1c4a92caecc8f6850f673cbadfd57b3e555417ce # v6
 
       - name: Install Luacheck and Busted
         # busted pulls lua-term from a GitHub tarball that can flake; if it does
         # again, install lua-term 0.3-1 (luarocks-hosted .src.rock) first.
+        # Same versions as .devcontainer/Dockerfile.
         run: |
-          luarocks install luacheck
-          luarocks install busted
+          luarocks install luacheck 1.2.0-1
+          luarocks install busted 2.3.0-1
 
       # Lint/format only tracked source — the Lua/LuaRocks install lands in the
       # workspace and must not be scanned.
@@ -35,7 +39,7 @@ jobs:
         run: busted
 
       - name: StyLua
-        uses: JohnnyMorganz/stylua-action@v5
+        uses: JohnnyMorganz/stylua-action@76fd70c03e6340ceaf673366712db9b20560b402 # v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: v2.5.2

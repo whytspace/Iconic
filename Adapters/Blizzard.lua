@@ -1,9 +1,9 @@
 local ADDON_NAME, ns = ...
 
--- Suggestion sources for Blizzard's pickers: each returns textures, then the name being entered as a query.
+-- The game's own pickers, all built on IconSelectorPopupFrameTemplate. Their suggested icons come first, then the
+-- name being entered as a query.
 local Pickers, TemplateAdapter = ns.Pickers, ns.Pickers.TemplateAdapter
 
-local EQUIPPED_SLOTS = 19
 local GUILD_BANK_SLOTS = 98
 
 local function withName(popup, list)
@@ -88,7 +88,7 @@ local function compact(list, count)
   return result
 end
 
-Pickers.ADAPTERS.gear = {
+local gearOverrides = {
   GetSuggestions = function(popup)
     local list = {}
     local setID = isEditing(popup) and popup.setID
@@ -104,7 +104,7 @@ Pickers.ADAPTERS.gear = {
         list[#list + 1] = items[slot] and items[slot] > 0 and itemIcon(items[slot]) or false
       end
     else
-      for slot = 1, EQUIPPED_SLOTS do
+      for slot = 1, ns.EQUIPPED_SLOTS do
         list[#list + 1] = GetInventoryItemTexture("player", slot) or false
       end
     end
@@ -112,7 +112,7 @@ Pickers.ADAPTERS.gear = {
   end,
 }
 
-Pickers.ADAPTERS.macro = {
+local macroOverrides = {
   GetSuggestions = function(popup)
     local list = {}
     local macroFrame = isEditing(popup) and MacroFrame
@@ -131,7 +131,7 @@ Pickers.ADAPTERS.macro = {
   end,
 }
 
-Pickers.ADAPTERS.bank = {
+local bankOverrides = {
   GetSuggestions = function(popup)
     local list = {}
     local tab = popup.GetSelectedTabData and popup:GetSelectedTabData()
@@ -142,24 +142,7 @@ Pickers.ADAPTERS.bank = {
   end,
 }
 
--- Baganator's bank windows, one per skin, each with its own copies of Blizzard's bank tab settings menu.
-function Pickers.AttachBaganator()
-  local skins = Baganator and Baganator.API and Baganator.API.Skins
-  local skin = skins and skins.GetCurrentSkin and skins.GetCurrentSkin()
-  if not skin then
-    return
-  end
-  for _, kind in ipairs({ "Single", "Category" }) do
-    local view = _G["Baganator_" .. kind .. "ViewBankViewFrame" .. skin]
-    for _, tabs in ipairs({ view and view.Character or false, view and view.Warband or false }) do
-      if tabs and tabs.TabSettingsMenu then
-        Pickers.Attach(tabs.TabSettingsMenu, Pickers.ADAPTERS.bank)
-      end
-    end
-  end
-end
-
-Pickers.ADAPTERS.guildBank = {
+local guildBankOverrides = {
   GetSuggestions = function(popup)
     local list = {}
     local tab = GetCurrentGuildBankTab()
@@ -176,7 +159,7 @@ Pickers.ADAPTERS.guildBank = {
   end,
 }
 
-Pickers.ADAPTERS.transmog = {
+local transmogOverrides = {
   GetSuggestions = function(popup)
     local list = {}
     local T = C_TransmogOutfitInfo
@@ -190,3 +173,54 @@ Pickers.ADAPTERS.transmog = {
     return withName(popup, compact(list))
   end,
 }
+
+-- Shared with adapters for other add-ons' copies of the bank tab settings menu.
+Pickers.BANK_OVERRIDES = bankOverrides
+
+-- A frame built on Blizzard's template, or nothing.
+local function templateFrame(popup)
+  return popup and popup.IconSelector and { popup } or {}
+end
+
+-- Several come from load-on-demand UIs, so each is looked for after every add-on load.
+local BLIZZARD = {
+  {
+    overrides = gearOverrides,
+    frame = function()
+      return GearManagerPopupFrame
+    end,
+  },
+  {
+    overrides = bankOverrides,
+    frame = function()
+      return BankPanel and BankPanel.TabSettingsMenu
+    end,
+  },
+  {
+    overrides = macroOverrides,
+    frame = function()
+      return MacroPopupFrame
+    end,
+  },
+  {
+    overrides = guildBankOverrides,
+    frame = function()
+      return GuildBankPopupFrame
+    end,
+  },
+  {
+    overrides = transmogOverrides,
+    frame = function()
+      return TransmogFrame and TransmogFrame.OutfitPopup
+    end,
+  },
+}
+
+for _, entry in ipairs(BLIZZARD) do
+  Pickers.AddAdapter({
+    overrides = entry.overrides,
+    frames = function()
+      return templateFrame(entry.frame())
+    end,
+  })
+end

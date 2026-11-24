@@ -2,6 +2,10 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm
 
 ARG STYLUA_VERSION=2.5.2
 ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
+# Same versions as .github/workflows/ci.yml.
+ARG LUACHECK_VERSION=1.2.0-1
+ARG BUSTED_VERSION=2.3.0-1
+ARG LUACOV_VERSION=0.17.0-1
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -17,9 +21,9 @@ RUN apt-get update \
     python3-pil \
     unzip \
   && luarocks --lua-version=5.1 install https://luarocks.org/lua-term-0.3-1.src.rock \
-  && luarocks --lua-version=5.1 install luacheck \
-  && luarocks --lua-version=5.1 install busted \
-  && luarocks --lua-version=5.1 install luacov \
+  && luarocks --lua-version=5.1 install luacheck "$LUACHECK_VERSION" \
+  && luarocks --lua-version=5.1 install busted "$BUSTED_VERSION" \
+  && luarocks --lua-version=5.1 install luacov "$LUACOV_VERSION" \
   && arch="$(dpkg --print-architecture)" \
   && case "$arch" in \
     amd64) stylua_arch="linux-x86_64"; lls_arch="linux-x64" ;; \

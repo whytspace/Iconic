@@ -12,16 +12,21 @@ Locales/Locales.lua
 Locales/deDE.lua
 Core.lua
 Data/Synonyms.lua
+Color.lua
 Search.lua
 Catalog.lua
 Data.lua
 
 UI/Templates.xml
-UI/View.lua
-UI/Pickers.lua
-UI/Suggestions.lua
-UI/Browser.lua
 UI/Tooltips.lua
+UI/View.lua
+UI/ColorChips.lua
+UI/FilterMenu.lua
+UI/SearchHints.lua
+UI/IconTooltip.lua
+UI/Pickers.lua
+Adapters/Adapters.xml
+UI/Browser.lua
 UI/About.lua
 UI/Settings.lua
 #@do-not-package@

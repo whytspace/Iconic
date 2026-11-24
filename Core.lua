@@ -20,6 +20,9 @@ ns.DEFAULTS = {
 
 ns.MAX_RECENT = 24
 
+-- Equipment slots GetInventoryItemTexture knows.
+ns.EQUIPPED_SLOTS = 19
+
 local function fill(target, defaults)
   for key, value in pairs(defaults) do
     if type(value) == "table" then
@@ -38,4 +41,11 @@ end
 function ns.InitDB(saved)
   ns.db = fill(type(saved) == "table" and saved or {}, ns.DEFAULTS)
   return ns.db
+end
+
+-- Moves `texture` to the front of the saved recent icons.
+function ns.AddRecent(texture)
+  if ns.db and texture then
+    ns.Catalog.AddRecent(ns.db.recent, texture)
+  end
 end

@@ -22,13 +22,10 @@ describe("UI files", function()
       end,
     })
     local ns = {}
-    for line in io.lines(addon.root .. "/Iconic.toc") do
-      line = line:gsub("%s+$", "")
-      if line:match("%.lua$") then
-        local chunk = assert(loadfile(addon.root .. "/" .. line))
-        setfenv(chunk, env)
-        chunk("Iconic", ns)
-      end
+    for _, file in ipairs(addon.tocFiles(true)) do
+      local chunk = assert(loadfile(addon.root .. "/" .. file))
+      setfenv(chunk, env)
+      chunk("Iconic", ns)
     end
     assert.is_function(env.Iconic.OpenPicker)
     assert.is_function(env.Iconic.RegisterPicker)

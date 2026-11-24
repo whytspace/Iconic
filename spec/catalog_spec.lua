@@ -15,10 +15,17 @@ describe("Catalog", function()
     ns = addon.load()
     Catalog = ns.Catalog
     data = Catalog.Parse(addon.fakeData(ns, {
-      { "10", "ability_hunter_snipershot", names = { "Hunter's Mark" }, src = "S", cls = "4" },
-      { "20", "spell_fire_fireball02", names = { "Fireball" }, src = "S", cls = "128" },
-      { "30", "inv_sword_04", names = { "Worn Shortsword" }, src = "I", cats = "2:7" },
-      { "40", "inv_misc_food_15", names = { "Prowler Steak" }, src = "IS", cats = "0:5", profs = "185" },
+      { "10", "ability_hunter_snipershot", names = { "Hunter's Mark" }, sources = "S", classMask = "4" },
+      { "20", "spell_fire_fireball02", names = { "Fireball" }, sources = "S", classMask = "128" },
+      { "30", "inv_sword_04", names = { "Worn Shortsword" }, sources = "I", categories = "2:7" },
+      {
+        "40",
+        "inv_misc_food_15",
+        names = { "Prowler Steak" },
+        sources = "IS",
+        categories = "0:5",
+        professions = "185",
+      },
       { "50", "inv_misc_questionmark" },
     }))
     rows =
@@ -31,7 +38,7 @@ describe("Catalog", function()
     assert.are.equal("One-Handed Swords", data.itemClasses["2:7"])
     assert.are.equal("Cooking", data.professions[185])
     assert.are.same({ "Prowler Steak" }, Catalog.Names(index, index.byKey[40]))
-    assert.are.same({ 185 }, index.profs[index.byKey[40]])
+    assert.are.same({ 185 }, index.professions[index.byKey[40]])
   end)
 
   it("applies a translation's names, search words, tag words and labels", function()
@@ -179,19 +186,19 @@ describe("Catalog", function()
       assert.are.same({ 1, 2, 3, 4 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
     end)
 
-    it("suggests a color for its name and aliases", function()
+    it("hints a color for its name and aliases", function()
       for word, preset in pairs({ blood = "red", crimson = "crimson" }) do
-        local suggestion = Catalog.Suggest(data, word, Catalog.Counts(data.index, rows))[1]
-        assert.are.equal("color", suggestion.dim)
-        assert.are.equal(preset, suggestion.value)
-        assert.are.same({ word }, suggestion.words)
+        local hint = Catalog.Hints(data, word, Catalog.Counts(data.index, rows))[1]
+        assert.are.equal("color", hint.dim)
+        assert.are.equal(preset, hint.value)
+        assert.are.same({ word }, hint.words)
       end
     end)
 
-    it("suggests a two-word color for both words", function()
-      local suggestion = Catalog.Suggest(data, "sword dark green", Catalog.Counts(data.index, rows))[1]
-      assert.are.equal("darkgreen", suggestion.value)
-      assert.are.same({ "dark", "green" }, suggestion.words)
+    it("hints a two-word color for both words", function()
+      local hint = Catalog.Hints(data, "sword dark green", Catalog.Counts(data.index, rows))[1]
+      assert.are.equal("darkgreen", hint.value)
+      assert.are.same({ "dark", "green" }, hint.words)
     end)
 
     it("counts icons per color", function()
@@ -202,7 +209,7 @@ describe("Catalog", function()
     end)
   end)
 
-  describe("suggestions", function()
+  describe("hints", function()
     local counts
     before_each(function()
       counts = Catalog.Counts(data.index, rows)
@@ -217,22 +224,22 @@ describe("Catalog", function()
     end
 
     it("offers filter values whose label starts with a typed word", function()
-      assert.are.same({ "Class: Hunter" }, labels(Catalog.Suggest(data, "hunt", counts)))
+      assert.are.same({ "Class: Hunter" }, labels(Catalog.Hints(data, "hunt", counts)))
     end)
 
     it("matches words inside labels and names the parent category", function()
-      assert.are.same({ "Item category: Weapon › One-Handed Swords" }, labels(Catalog.Suggest(data, "sword", counts)))
+      assert.are.same({ "Item category: Weapon › One-Handed Swords" }, labels(Catalog.Hints(data, "sword", counts)))
     end)
 
     it("skips values without icons and active filters", function()
-      assert.are.same({}, labels(Catalog.Suggest(data, "armor", counts)))
-      assert.are.same({}, labels(Catalog.Suggest(data, "hunter", counts, { class = { [3] = true } })))
+      assert.are.same({}, labels(Catalog.Hints(data, "armor", counts)))
+      assert.are.same({}, labels(Catalog.Hints(data, "hunter", counts, { class = { [3] = true } })))
     end)
 
     it("reports the query word to drop", function()
-      local suggestion = Catalog.Suggest(data, "fire hunter", counts)[1]
-      assert.are.same({ "hunter" }, suggestion.words)
-      assert.are.equal("fire", Catalog.RemoveWord("fire Hunter", suggestion.words[1]))
+      local hint = Catalog.Hints(data, "fire hunter", counts)[1]
+      assert.are.same({ "hunter" }, hint.words)
+      assert.are.equal("fire", Catalog.RemoveWord("fire Hunter", hint.words[1]))
     end)
   end)
 

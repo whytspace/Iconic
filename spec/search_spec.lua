@@ -1,7 +1,7 @@
 local addon = require("spec.helpers.addon")
 
 describe("Search", function()
-  local ns, Search, Catalog, data, rows, synonyms
+  local ns, Search, Catalog, Color, data, rows, synonyms
 
   local function keys(results, n)
     local list = {}
@@ -24,23 +24,29 @@ describe("Search", function()
 
   before_each(function()
     ns = addon.load()
-    Search, Catalog = ns.Search, ns.Catalog
+    Search, Catalog, Color = ns.Search, ns.Catalog, ns.Color
     data = Catalog.Parse(addon.fakeData(ns, {
       {
         "132212",
         "ability_hunter_snipershot",
         names = { "Hunter's Mark", "Sniper Shot" },
         desc = "places hunters mark target increasing ranged attack power",
-        src = "S",
-        cls = "4",
+        sources = "S",
+        classMask = "4",
         spells = "1130",
       },
-      { "236188", "ability_hunter_markedfordeath", names = { "Marked for Death" }, src = "S", cls = "4" },
-      { "135274", "inv_sword_04", names = { "Worn Shortsword", "Shadow Sword" }, src = "I", cats = "2:7" },
-      { "132690", "inv_misc_bone_skull_01", names = { "Skull of Impending Doom" }, src = "I", cats = "15:0" },
-      { "1001", "inv_shirt_white_01", names = { "White Linen Shirt" }, src = "I", cats = "4:0" },
-      { "1002", "inv_misc_cape_01", names = { "Tattered Cape" }, src = "I" },
-      { "133971", "inv_misc_food_15", names = { "Prowler Steak", "Roasted Quail" }, src = "IS", cats = "0:5" },
+      { "236188", "ability_hunter_markedfordeath", names = { "Marked for Death" }, sources = "S", classMask = "4" },
+      { "135274", "inv_sword_04", names = { "Worn Shortsword", "Shadow Sword" }, sources = "I", categories = "2:7" },
+      { "132690", "inv_misc_bone_skull_01", names = { "Skull of Impending Doom" }, sources = "I", categories = "15:0" },
+      { "1001", "inv_shirt_white_01", names = { "White Linen Shirt" }, sources = "I", categories = "4:0" },
+      { "1002", "inv_misc_cape_01", names = { "Tattered Cape" }, sources = "I" },
+      {
+        "133971",
+        "inv_misc_food_15",
+        names = { "Prowler Steak", "Roasted Quail" },
+        sources = "IS",
+        categories = "0:5",
+      },
     }))
     rows = Catalog.Rows(data, { 132212, 236188, 135274, 132690, 1001, 1002, 133971 })
     synonyms = Search.BuildSynonyms(ns.SYNONYMS)
@@ -58,7 +64,7 @@ describe("Search", function()
     })
     assert.are.equal("Rot", german.L["Red"])
     assert.are.equal("Gruppieren: %s", german.L["Group by: %s"])
-    assert.is_truthy(table.concat(german.Search.Preset("gold").hints, " "):find("goldene", 1, true))
+    assert.is_truthy(table.concat(german.Color.Preset("gold").hints, " "):find("goldene", 1, true))
     assert.are.equal("Red", ns.L["Red"])
   end)
 
@@ -158,10 +164,10 @@ describe("Search", function()
   describe("item categories", function()
     before_each(function()
       data = Catalog.Parse(addon.fakeData(ns, {
-        { "1", "inv_shield_01", names = { "Ward of the Violet Citadel" }, src = "I", cats = "4:6" },
-        { "2", "inv_shield_02", names = { "Kite Shield" }, src = "I", cats = "4:6" },
-        { "3", "spell_holy_powerwordshield", names = { "Power Word: Shield" }, src = "S" },
-        { "4", "inv_misc_cape_01", names = { "Tattered Cloak" }, src = "I", cats = "4:0" },
+        { "1", "inv_shield_01", names = { "Ward of the Violet Citadel" }, sources = "I", categories = "4:6" },
+        { "2", "inv_shield_02", names = { "Kite Shield" }, sources = "I", categories = "4:6" },
+        { "3", "spell_holy_powerwordshield", names = { "Power Word: Shield" }, sources = "S" },
+        { "4", "inv_misc_cape_01", names = { "Tattered Cloak" }, sources = "I", categories = "4:0" },
       }))
       rows = Catalog.Rows(data, { 1, 2, 3, 4 })
     end)
@@ -200,8 +206,8 @@ describe("Search", function()
     end)
 
     it("names colors by the nearest reference shade", function()
-      assert.are.equal("green", Search.ColorName(65, -15, 11))
-      assert.are.equal("gray", Search.ColorName(76, 0, 0))
+      assert.are.equal("green", Color.Name(65, -15, 11))
+      assert.are.equal("gray", Color.Name(76, 0, 0))
       assert.are.equal("green", data.index.colorSlots[1].name[data.index.byKey[2]])
     end)
 
@@ -239,7 +245,7 @@ describe("Search", function()
     end)
 
     it("converts a picked color to OKLab scaled like the data", function()
-      local red = Search.PickTarget(205 / 255, 40 / 255, 40 / 255)
+      local red = Color.ChipTarget(205 / 255, 40 / 255, 40 / 255)
       for i = 1, 3 do
         assert.is_true(math.abs(red[i] - addon.COLOR_LAB.red[i]) < 0.5)
       end
@@ -296,7 +302,7 @@ describe("Search", function()
         { { word = "umhang", via = { "cloak", "cape" }, where = "name" } },
         Search.Explain(cape.index, 1, "Umhang", { synonyms = translated })
       )
-      assert.are.equal("iris", Search.Readable(Search.BuildSynonyms({}, { schwertlilie = "iris" }), "iri"))
+      assert.are.equal("iris", Search.DisplayWord(Search.BuildSynonyms({}, { schwertlilie = "iris" }), "iri"))
     end)
 
     it("gives a color chip's share of the icon", function()

@@ -110807,7 +110807,7 @@ nil,
 "horse skeleton mount gold purple",
 "horse skeleton mount gold purple",
     },
-    src = {
+    sourceMask = {
 1,
 3,
 1,
@@ -138477,7 +138477,7 @@ nil,
 0,
 0,
     },
-    cls = {
+    classMask = {
 1032,
 9,
 1285,
@@ -166147,7 +166147,7 @@ nil,
 0,
 0,
     },
-    cats = {
+    categories = {
 nil,
 {1803},
 nil,
@@ -193817,7 +193817,7 @@ nil,
 nil,
 nil,
     },
-    profs = {
+    professions = {
 nil,
 nil,
 nil,

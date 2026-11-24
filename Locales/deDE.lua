@@ -110,7 +110,7 @@ ns.Locales.deDE = {
   ["Yellow"] = "Gelb",
 }
 
--- Extra words that suggest a color chip, by preset key (Search.COLOR_PRESETS).
+-- Extra words that suggest a color chip, by preset key (Color.PRESETS).
 ns.LocaleColorHints = ns.LocaleColorHints or {}
 ns.LocaleColorHints.deDE = {
   red = { "blut", "scharlach" },

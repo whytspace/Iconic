@@ -94,7 +94,7 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
         found[row] = true
       end
       for row = 1, data.index.count do
-        for _, number in ipairs(data.index.cats[row] or {}) do
+        for _, number in ipairs(data.index.categories[row] or {}) do
           if number == shield and not found[row] then
             missing = missing + 1
           end
@@ -108,22 +108,25 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
         assert.is_true(classId <= 13, "unexpected class " .. classId .. " " .. data.classes[classId])
       end
       for row = 1, data.index.count do
-        assert.is_true(data.index.cls[row] < 2 ^ 13, "class bit above Evoker on " .. tostring(data.index.key[row]))
+        assert.is_true(
+          data.index.classMask[row] < 2 ^ 13,
+          "class bit above Evoker on " .. tostring(data.index.key[row])
+        )
       end
     end)
 
     it("ranks icons with much of a chip's color first", function()
-      local green = ns.Search.PickTarget(0x4c / 255, 0xbb / 255, 0x44 / 255)
+      local green = ns.Color.ChipTarget(0x4c / 255, 0xbb / 255, 0x44 / 255)
       local results = ns.Search.Find(data.index, rows, "", { chips = { { target = green } } })
       assert.is_true(#results > 100)
       for i = 1, 10 do
-        assert.is_true(ns.Search.ColorShare(data.index, results[i], "green") >= 40)
+        assert.is_true(ns.Color.Share(data.index, results[i], "green") >= 40)
       end
     end)
 
     it("tags hunter spells with the hunter class", function()
       local row = data.index.byKey[132212]
-      assert.is_true(ns.Catalog.HasClass(data.index.cls[row], 3))
+      assert.is_true(ns.Catalog.HasClass(data.index.classMask[row], 3))
     end)
 
     it("stores names as game references or text", function()

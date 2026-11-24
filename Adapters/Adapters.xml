@@ -1,0 +1,5 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- One file per supported UI; each registers itself with Pickers.AddAdapter. -->
+	<Script file="Blizzard.lua"/>
+	<Script file="Baganator.lua"/>
+</Ui>

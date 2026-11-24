@@ -20,13 +20,12 @@ import sys
 
 from PIL import Image
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WAGO_CACHE = os.path.join(ROOT, ".cache", "wago")
-ICON_CACHE = os.path.join(ROOT, ".cache", "icons")
-SHEET_DIR = os.path.join(ROOT, ".cache", "colors")
-OUT = os.path.join(ROOT, ".cache", "icon_colors.csv")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import CACHE, ICON_CACHE, cached_icon_names, log  # noqa: E402
 
-BRANCHES = ["wowf", "wow"]
+SHEET_DIR = os.path.join(CACHE, "colors")
+OUT = os.path.join(CACHE, "icon_colors.csv")
+
 SAMPLE = 28  # icons are analyzed at this size, after cropping the frame
 CROP = 4  # pixels of the 64px icon frame to ignore on each side
 MAX_COLORS = 4
@@ -34,7 +33,7 @@ ITERATIONS = 10  # k-means rounds
 MERGE = 0.05  # OKLab distance under which two found colors become one
 MIN_WEIGHT = 0.05  # smaller colors are dropped
 
-# Reference colors per name, in sRGB, for the contact sheets; must match COLOR_REFS in Search.lua.
+# Reference colors per name, in sRGB, for the contact sheets; must match REFS in Color.lua.
 COLORS = {
     "red": [(205, 40, 40), (120, 20, 25)],
     "orange": [(230, 125, 30), (170, 85, 25)],
@@ -49,10 +48,6 @@ COLORS = {
     "white": [(235, 235, 230)],
     "gray": [(176, 176, 176), (125, 125, 125), (75, 75, 78)],
 }
-
-
-def log(*args):
-    print(*args, file=sys.stderr, flush=True)
 
 
 def srgb_to_oklab(r, g, b):
@@ -97,20 +92,6 @@ def pixel_lab(r5, g5, b5):
 
 def color_name(lab):
     return min(PROTOTYPES, key=lambda proto: math.dist(lab, proto[1]))[0]
-
-
-def icon_ids():
-    """Icon file IDs of both clients."""
-    ids = set()
-    for branch in BRANCHES:
-        path = os.path.join(WAGO_CACHE, f"{branch}-ManifestInterfaceData.csv")
-        if not os.path.exists(path):
-            sys.exit(f"missing {path}; run scripts/build_data.py first")
-        with open(path, encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle):
-                if row["FilePath"].lower().replace("/", "\\").startswith("interface\\icons"):
-                    ids.add(int(row["ID"]))
-    return sorted(ids)
 
 
 def icon_path(file_id):
@@ -249,7 +230,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sheets", action="store_true", help="write a contact sheet of the top icons per color")
     args = parser.parse_args()
-    colors = analyze_all(icon_ids())
+    colors = analyze_all(sorted(cached_icon_names()))
     write_csv(colors)
     if args.sheets:
         write_sheets(colors)

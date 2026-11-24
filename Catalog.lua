@@ -82,8 +82,8 @@ local function mergeText(extra, english)
 end
 
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file (only for textures
--- without data), refs (names, "a|b"), text (padded search text), tags (picture tags, "a b"), src (source bits), cls (class bits), cats (category numbers),
--- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant color, the
+-- without data), refs (names, "a|b"), text (padded search text), tags (picture tags, "a b"), sourceMask (source bits), classMask (class bits),
+-- categories (category numbers), professions (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant color, the
 -- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest color key).
 function Catalog.NewIndex()
   return {
@@ -96,10 +96,10 @@ function Catalog.NewIndex()
     refs = {},
     text = {},
     tags = {},
-    src = {},
-    cls = {},
-    cats = {},
-    profs = {},
+    sourceMask = {},
+    classMask = {},
+    categories = {},
+    professions = {},
     spells = {},
     colorSlots = {},
   }
@@ -115,12 +115,12 @@ local function addRow(index, key, id, texture, file)
   index.texture[row] = texture
   index.file[row] = file
   index.text[row] = ns.Search.PadText(ns.Search.FileText(file))
-  index.src[row] = 0
-  index.cls[row] = 0
+  index.sourceMask[row] = 0
+  index.classMask[row] = 0
   return row
 end
 
-local COLUMNS = { "refs", "text", "tags", "src", "cls", "cats", "profs", "spells" }
+local COLUMNS = { "refs", "text", "tags", "sourceMask", "classMask", "categories", "professions", "spells" }
 
 -- Adds each row's picture tags (readable words, "rose thorns") to the file name field of its search text, stemmed
 -- and without repeats.
@@ -154,7 +154,7 @@ end
 -- like search text (" a b "), for Search.Find.
 local function categoryWords(data)
   local words, labels, Search = {}, data.itemClasses or {}, ns.Search
-  for _, list in pairs(data.index.cats) do
+  for _, list in pairs(data.index.categories) do
     for _, number in ipairs(list) do
       if not words[number] then
         local class = math.floor(number / 256)
@@ -194,7 +194,7 @@ function Catalog.Parse(raw)
     local slot = { l = colors["l" .. k], a = colors["a" .. k], b = colors["b" .. k], w = colors["w" .. k], name = {} }
     for row = 1, #slot.w do
       if slot.w[row] > 0 then
-        slot.name[row] = ns.Search.ColorName(slot.l[row], slot.a[row], slot.b[row])
+        slot.name[row] = ns.Color.Name(slot.l[row], slot.a[row], slot.b[row])
       end
     end
     index.colorSlots[k] = slot
@@ -314,7 +314,7 @@ end)
 -- Per filter group: does a row match one of the selected values?
 local DIMENSION_MATCHERS = {
   source = function(index, row, selected)
-    local src = index.src[row]
+    local src = index.sourceMask[row]
     for key in pairs(selected) do
       -- A saved filter may name a source that is gone (achievements).
       if SOURCE_BITS[key] and hasBit(src, SOURCE_BITS[key]) then
@@ -324,7 +324,7 @@ local DIMENSION_MATCHERS = {
     return false
   end,
   class = function(index, row, selected)
-    local mask = index.cls[row]
+    local mask = index.classMask[row]
     for classId in pairs(selected) do
       if Catalog.HasClass(mask, classId) then
         return true
@@ -333,7 +333,7 @@ local DIMENSION_MATCHERS = {
     return false
   end,
   category = function(index, row, selected)
-    local cats = index.cats[row]
+    local cats = index.categories[row]
     if not cats then
       return false
     end
@@ -345,7 +345,7 @@ local DIMENSION_MATCHERS = {
     return false
   end,
   profession = function(index, row, selected)
-    local profs = index.profs[row]
+    local profs = index.professions[row]
     if not profs then
       return false
     end
@@ -395,15 +395,16 @@ end
 function Catalog.Counts(index, rows)
   local counts = { source = {}, class = {}, category = {}, profession = {}, color = {} }
   local source, class, category, profession = counts.source, counts.class, counts.category, counts.profession
-  local srcs, clss, catLists, profLists = index.src, index.cls, index.cats, index.profs
+  local sourceMasks, classMasks, categoryLists, professionLists =
+    index.sourceMask, index.classMask, index.categories, index.professions
   for _, row in ipairs(rows) do
-    for _, key in ipairs(SOURCE_KEYS[srcs[row]]) do
+    for _, key in ipairs(SOURCE_KEYS[sourceMasks[row]]) do
       source[key] = (source[key] or 0) + 1
     end
-    for _, classId in ipairs(CLASS_IDS[clss[row]]) do
+    for _, classId in ipairs(CLASS_IDS[classMasks[row]]) do
       class[classId] = (class[classId] or 0) + 1
     end
-    local cats = catLists[row]
+    local cats = categoryLists[row]
     if cats then
       for i, number in ipairs(cats) do
         local key, top = CATEGORY_KEYS[number], floor(number / 256)
@@ -414,11 +415,11 @@ function Catalog.Counts(index, rows)
         end
       end
     end
-    for _, prof in ipairs(profLists[row] or NONE) do
+    for _, prof in ipairs(professionLists[row] or NONE) do
       profession[prof] = (profession[prof] or 0) + 1
     end
   end
-  local minimum, color, slots = ns.Search.COLOR_MIN, counts.color, index.colorSlots
+  local minimum, color, slots = ns.Color.MIN_SHARE, counts.color, index.colorSlots
   local shares = {}
   for _, row in ipairs(rows) do
     for _, slot in ipairs(slots) do
@@ -530,17 +531,17 @@ end
 function Catalog.GroupValues(index, row, groupBy)
   local values = {}
   if groupBy == "source" then
-    local src = index.src[row]
+    local src = index.sourceMask[row]
     for _, source in ipairs(Catalog.SOURCES) do
       if hasBit(src, source.bit) then
         values[#values + 1] = source.key
       end
     end
   elseif groupBy == "class" then
-    values = classIds(index.cls[row])
+    values = classIds(index.classMask[row])
   elseif groupBy == "category" then
     local seen = {}
-    for _, number in ipairs(index.cats[row] or NONE) do
+    for _, number in ipairs(index.categories[row] or NONE) do
       local top = floor(number / 256)
       if not seen[top] then
         seen[top] = true
@@ -548,7 +549,7 @@ function Catalog.GroupValues(index, row, groupBy)
       end
     end
   elseif groupBy == "profession" then
-    for i, prof in ipairs(index.profs[row] or NONE) do
+    for i, prof in ipairs(index.professions[row] or NONE) do
       values[i] = prof
     end
   elseif groupBy == "color" then
@@ -572,7 +573,7 @@ function Catalog.GroupLabel(data, groupBy, value)
   elseif groupBy == "profession" then
     return data and data.professions[value] or tostring(value)
   elseif groupBy == "color" then
-    for _, color in ipairs(ns.Search.COLORS) do
+    for _, color in ipairs(ns.Color.NAMES) do
       if color.key == value then
         return L[color.label]
       end
@@ -587,7 +588,7 @@ for i, source in ipairs(Catalog.SOURCES) do
 end
 
 local COLOR_RANK = {}
-for i, color in ipairs(ns.Search.COLORS) do
+for i, color in ipairs(ns.Color.NAMES) do
   COLOR_RANK[color.key] = i
 end
 
@@ -662,7 +663,7 @@ function Catalog.Sections(data, rows, groupBy, recentRows, suggestedRows)
   return sections
 end
 
--- Every filter value as a suggestion candidate: { dim, value, label, group }.
+-- Every filter value as a hint candidate: { dim, value, label, group }.
 local function filterCandidates(data)
   local list = {}
   local function add(dim, value, label, group, hints)
@@ -682,7 +683,7 @@ local function filterCandidates(data)
   for prof, name in pairs(data.professions or {}) do
     add("profession", prof, name, L["Profession"])
   end
-  for _, preset in ipairs(ns.Search.COLOR_PRESETS) do
+  for _, preset in ipairs(ns.Color.PRESETS) do
     add("color", preset.key, L[preset.label], L["Color"], preset.hints)
     -- Icons are counted per color name; a preset counts those of the name its shade falls under.
     list[#list].countKey = preset.name
@@ -693,8 +694,8 @@ end
 -- Filter values a query's words point at, best first: { dim, value, label, group, words, count }. A word
 -- matches when it equals or starts a word of the value's label; a label whose every word is matched ranks above
 -- one matched in part. Only values with icons and not yet active are offered. `words` are the query words to drop
--- when the suggestion is taken.
-function Catalog.Suggest(data, query, counts, filters, max)
+-- when the hint is taken.
+function Catalog.Hints(data, query, counts, filters, max)
   local Search = ns.Search
   local words = {}
   for word in Search.Normalize(query):gmatch("%S+") do

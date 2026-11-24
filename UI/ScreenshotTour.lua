@@ -1,8 +1,8 @@
 local ADDON_NAME, ns = ...
 
 -- Maintainer tool behind /iconic shot tour: stages each README view, captures it, then restores the UI.
-local Tour = {}
-ns.ScreenshotTour = Tour
+local ScreenshotTour = {}
+ns.ScreenshotTour = ScreenshotTour
 
 -- Lets a search (debounced in View) and the grid layout settle before capturing.
 local SETTLE = 0.8
@@ -124,7 +124,7 @@ local VIEWS = {
   },
 }
 
-Tour.VIEWS = VIEWS
+ScreenshotTour.VIEWS = VIEWS
 
 local function snapshot()
   local view = ns.Browser.view
@@ -166,7 +166,7 @@ local function restore(saved)
 end
 
 -- Runs the views in order; `only` limits it to one view by name.
-function Tour:Run(only)
+function ScreenshotTour:Run(only)
   if self.running then
     chat("the screenshot tour is already running.")
     return

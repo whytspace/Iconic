@@ -50,12 +50,12 @@ function Browser:Create()
   frame:SetTitle(L["Iconic"])
 
   -- Opens Iconic's settings page, left of the close button.
-  local settings = ns.CreateSettingsButton(frame)
+  local settings = ns.SettingsPage.CreateButton(frame)
   settings:SetPoint("RIGHT", frame.CloseButton, "LEFT", -2, 0)
   -- Above the title bar's border art, like the close button.
   settings:SetFrameLevel(frame.CloseButton:GetFrameLevel())
 
-  self.view = ns.CreateView(frame, {
+  self.view = ns.View.Create(frame, {
     searchLeft = SEARCH_LEFT,
     onSelect = function(texture)
       self:SetSelected(texture)
@@ -156,7 +156,7 @@ function Browser:SetSelected(texture)
     names, pending = Catalog.Names(data.index, row)
   end
   if pending then
-    ns.AfterNames("browser", function()
+    ns.Tooltips.AfterNames("browser", function()
       if self.selected == texture then
         self:SetSelected(texture)
       end

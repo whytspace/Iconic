@@ -2,6 +2,9 @@ local ADDON_NAME, ns = ...
 
 local L = ns.L
 
+local About = {}
+ns.About = About
+
 local LOGO = "Interface\\AddOns\\Iconic\\Assets\\logo"
 
 local function metadata(key)
@@ -36,7 +39,7 @@ local function linkBox(parent, url)
   return box
 end
 
-function ns.CreateAboutPanel()
+function About.CreatePanel()
   local frame = CreateFrame("Frame")
 
   local logo = frame:CreateTexture(nil, "ARTWORK")

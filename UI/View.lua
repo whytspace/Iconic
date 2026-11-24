@@ -8,47 +8,29 @@ local MIN_ICON_SIZE, ICON_GAP, ROW_INSET = 34, 4, 8
 local BAND_HEIGHT, HEADER_GAP, SECTION_GAP, TOOLBAR_HEIGHT = 26, 8, 8, 40
 local HEADER_HEIGHT = BAND_HEIGHT + HEADER_GAP + 2
 local SEARCH_DELAY = 0.2
--- While a color is dragged in the picker, the grid follows at most this often.
-local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
 local MAX_SUGGESTED_ROWS = 3
 local FOOTER_HEIGHT = 16
 local GRID_PAD_TOP, GRID_PAD_BOTTOM = 7, 6
-local SUGGEST_WIDTH = 320
 
 local View = {}
 View.__index = View
+ns.View = View
 
--- Blizzard's submenu arrow, a bit smaller than the text.
-local SYNONYM_ARROW = "|TInterface\\ChatFrame\\ChatFrameExpandArrow:8|t"
+-- Shaded gray sphere (scripts/build_swatch.py), tinted per color.
+View.SWATCH = "Interface\\AddOns\\Iconic\\Assets\\swatch"
+-- Size of the red X on color chips and on the filter button (Blizzard's is 23).
+View.RESET_SIZE = 20
 
--- How a tooltip names where a search word matched (Search.Explain).
-local MATCH_PLACES = {
-  description = "description",
-  category = "item category",
-}
+-- The saved group-by key; ActiveGroupBy is the one in effect.
+function View.SavedGroupBy()
+  return ns.db and ns.db.groupBy or "none"
+end
 
--- Calls `fn` once the game has loaded spell or item names it was asked for (Catalog.NameOf); a later wait for the
--- same key replaces an earlier one.
--- The events that answer C_Item.RequestLoadItemDataByID and C_Spell.RequestLoadSpellData.
-local NAME_EVENTS = { "ITEM_DATA_LOAD_RESULT", "SPELL_DATA_LOAD_RESULT" }
-local nameWaits = {}
-local nameEvents = CreateFrame("Frame")
-nameEvents:SetScript("OnEvent", function()
-  for _, event in ipairs(NAME_EVENTS) do
-    nameEvents:UnregisterEvent(event)
-  end
-  local waits = nameWaits
-  nameWaits = {}
-  for _, fn in pairs(waits) do
-    fn()
-  end
-end)
-function ns.AfterNames(key, fn)
-  nameWaits[key] = fn
-  for _, event in ipairs(NAME_EVENTS) do
-    nameEvents:RegisterEvent(event)
-  end
+-- Class file name ("HUNTER") of a class ID, or nil.
+function View.ClassFile(classId)
+  local info = C_CreatureInfo and C_CreatureInfo.GetClassInfo and C_CreatureInfo.GetClassInfo(classId)
+  return info and info.classFile
 end
 
 local function isSpellKnown(spellId)
@@ -91,7 +73,7 @@ local function computeUsable(data, extraTextures)
       end
     end
   end
-  for slot = 1, 19 do
+  for slot = 1, ns.EQUIPPED_SLOTS do
     local texture = GetInventoryItemTexture("player", slot)
     if texture then
       add(texture)
@@ -100,258 +82,22 @@ local function computeUsable(data, extraTextures)
   return set
 end
 
-local function selectedSet(filters, dim)
-  filters[dim] = filters[dim] or {}
-  return filters[dim]
+-- The selected values of one filter group, created when missing.
+function View:FilterSet(dim)
+  self.filters[dim] = self.filters[dim] or {}
+  return self.filters[dim]
 end
 
-local function sortedKeys(map, numericOnly)
-  local keys = {}
-  for key in pairs(map) do
-    if not numericOnly or type(key) == "number" then
-      keys[#keys + 1] = key
-    end
-  end
-  table.sort(keys, function(a, b)
-    return tostring(map[a]) < tostring(map[b])
-  end)
-  return keys
+-- The search text, whether it is long enough to search, and whether it or color chips make a query.
+function View:Query()
+  local text = self.search and self.search:GetText() or ""
+  local hasText = #Search.Normalize(text) >= MIN_QUERY
+  return text, hasText, hasText or #self.chips > 0
 end
 
-local MENU_ICON = 16
--- Shaded gray sphere (scripts/build_swatch.py), tinted per color.
-local SWATCH = "Interface\\AddOns\\Iconic\\Assets\\swatch"
--- Hue wheel on the same sphere (scripts/build_swatch.py), for the button that adds a color chip.
-local COLOR_WHEEL = "Interface\\AddOns\\Iconic\\Assets\\colorwheel"
-local SWATCH_ROW_SIZE, SUGGESTION_ICON_SIZE = 12, 19
-
--- Class name in its class color, with the class icon.
-local function classLabel(classId, name)
-  local info = C_CreatureInfo and C_CreatureInfo.GetClassInfo and C_CreatureInfo.GetClassInfo(classId)
-  local file = info and info.classFile
-  if not file then
-    return name
-  end
-  local color = (C_ClassColor and C_ClassColor.GetClassColor(file)) or (RAID_CLASS_COLORS and RAID_CLASS_COLORS[file])
-  local text = color and color:WrapTextInColorCode(name) or name
-  return CreateAtlasMarkup(GetClassAtlas(file), MENU_ICON, MENU_ICON) .. " " .. text
-end
-
-local function iconLabel(icon, name)
-  return icon and ("|T" .. icon .. ":" .. MENU_ICON .. ":" .. MENU_ICON .. "|t " .. name) or name
-end
-
-local MENU_ROW_HEIGHT, MENU_CHECK_WIDTH, MENU_COUNT_GAP, MENU_ARROW_WIDTH = 20, 22, 18, 22
-
-local function grayed(text)
-  return "|cff808080" .. text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") .. "|r"
-end
-
--- Shows a right-aligned count in a menu entry (in front of the submenu arrow when there is one) and grays
--- the label when the count is zero. Runs on every menu refresh, so it reads the count live.
-local function addCount(description, label, getCount, isSelected, hasSubmenu)
-  description:AddInitializer(function(button)
-    local count = getCount()
-    button.fontString:SetText((count == 0 and not isSelected()) and grayed(label) or label)
-    local text = button:AttachFontString()
-    text:SetFontObject("GameFontDisableSmall")
-    text:SetHeight(MENU_ROW_HEIGHT)
-    text:SetJustifyH("RIGHT")
-    text:SetPoint("RIGHT", hasSubmenu and -MENU_ARROW_WIDTH or -4, 0)
-    text:SetText(count)
-    local width = MENU_CHECK_WIDTH
-      + button.fontString:GetUnboundedStringWidth()
-      + MENU_COUNT_GAP
-      + text:GetUnboundedStringWidth()
-      + (hasSubmenu and MENU_ARROW_WIDTH or 4)
-    return width, MENU_ROW_HEIGHT
-  end)
-end
-
--- Subclass keys ("2:7") of an item class, sorted by name.
-local function subcategories(itemClasses, top)
-  local prefix, keys = top .. ":", {}
-  for key in pairs(itemClasses) do
-    if type(key) == "string" and key:sub(1, #prefix) == prefix then
-      keys[#keys + 1] = key
-    end
-  end
-  table.sort(keys, function(a, b)
-    return itemClasses[a] < itemClasses[b]
-  end)
-  return keys
-end
-
-function View:SetupFilterMenu()
-  local view = self
-  local function toggle(dim, value)
-    return function()
-      local set = selectedSet(view.filters, dim)
-      set[value] = not set[value] or nil
-      view:Refresh()
-      return MenuResponse.Refresh
-    end
-  end
-  local function isSet(dim, value)
-    return function()
-      return view.filters[dim] and view.filters[dim][value] or false
-    end
-  end
-  local function allSet(dim, values)
-    return function()
-      local set = view.filters[dim] or {}
-      for _, value in ipairs(values) do
-        if not set[value] then
-          return false
-        end
-      end
-      return true
-    end
-  end
-  -- Selects every value, or clears them all when every one is already selected.
-  local function toggleAll(dim, values)
-    return function()
-      local set, all = selectedSet(view.filters, dim), true
-      for _, value in ipairs(values) do
-        all = all and set[value] == true
-      end
-      for _, value in ipairs(values) do
-        set[value] = (not all) or nil
-      end
-      view:Refresh()
-      return MenuResponse.Refresh
-    end
-  end
-
-  self.filter:SetupMenu(function(_, root)
-    local data = view.data
-    -- Totals decide which values exist at all; facet counts (under the other active filters and the search)
-    -- are shown, and values with none are grayed out but stay visible.
-    local totals = view.counts or {}
-    local function total(dim, value)
-      return totals[dim] and totals[dim][value] or 0
-    end
-    local function facet(dim, value)
-      local facets = view:FacetCounts()
-      return facets[dim] and facets[dim][value] or 0
-    end
-    local function present(dim, values)
-      local list = {}
-      for _, value in ipairs(values) do
-        if total(dim, value) > 0 then
-          list[#list + 1] = value
-        end
-      end
-      return list
-    end
-    -- A checkbox entry with its right-aligned count; grayed at zero unless it is ticked.
-    local function entry(parent, label, dim, value, isSelected, setSelected, hasSubmenu)
-      local description = parent:CreateCheckbox(label, isSelected, setSelected)
-      addCount(description, label, function()
-        return facet(dim, value)
-      end, isSelected, hasSubmenu)
-      return description
-    end
-
-    root:CreateCheckbox(L["Only my spells & items"], function()
-      return view.filters.usable or false
-    end, function()
-      view.filters.usable = not view.filters.usable or nil
-      view:Refresh()
-      return MenuResponse.Refresh
-    end)
-    root:CreateDivider()
-
-    local sources = {}
-    for _, source in ipairs(Catalog.SOURCES) do
-      if total("source", source.key) > 0 then
-        sources[#sources + 1] = source
-      end
-    end
-    if #sources > 0 then
-      local menu = root:CreateButton(L["Source"])
-      for _, source in ipairs(sources) do
-        entry(menu, L[source.label], "source", source.key, isSet("source", source.key), toggle("source", source.key))
-      end
-    end
-    if not data then
-      return
-    end
-
-    local classIds = present("class", sortedKeys(data.classes))
-    if #classIds > 0 then
-      local menu = root:CreateButton(L["Class"])
-      for _, classId in ipairs(classIds) do
-        local label = classLabel(classId, data.classes[classId])
-        entry(menu, label, "class", classId, isSet("class", classId), toggle("class", classId))
-      end
-    end
-
-    local tops = present("category", sortedKeys(data.itemClasses, true))
-    if #tops > 0 then
-      local menu = root:CreateButton(L["Item category"])
-      for _, top in ipairs(tops) do
-        local keys = present("category", subcategories(data.itemClasses, top))
-        local name = data.itemClasses[top]
-        if #keys <= 1 then
-          -- A lone subcategory adds nothing; filter by it straight from the category entry.
-          local key = keys[1] or top
-          entry(menu, name, "category", key, isSet("category", key), toggle("category", key))
-        else
-          -- Checking the category selects all its subcategories; hovering opens them.
-          local sub = entry(menu, name, "category", top, allSet("category", keys), toggleAll("category", keys), true)
-          for _, key in ipairs(keys) do
-            entry(sub, data.itemClasses[key], "category", key, isSet("category", key), toggle("category", key))
-          end
-        end
-      end
-    end
-
-    local profs = present("profession", sortedKeys(data.professions))
-    if #profs > 0 then
-      local menu = root:CreateButton(L["Profession"])
-      for _, prof in ipairs(profs) do
-        local label = iconLabel(data.professionIcons and data.professionIcons[prof], data.professions[prof])
-        entry(menu, label, "profession", prof, isSet("profession", prof), toggle("profession", prof))
-      end
-    end
-  end)
-
-  self.filter:SetIsDefaultCallback(function()
-    return Catalog.ActiveFilterCount(view.filters) == 0
-  end)
-  self.filter:SetDefaultCallback(function()
-    view.filters = {}
-    view:Refresh()
-  end)
-end
-
--- Filter-style button whose fixed text names the current grouping.
-function View:UpdateGroupText()
-  local current = ns.db and ns.db.groupBy or "none"
-  for _, entry in ipairs(Catalog.GROUPS) do
-    if entry.key == current then
-      self.group:SetText(L["Group by: %s"]:format(L[entry.label]))
-    end
-  end
-end
-
-function View:SetupGroupMenu()
-  local view = self
-  self.group:SetupMenu(function(_, root)
-    for _, entry in ipairs(Catalog.GROUPS) do
-      root:CreateRadio(L[entry.label], function()
-        return (ns.db and ns.db.groupBy or "none") == entry.key
-      end, function()
-        if ns.db then
-          ns.db.groupBy = entry.key
-        end
-        view:UpdateGroupText()
-        view:Refresh()
-      end, entry.key)
-    end
-  end)
-  self:UpdateGroupText()
+-- Search.Find options for the current synonyms and color chips.
+function View:SearchOptions()
+  return { synonyms = ns.synonyms, chips = self.chips }
 end
 
 local BAND_ALPHA, BAND_HOVER_ALPHA = 0.12, 0.2
@@ -413,8 +159,8 @@ function View:InitHeader(frame, elementData)
 end
 
 -- Grouping in effect: grouping by color pauses while color chips rank the icons.
-function View:GroupBy()
-  local groupBy = ns.db and ns.db.groupBy or "none"
+function View:ActiveGroupBy()
+  local groupBy = View.SavedGroupBy()
   if groupBy == "color" and #self.chips > 0 then
     return "none"
   end
@@ -423,7 +169,7 @@ end
 
 -- Collapse state lives per group-by, keyed by section value.
 function View:CollapsedSet()
-  local groupBy = self:GroupBy()
+  local groupBy = self:ActiveGroupBy()
   local all = ns.db and ns.db.collapsed or {}
   all[groupBy] = all[groupBy] or {}
   return all[groupBy]
@@ -474,327 +220,6 @@ function View:CreateSignButton(parent, plus, tooltip, onClick)
   return button
 end
 
-local MAX_CHIPS, CHIP_SIZE, CHIP_GAP, CHIP_MIN_SWATCH = 3, 22, 8, 8
-local MIN_WEIGHT = 0.1
--- Size of the red X on color chips and on the filter button (Blizzard's is 23).
-local RESET_SIZE = 20
-
--- A color chip: its color { r, g, b } (0-1), OKLab target, weight (0.1-1) and the preset it came from, if any.
-local function newChip(color, weight, preset)
-  return { color = color, target = Search.PickTarget(color.r, color.g, color.b), weight = weight or 1, preset = preset }
-end
-
-local function chipLabel(chip)
-  local preset = chip.preset and Search.Preset(chip.preset)
-  if preset then
-    return L[preset.label]
-  end
-  local c = chip.color
-  return ("#%02X%02X%02X"):format(c.r * 255 + 0.5, c.g * 255 + 0.5, c.b * 255 + 0.5)
-end
-
-local function createColorButton(parent, onClick, onEnter)
-  local button = CreateFrame("Button", nil, parent)
-  button:SetSize(CHIP_SIZE, CHIP_SIZE)
-  button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
-  button.swatch = button:CreateTexture(nil, "ARTWORK")
-  button.swatch:SetSize(20, 20)
-  button.swatch:SetPoint("CENTER")
-  -- Sub-pixel sizes, so a chip shrinks smoothly with its weight.
-  button.swatch:SetSnapToPixelGrid(false)
-  button.swatch:SetTexelSnappingBias(0)
-  button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-  button:SetScript("OnClick", onClick)
-  button:SetScript("OnEnter", function(owner)
-    GameTooltip:SetOwner(owner, "ANCHOR_TOP")
-    onEnter(owner)
-    GameTooltip:Show()
-  end)
-  button:SetScript("OnLeave", function()
-    GameTooltip:Hide()
-  end)
-  return button
-end
-
--- Color chips and the button that adds one, in a bar left of the filter button. Each chip is a color the icons
--- must contain: click changes it in Blizzard's color picker, right-click removes it.
-function View:CreateColorBar(parent)
-  local bar = CreateFrame("Frame", nil, parent)
-  bar:SetHeight(CHIP_SIZE)
-  self.chipButtons = {}
-  for i = 1, MAX_CHIPS do
-    local button = createColorButton(bar, function(_, mouseButton)
-      if mouseButton == "RightButton" then
-        self:RemoveChip(i)
-      else
-        self:OpenColorPicker(i)
-      end
-    end, function()
-      local chip = self.chips[i]
-      GameTooltip:SetText(chipLabel(chip), 1, 1, 1)
-      if #self.chips > 1 then
-        GameTooltip:AddLine(L["Weight: %d%%"]:format(chip.weight * 100 + 0.5), 0.9, 0.9, 0.9)
-      end
-      GameTooltip:AddLine(L["Click to change; the X or right-click removes it"], 0.7, 0.7, 0.7)
-    end)
-    button.swatch:SetTexture(SWATCH)
-    -- The same red X as the filter button's reset, in the chip's corner.
-    local remove = CreateFrame("Button", nil, button)
-    -- Level with the filter's X: on the filter's top edge, 3 px in from the swatch's right edge.
-    remove:SetSize(RESET_SIZE, RESET_SIZE)
-    remove:SetPoint("CENTER", button, "CENTER", 7, self.filter:GetHeight() / 2)
-    remove:SetFrameLevel(button:GetFrameLevel() + 2)
-    remove:SetNormalAtlas("auctionhouse-ui-filter-redx")
-    remove:SetHighlightAtlas("auctionhouse-ui-filter-redx", "ADD")
-    remove:GetHighlightTexture():SetAlpha(0.4)
-    remove:SetScript("OnClick", function()
-      self:RemoveChip(i)
-    end)
-    self.chipButtons[i] = button
-  end
-  self.addColorButton = createColorButton(bar, function(_, mouseButton)
-    if mouseButton ~= "RightButton" then
-      self:OpenColorPicker()
-    end
-  end, function()
-    GameTooltip:SetText(L["Search by color"], 1, 1, 1)
-  end)
-  self.addColorButton.swatch:SetTexture(COLOR_WHEEL)
-  return bar
-end
-
--- Lays out the chips and the add button, right-aligned in the bar.
-function View:UpdateChips()
-  local buttons = {}
-  for i, button in ipairs(self.chipButtons) do
-    local chip = self.chips[i]
-    button:SetShown(chip ~= nil)
-    if chip then
-      local weight = #self.chips > 1 and chip.weight or 1
-      local c, size = chip.color, CHIP_MIN_SWATCH + (20 - CHIP_MIN_SWATCH) * weight
-      button.swatch:SetVertexColor(c.r, c.g, c.b)
-      -- Lighter chips look smaller.
-      button.swatch:SetSize(size, size)
-      buttons[#buttons + 1] = button
-    end
-  end
-  self.addColorButton:SetShown(#self.chips < MAX_CHIPS)
-  if #self.chips < MAX_CHIPS then
-    buttons[#buttons + 1] = self.addColorButton
-  end
-  for i, button in ipairs(buttons) do
-    button:ClearAllPoints()
-    button:SetPoint("LEFT", (i - 1) * (CHIP_SIZE + CHIP_GAP), 0)
-  end
-  self.colorBar:SetWidth(#buttons * (CHIP_SIZE + CHIP_GAP) - CHIP_GAP)
-end
-
--- Replaces all chips: a list of { key = preset key } or { color = { r, g, b }, weight, preset }.
-function View:SetChips(chips)
-  self.chips = {}
-  for i, chip in ipairs(chips) do
-    if chip.color then
-      self.chips[i] = newChip(chip.color, chip.weight, chip.preset)
-    else
-      self.chips[i] = newChip(Search.HexColor(Search.Preset(chip.key).hex), chip.weight, chip.key)
-    end
-  end
-  self:UpdateChips()
-  self:QueuePickRefresh()
-end
-
--- Sets chip `i` (or a new last chip) to a picked color { r, g, b }, keeping its weight.
-function View:SetChipColor(i, color, weight)
-  local chips = self.chips
-  i = math.min(i, #chips + 1, MAX_CHIPS)
-  chips[i] = newChip(color, weight or (chips[i] and chips[i].weight))
-  self:UpdateChips()
-  self:QueuePickRefresh()
-end
-
--- Sets the weight (MIN_WEIGHT-1) of chip `i`.
-function View:SetChipWeight(i, weight)
-  local chip = self.chips[i]
-  if chip then
-    self.chips[i] = newChip(chip.color, math.max(MIN_WEIGHT, math.min(1, weight)), chip.preset)
-    self:UpdateChips()
-    self:QueuePickRefresh()
-  end
-end
-
--- Adds a chip for a color preset unless it is there already or the bar is full.
-function View:AddPresetChip(key)
-  for _, chip in ipairs(self.chips) do
-    if chip.preset == key then
-      return
-    end
-  end
-  local preset = Search.Preset(key)
-  if preset and #self.chips < MAX_CHIPS then
-    self.chips[#self.chips + 1] = newChip(Search.HexColor(preset.hex), 1, key)
-    self:UpdateChips()
-  end
-end
-
-function View:RemoveChip(i)
-  table.remove(self.chips, i)
-  self:UpdateChips()
-  self:QueuePickRefresh()
-end
-
--- Refreshes soon after a color change; unlike QueueRefresh, further changes don't push it back, so the grid
--- keeps up while the color is dragged.
-function View:QueuePickRefresh()
-  if self.pickRefreshQueued then
-    return
-  end
-  self.pickRefreshQueued = true
-  C_Timer.After(PICK_INTERVAL, function()
-    self.pickRefreshQueued = false
-    self:Refresh()
-  end)
-end
-
--- Blizzard's color picker is shared: while Iconic uses it, its Cancel button is hidden and Okay centered, it sits beside
--- Iconic's window, and a weight slider hangs below it. All is restored when it closes.
-local picker, weightPanel
-
-local WEIGHT_OVERLAP = 8
-
--- Below the picker, in the same dialog border, joined to it.
-local function createWeightPanel(frame)
-  local panel = CreateFrame("Frame", nil, frame)
-  -- Overlaps the picker by its border, so one border line separates the two.
-  panel:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, WEIGHT_OVERLAP)
-  panel:SetPoint("TOPRIGHT", frame, "BOTTOMRIGHT", 0, WEIGHT_OVERLAP)
-  panel:SetHeight(96)
-  panel.border = CreateFrame("Frame", nil, panel, "DialogBorderTemplate")
-  panel.border:SetAllPoints()
-  panel.label = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  panel.label:SetPoint("TOPLEFT", 18, -16)
-  panel.label:SetText(L["Weight"])
-  panel.hint = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  panel.hint:SetPoint("TOPLEFT", panel.label, "BOTTOMLEFT", 0, -4)
-  panel.hint:SetPoint("RIGHT", -18, 0)
-  panel.hint:SetJustifyH("LEFT")
-  panel.hint:SetText(L["How much this color counts in the color search."])
-  panel.slider = CreateFrame("Frame", nil, panel, "MinimalSliderWithSteppersTemplate")
-  panel.slider:SetPoint("TOPLEFT", panel.hint, "BOTTOMLEFT", -2, -6)
-  panel.slider:SetPoint("RIGHT", -64, 0)
-  panel.slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(_, value)
-    if panel.view then
-      panel.view:SetPickerWeight(value / 100)
-    end
-  end, panel)
-  return panel
-end
-
-local function preparePicker(anchor)
-  local frame = ColorPickerFrame
-  if not picker then
-    picker = {}
-    frame:HookScript("OnHide", function()
-      if picker.okay then
-        picker.cancel:Show()
-        picker.okay:ClearAllPoints()
-        for _, point in ipairs(picker.okayPoints) do
-          picker.okay:SetPoint(unpack(point))
-        end
-      end
-      if picker.points then
-        frame:ClearAllPoints()
-        for _, point in ipairs(picker.points) do
-          frame:SetPoint(unpack(point))
-        end
-        frame:SetClampedToScreen(picker.clamped)
-        picker.points = nil
-      end
-      if weightPanel then
-        weightPanel:Hide()
-        weightPanel.view = nil
-      end
-    end)
-  end
-  local cancel = frame.Footer and frame.Footer.CancelButton or _G.ColorPickerCancelButton
-  local okay = frame.Footer and frame.Footer.OkayButton or _G.ColorPickerOkayButton
-  if cancel and okay and cancel:IsShown() then
-    picker.cancel, picker.okay, picker.okayPoints = cancel, okay, {}
-    for i = 1, okay:GetNumPoints() do
-      picker.okayPoints[i] = { okay:GetPoint(i) }
-    end
-    local _, _, _, _, y = cancel:GetPoint(1)
-    cancel:Hide()
-    okay:ClearAllPoints()
-    okay:SetPoint("BOTTOM", cancel:GetParent(), "BOTTOM", 0, y or 0)
-  end
-  if not picker.points then
-    picker.points, picker.clamped = {}, frame:IsClampedToScreen()
-    for i = 1, frame:GetNumPoints() do
-      picker.points[i] = { frame:GetPoint(i) }
-    end
-  end
-  frame:ClearAllPoints()
-  frame:SetPoint("TOPLEFT", anchor, "TOPRIGHT", -2, -1)
-  frame:SetClampedToScreen(true)
-end
-
--- Opens Blizzard's color picker for chip `i`, or for a new chip; the grid follows the color and weight while they
--- change, and closing the picker keeps them.
-function View:OpenColorPicker(i)
-  if not ColorPickerFrame and C_AddOns and C_AddOns.LoadAddOn then
-    C_AddOns.LoadAddOn("Blizzard_ColorPickerFrame")
-  end
-  if not (ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) then
-    return
-  end
-  local slot = i or #self.chips + 1
-  -- Counted before the picker opens: it reports its start color at once, which already adds a new chip.
-  local chipCount = math.max(#self.chips, slot)
-  local editing = i and self.chips[i]
-  -- A new chip starts at white: no hue picked, full lightness.
-  local start = editing and editing.color or { r = 1, g = 1, b = 1 }
-  self.pickerSlot, self.pickerWeight = slot, editing and editing.weight or 1
-  ColorPickerFrame:SetupColorPickerAndShow({
-    r = start.r,
-    g = start.g,
-    b = start.b,
-    hasOpacity = false,
-    swatchFunc = function()
-      local r, g, b = ColorPickerFrame:GetColorRGB()
-      -- Opening the picker reports the start color: a new chip appears only once a color is picked, and a preset
-      -- chip keeps its name until the color changes.
-      local unchanged = math.abs(r - start.r) + math.abs(g - start.g) + math.abs(b - start.b) < 0.005
-      if not unchanged then
-        self:SetChipColor(slot, { r = r, g = g, b = b }, self.pickerWeight)
-      end
-    end,
-  })
-  preparePicker(self.frame:GetParent())
-  weightPanel = weightPanel or createWeightPanel(ColorPickerFrame)
-  weightPanel.view = nil
-  weightPanel.slider:Init(self.pickerWeight * 100, MIN_WEIGHT * 100, 100, 18, {
-    [MinimalSliderWithSteppersMixin.Label.Right] = function(value)
-      return ("%d%%"):format(value + 0.5)
-    end,
-  })
-  weightPanel.view = self
-  -- A weight only matters next to another chip.
-  weightPanel:SetShown(chipCount > 1)
-end
-
--- The weight slider under the color picker, once it exists (for /iconic shot demo).
-function View:WeightSlider()
-  return weightPanel and weightPanel.slider
-end
-
--- The weight slider under the color picker moved: applies to the chip being picked, or to the next one.
-function View:SetPickerWeight(weight)
-  self.pickerWeight = weight
-  if self.chips[self.pickerSlot] then
-    self:SetChipWeight(self.pickerSlot, weight)
-  end
-end
-
 function View:CreateIconButton(parent)
   local view = self
   local button = CreateFrame("Button", nil, parent)
@@ -839,103 +264,14 @@ function View:InitRow(frame, elementData)
   end
 end
 
--- Tooltip for an icon row, anchored to `owner` (defaults to the hovered button's row).
-function View:ShowTooltip(owner, row)
-  local index = self.data.index
-  row = row or owner.row
-  GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-  local names, pending = Catalog.Names(index, row)
-  if pending then
-    ns.AfterNames("tooltip", function()
-      if GameTooltip:IsOwned(owner) then
-        self:ShowTooltip(owner, row)
-      end
-    end)
-  end
-  -- While searching, the words a search word finds are colored and a line says what found the icon.
-  local query = self.search and self.search:GetText() or ""
-  local searching = #Search.Normalize(query) >= MIN_QUERY or #self.chips > 0
-  local opts = { synonyms = ns.synonyms, chips = self.chips }
-  local function shown(name)
-    return searching and Search.Highlight(name, query, opts) or name
-  end
-  GameTooltip:SetText(names[1] and shown(names[1]) or index.file[row] or tostring(index.key[row]), 1, 1, 1)
-  -- Below the best name only the names a search word finds, or all with the setting; the rest are counted.
-  local all = ns.ShowIconID(ns.db.settings.tooltipNames)
-  local hidden = 0
-  for i = 2, #names do
-    local name = searching and shown(names[i]) or names[i]
-    if all or name ~= names[i] then
-      GameTooltip:AddLine(name, 0.8, 0.8, 0.8)
-    else
-      hidden = hidden + 1
-    end
-  end
-  if hidden > 0 then
-    GameTooltip:AddLine(hidden == 1 and L["+1 more name"] or L["+%d more names"]:format(hidden), 0.5, 0.5, 0.5)
-  end
-  -- Picture tags in the client's language, the ones a search word finds colored.
-  local tags = {}
-  for tag in (index.tags[row] or ""):gmatch("%S+") do
-    tags[#tags + 1] = self.data.tagNames and self.data.tagNames[tag] or tag
-  end
-  local tagText = table.concat(tags, ", ")
-  if tagText ~= "" then
-    GameTooltip:AddLine(
-      L["Tags: %s"]:format(searching and Search.Highlight(tagText, query, opts) or tagText),
-      0.6,
-      0.6,
-      0.6,
-      true
-    )
-  end
-  if searching then
-    local parts = {}
-    for _, found in ipairs(Search.Explain(index, row, query, opts)) do
-      if found.word then
-        -- Direct hits in a shown name or tag are colored there; only the rest need saying.
-        local seen = not found.via
-          and (
-            found.where == "name" or (found.where == "tag" and Search.Highlight(tagText, found.word, opts) ~= tagText)
-          )
-        if not seen then
-          local word = found.word
-          for _, step in ipairs(found.via or {}) do
-            word = ("%s %s %s"):format(word, SYNONYM_ARROW, step)
-          end
-          -- Places the tooltip doesn't show get named; a direct hit in the tag field not among the tags is the file name.
-          local place = (found.where == "description" or found.where == "category") and MATCH_PLACES[found.where]
-            or (not found.via and found.where == "tag" and "file name")
-          parts[#parts + 1] = place and ("%s (%s)"):format(word, L[place]) or word
-        end
-      else
-        local preset = Search.Preset(found.color)
-        parts[#parts + 1] = ("%s %d%%"):format(preset and L[preset.label] or found.color, found.share)
-      end
-    end
-    if #parts > 0 then
-      GameTooltip:AddLine(L["Found by: %s"]:format(table.concat(parts, ", ")), 1, 0.82, 0, true)
-    end
-  end
-  if index.id[row] and ns.ShowIconID(ns.db.settings.tooltipPicker) then
-    GameTooltip:AddLine(L["Icon ID: %d"]:format(index.id[row]), 0.5, 0.8, 1)
-  end
-  GameTooltip:Show()
-  ns.WatchModifiers(owner, function()
-    self:ShowTooltip(owner, row)
-  end)
-end
-
--- Icons per row, and sets self.iconSize so that many icons fill the width between the insets.
-function View:PerRow()
+-- Icons per row and their size, so that many icons fill the width between the insets.
+function View:RowLayout()
   local width = (self.scrollBox:GetWidth() or 0) - 2 * ROW_INSET
   if width <= 0 then
-    self.iconSize = MIN_ICON_SIZE
-    return 11
+    return 11, MIN_ICON_SIZE
   end
   local perRow = math.max(1, math.floor((width + ICON_GAP) / (MIN_ICON_SIZE + ICON_GAP)))
-  self.iconSize = (width + ICON_GAP) / perRow - ICON_GAP
-  return perRow
+  return perRow, (width + ICON_GAP) / perRow - ICON_GAP
 end
 
 function View:Fill(textures, extras)
@@ -1091,10 +427,10 @@ function View:FacetCounts()
   if self.facets then
     return self.facets
   end
-  local index, query = self.data.index, self.search:GetText() or ""
-  local rows = self.rows
-  if #Search.Normalize(query) >= MIN_QUERY or #self.chips > 0 then
-    rows = Search.Find(index, rows, query, { synonyms = ns.synonyms, chips = self.chips })
+  local index, rows = self.data.index, self.rows
+  local query, _, hasQuery = self:Query()
+  if hasQuery then
+    rows = Search.Find(index, rows, query, self:SearchOptions())
   end
   self.facets = Catalog.FacetCounts(index, rows, self.filters, self.usable)
   return self.facets
@@ -1107,27 +443,24 @@ function View:Refresh(keepScroll)
     return
   end
   local data, index = self.data, self.data.index
-  local query = self.search:GetText() or ""
-  local hasText = #Search.Normalize(query) >= MIN_QUERY
-  local hasQuery = hasText or #self.chips > 0
-  local groupBy = self:GroupBy()
+  local query, hasText, hasQuery = self:Query()
+  local groupBy = self:ActiveGroupBy()
 
   local rows = Catalog.Filter(index, self.rows, self.filters, self.usable)
   local loose = false
   if hasQuery then
-    rows, loose = Search.Find(index, rows, query, {
-      synonyms = ns.synonyms,
-      usable = self.usable,
-      vocabulary = function()
-        self.vocabulary = self.vocabulary or Search.Vocabulary(index.text)
-        return self.vocabulary
-      end,
-      chips = self.chips,
-    })
+    local opts = self:SearchOptions()
+    opts.usable = self.usable
+    opts.vocabulary = function()
+      self.vocabulary = self.vocabulary or Search.Vocabulary(index.text)
+      return self.vocabulary
+    end
+    rows, loose = Search.Find(index, rows, query, opts)
   end
 
   self:UpdateFooter(#rows, #self.rows)
-  local perRow = self:PerRow()
+  local perRow
+  perRow, self.iconSize = self:RowLayout()
   local settings = ns.db and ns.db.settings
   local recent = not hasQuery
     and settings
@@ -1214,100 +547,9 @@ local function leftAlignText(button)
   button:UpdateText()
 end
 
--- Fills the search box's suggestion list with filter values matching the typed words.
-function View:UpdateSuggestions()
-  local box = self.search
-  if not (self.data and box:HasFocus() and box:IsCurrentTextValidForSearch()) then
-    box:HideSearchPreview()
-    return
-  end
-  local buttons = box:GetButtons()
-  -- At least SUGGEST_WIDTH wide, so long labels such as item categories fit beside a narrow search box.
-  box.searchPreviewContainer:SetWidth(math.max(box:GetWidth(), SUGGEST_WIDTH))
-  -- Colors that already have a chip count as active, like ticked filters.
-  local active = setmetatable({ color = {} }, { __index = self.filters })
-  for _, chip in ipairs(self.chips) do
-    if chip.preset then
-      active.color[chip.preset] = true
-    end
-  end
-  local list = Catalog.Suggest(self.data, box:GetText(), self.counts, active, #buttons)
-  for i, button in ipairs(buttons) do
-    local suggestion = list[i]
-    button.suggestion = suggestion
-    if suggestion then
-      button.Name:SetText(
-        ("|cff9d9d9d%s:|r %s |cff9d9d9d%d|r"):format(suggestion.group, suggestion.label, suggestion.count)
-      )
-      self:SetSuggestionIcon(button.Icon, suggestion)
-      button:Show()
-    else
-      button:Hide()
-    end
-  end
-  if #list == 0 then
-    box:HideSearchPreview()
-  else
-    box:UpdateSearchPreview(true, true, #list)
-    -- Nothing highlighted: Enter searches; arrow keys pick a suggestion first.
-    box.selectedIndex = 0
-    for _, button in ipairs(buttons) do
-      button.selectedTexture:Hide()
-    end
-  end
-end
-
--- Class icon, profession icon or color swatch; other suggestions show none.
-function View:SetSuggestionIcon(texture, suggestion)
-  texture:SetTexCoord(0, 1, 0, 1)
-  texture:SetVertexColor(1, 1, 1)
-  texture:SetSize(SUGGESTION_ICON_SIZE, SUGGESTION_ICON_SIZE)
-  if suggestion.dim == "class" then
-    local info = C_CreatureInfo and C_CreatureInfo.GetClassInfo and C_CreatureInfo.GetClassInfo(suggestion.value)
-    if info and info.classFile then
-      texture:SetAtlas(GetClassAtlas(info.classFile))
-      texture:Show()
-      return
-    end
-  elseif suggestion.dim == "profession" and self.data.professionIcons[suggestion.value] then
-    texture:SetTexture(self.data.professionIcons[suggestion.value])
-    texture:Show()
-    return
-  elseif suggestion.dim == "color" and Search.Preset(suggestion.value) then
-    -- Smaller than the icon slot, centered in it.
-    local c = Search.HexColor(Search.Preset(suggestion.value).hex)
-    texture:SetTexture(SWATCH)
-    texture:SetSize(SWATCH_ROW_SIZE, SWATCH_ROW_SIZE)
-    texture:SetVertexColor(c.r, c.g, c.b)
-    texture:Show()
-    return
-  end
-  texture:SetTexture(nil)
-  texture:Show()
-end
-
--- Turns a suggestion into an active filter and drops its word from the search text.
-function View:ApplySuggestion(suggestion)
-  if not suggestion then
-    return
-  end
-  if suggestion.dim == "color" then
-    self:AddPresetChip(suggestion.value)
-  else
-    selectedSet(self.filters, suggestion.dim)[suggestion.value] = true
-  end
-  local text = self.search:GetText()
-  for _, word in ipairs(suggestion.words) do
-    text = Catalog.RemoveWord(text, word)
-  end
-  self.search:SetText(text)
-  self.search:Close()
-  self:Refresh()
-end
-
 -- Creates the picker view inside `parent`. opts.onSelect(texture) is called when an icon is clicked,
 -- opts.onSelectedState(state) whenever SelectedState may have changed.
-function ns.CreateView(parent, opts)
+function View.Create(parent, opts)
   local self = setmetatable({
     filters = {},
     chips = {},
@@ -1349,7 +591,7 @@ function ns.CreateView(parent, opts)
   self.filter = CreateFrame("DropdownButton", nil, toolbar, "WowStyle1FilterDropdownTemplate")
   leftAlignText(self.filter)
   if self.filter.ResetButton then
-    self.filter.ResetButton:SetSize(RESET_SIZE, RESET_SIZE)
+    self.filter.ResetButton:SetSize(View.RESET_SIZE, View.RESET_SIZE)
   end
   self.filter:SetPoint("RIGHT", self.group, "LEFT", -8, 0)
 
@@ -1366,27 +608,27 @@ function ns.CreateView(parent, opts)
   self.search.Instructions:SetText(L["Search…"])
   self.search:HookScript("OnTextChanged", function()
     self:QueueRefresh()
-    self:UpdateSuggestions()
+    self:UpdateHints()
   end)
   self.search:HookScript("OnEditFocusGained", function()
-    self:UpdateSuggestions()
+    self:UpdateHints()
   end)
   for _, button in ipairs(self.search:GetButtons()) do
     button:SetScript("OnClick", function(clicked)
-      self:ApplySuggestion(clicked.suggestion)
+      self:ApplyHint(clicked.hint)
     end)
   end
-  -- Enter takes a suggestion only when one was picked with the arrow keys; otherwise it just searches.
+  -- Enter takes a hint only when one was picked with the arrow keys; otherwise it just searches.
   self.search:SetScript("OnEnterPressed", function(box)
     local picked = box.selectedIndex and box:GetButtons()[box.selectedIndex]
-    if picked and picked:IsShown() and picked.suggestion then
+    if picked and picked:IsShown() and picked.hint then
       picked:Click()
       return
     end
     box:Close()
     self:Refresh()
   end)
-  -- Line the suggestion list up with the visible edge of the search box.
+  -- Line the hint list up with the visible edge of the search box.
   local preview = self.search.searchPreviewContainer
   preview:ClearAllPoints()
   preview:SetPoint("TOPLEFT", self.search, "BOTTOMLEFT", -5, -1)
@@ -1406,7 +648,7 @@ function ns.CreateView(parent, opts)
   footer.brand:SetText(L["Iconic"])
   -- Pickers get a settings button after the brand; the browser has one in its title bar.
   if opts and opts.settingsButton then
-    footer.settings = ns.CreateSettingsButton(footer)
+    footer.settings = ns.SettingsPage.CreateButton(footer)
     footer.settings:SetPoint("RIGHT")
     footer.brand:SetPoint("RIGHT", footer.settings, "LEFT", -4, 0)
   else

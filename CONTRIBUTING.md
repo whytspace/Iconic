@@ -26,8 +26,9 @@ Use the WoW Forever client's AddOns folder the same way. The Git setting prevent
 ## Layout
 
 - `Iconic.toc` — one add-on for WoW Forever and retail.
-- `Search.lua`, `Catalog.lua`, `Data.lua` — search, filters, groups and data loading; pure Lua, unit-tested.
-- `UI/` — frames, picker hooks, tooltips, settings, public API; checked in-game.
+- `Search.lua`, `Color.lua`, `Catalog.lua`, `Data.lua` — search, color matching, filters, groups and data loading; pure Lua, unit-tested.
+- `UI/` — frames, picker hooks, tooltips, settings, public API; checked in-game. `View.lua` is the icon grid; `ColorChips.lua`, `FilterMenu.lua`, `SearchHints.lua` and `IconTooltip.lua` add its parts.
+- `Adapters/` — one file per UI whose icon pickers Iconic replaces, listed in `Adapters/Adapters.xml`.
 - `Data/Synonyms.lua` — hand-curated synonym groups.
 - `Iconic_Data/` — a separate load-on-demand add-on with the generated icon data, one file per game version, picked by `[AllowLoadGameType]`.
 
@@ -45,7 +46,7 @@ Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped fi
 
 Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`, plus the picture tags from `tags`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colors are four dominant-color slots, each an `l`, `a`, `b`, `w` and `name` column.
 
-`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together.
+`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together; `spec/tokenizer_spec.lua` fails while they differ.
 
 ## Icon colors
 
@@ -68,14 +69,14 @@ devc python3 scripts/build_data.py
 
 Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colors, each with its weight, the part of the icon it covers; pixels near the center and saturated pixels weigh more. The data ships only their OKLab values and weights. `--sheets` writes `.cache/colors/<color>.png` with the icons that have the most of each named color, for checking the result by eye.
 
-In search, a color chip is one shade with a weight (`chipScore` in `Search.lua`):
+In search, a color chip is one shade with a weight (`Color.ChipScore` in `Color.lua`):
 
-- An icon matches a chip when at least `COLOR_MIN` of it lies in the chip's band: within `HUE_WIDTH` degrees of its hue, or, for a colorless chip (black, white, gray), within `LIGHT_WIDTH` of its lightness.
+- An icon matches a chip when at least `MIN_SHARE` of it lies in the chip's band: within `HUE_WIDTH` degrees of its hue, or, for a colorless chip (black, white, gray), within `LIGHT_WIDTH` of its lightness.
 - Inside the band, colors count less the farther they lie from the chip's shade (`CLOSE_RADIUS`, down to `CLOSE_FLOOR`).
 - Icons rank by the chips' values averaged by their weights (the slider under the color picker).
-- Color words are presets: one shade each (`Search.COLOR_PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
+- Color words are presets: one shade each (`Color.PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
 
-Grouping by color names each dominant color after the nearest reference shade (`COLOR_REFS` in `Search.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid color covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest color (`colorGroup` in `Catalog.lua`).
+Grouping by color names each dominant color after the nearest reference shade (`REFS` in `Color.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid color covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest color (`colorGroup` in `Catalog.lua`).
 
 ## Icon tags
 
@@ -128,7 +129,9 @@ Add a group only when a player would plausibly search one word to find the other
 
 ## Picker adapters
 
-`UI/Pickers.lua` replaces the icon grid of every frame built on Blizzard's `IconSelectorPopupFrameTemplate`. A new Blizzard picker is one entry in `Pickers.BLIZZARD`. Other add-ons call `Iconic.RegisterPicker(frame, adapter)`, documented in `UI/API.lua`.
+`UI/Pickers.lua` replaces the icon grid of every frame built on Blizzard's `IconSelectorPopupFrameTemplate`. A new Blizzard picker is one entry in `BLIZZARD` in `Adapters/Blizzard.lua`.
+
+Another add-on's pickers get a file in `Adapters/`, added to `Adapters/Adapters.xml`, that calls `Pickers.AddAdapter({ addon, frames, overrides, events })` (see `Adapters/Baganator.lua`). Iconic looks for the frames once that add-on has loaded and after each of `events`. Add-ons can also call `Iconic.RegisterPicker(frame, adapter)` themselves, documented in `UI/API.lua`.
 
 ## Assets
 

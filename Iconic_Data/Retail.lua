@@ -120320,7 +120320,7 @@ nil,
 "cat bandages mummy green spikes",
 "zombie face hood green undead",
     },
-    src = {
+    sourceMask = {
 3,
 1,
 3,
@@ -150348,7 +150348,7 @@ nil,
 11,
 3,
     },
-    cls = {
+    classMask = {
 0,
 0,
 0,
@@ -180376,7 +180376,7 @@ nil,
 0,
 0,
     },
-    cats = {
+    categories = {
 {0,1024,3072},
 nil,
 {3072},
@@ -210404,7 +210404,7 @@ nil,
 {3842},
 {8,1029},
     },
-    profs = {
+    professions = {
 nil,
 nil,
 nil,
