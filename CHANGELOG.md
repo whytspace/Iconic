@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2 - 2026-11-24
+
 - **[New]** Suggested icons that fit what you're editing. ([#13](https://github.com/whytspace/Iconic/issues/13))
 - **[New]** Over 30,000 icons analysed by what they show, so searches like "werewolf" or "rose" find them. ([#16](https://github.com/whytspace/Iconic/issues/16))
 - **[New]** German support: icons are found by their German names and by what they show. ([#5](https://github.com/whytspace/Iconic/issues/5))

@@ -2,7 +2,7 @@
 ## Title: Iconic
 ## Notes: Searchable, filterable icon picker for macros, equipment sets, banks and outfits.
 ## Author: whytspace
-## Version: 1.0.0
+## Version: 2
 ## IconTexture: Interface\AddOns\Iconic\Assets\logo
 ## SavedVariables: IconicDB
 ## X-Website: https://github.com/whytspace/Iconic
