@@ -1,0 +1,48 @@
+name: Bug report
+description: Something in Iconic doesn't work or shows an error.
+type: Bug
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect instead? A screenshot helps.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the macro window
+        2. Click "New"
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Lua error
+      description: The full error text, if any. Turn errors on with `/console scriptErrors 1`, or use BugSack.
+      render: text
+  - type: dropdown
+    id: client
+    attributes:
+      label: Game version
+      options:
+        - Retail
+        - WoW Forever
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Iconic version
+      placeholder: v3
+    validations:
+      required: true
+  - type: input
+    id: addons
+    attributes:
+      label: Other add-ons
+      description: Does it still happen with only Iconic enabled? If not, which add-on causes it?
