@@ -12,6 +12,7 @@
 - **[New]** A gear button in the `/iconic` window opens Iconic's settings.
 - **[New]** Baganator's bank tab icon picker gets Iconic too. ([#7](https://github.com/whytspace/Iconic/issues/7))
 - **[New]** Icons are found by what their picture shows, such as "werewolf", "rose" or "net", even when no name says so. ([#16](https://github.com/whytspace/Iconic/issues/16))
+- **[New]** While searching, icon tooltips colour the words that matched and say what found the icon, such as "shield (picture), purple 34%". ([#16](https://github.com/whytspace/Iconic/issues/16))
 - **[Change]** Clicking the icon under "Currently Selected" again scrolls to its next place in the picker, such as from recently used to all icons, then back to the first.
 - **[Change]** Colour chips find every shade of their colour and rank the closest first, whether picked or from a colour word; icons with a smaller part in that colour are found too. ([#10](https://github.com/whytspace/Iconic/issues/10))
 - **[Change]** Searches with colour chips rank icons by how well the words match and by colour, not colour alone, and item category names such as "Shield" are searched too. ([#15](https://github.com/whytspace/Iconic/issues/15))

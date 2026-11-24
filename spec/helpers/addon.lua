@@ -41,8 +41,8 @@ function M.rawData(file, global)
   return env[global or "IconicData"]
 end
 
--- Search field as scripts/build_data.py writes it: name buckets (1st, 2nd, 3rd-4th, rest), file, description.
-local function searchField(Search, names, file, desc)
+-- Search field as scripts/build_data.py writes it: name buckets (1st, 2nd, 3rd-4th, rest), file and tags, description.
+local function searchField(Search, names, file, desc, tags)
   local buckets = { { names[1] }, { names[2] }, { names[3], names[4] }, {} }
   for i = 5, #names do
     table.insert(buckets[4], names[i])
@@ -58,7 +58,9 @@ local function searchField(Search, names, file, desc)
     end
     fields[i] = table.concat(list, " ")
   end
-  fields[5] = Search.FileText(file):gsub("|", "")
+  fields[5] = (Search.FileText(file):gsub("|", "") .. " " .. table.concat(Search.Tokens(tags or ""), " "))
+    :gsub("^%s+", "")
+    :gsub("%s+$", "")
   fields[6] = table.concat(Search.Tokens(desc or ""), " ")
   return table.concat(fields, "|")
 end
@@ -97,7 +99,7 @@ local COLOR_LAB = {
 M.COLOR_LAB = COLOR_LAB
 
 -- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
--- names = {...}, desc, src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
+-- names = {...}, desc, tags = "wolf beast", src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
 -- colors = "green:62 red:18 35/-9/7:20" }; each colour becomes a dominant colour with that weight, at a named
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
@@ -117,7 +119,7 @@ function M.fakeData(ns, rows)
     icons.id[row] = tonumber(r[1])
     icons.file[row] = r[2]
     icons.refs[row] = #names > 0 and table.concat(names, "|") or nil
-    icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc))
+    icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc, r.tags))
     local src = 0
     for letter in (r.src or ""):gmatch(".") do
       src = src + SOURCE_BITS[letter]

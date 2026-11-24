@@ -483,7 +483,7 @@ local function chipValue(index, row, band)
       end
     end
   end
-  return share >= COLOR_MIN and value or nil
+  return share >= COLOR_MIN and value or nil, share
 end
 
 -- Share (0-100) of a named colour in an index row: the weight of its dominant colours with that name.
@@ -647,4 +647,130 @@ function Search.Find(index, rows, query, opts)
   end
   results, scores = run(index, rows, query, opts, true)
   return results, true, scores
+end
+
+-- Colour for the words of a name that a search word finds (the game's gold).
+local HIGHLIGHT = "|cffffd100"
+
+-- Each query token with the word typed for it and its variants (itself, synonyms).
+local function queryTerms(query, synonyms)
+  local terms = {}
+  for word in Search.Normalize(query):gmatch("%S+") do
+    local token = Search.Tokens(word)[1]
+    if token then
+      terms[#terms + 1] = { word = word, variants = variantsFor(token, synonyms or {}) }
+    end
+  end
+  return terms
+end
+
+local function startsWith(text, term)
+  return text == term or (#term >= 3 and sub(text, 1, #term) == term)
+end
+
+-- Why a row matches a query: per search word { word, via = the synonym it matched through, if any, where = "name" | "file" | "picture" | "description" |
+-- "category" }, then per colour chip { color = name, share = 0-100 }. Words that don't match are left out.
+-- opts: synonyms, chips (as for Search.Find).
+function Search.Explain(index, row, query, opts)
+  opts = opts or {}
+  local text, file = index.text[row], index.file[row]
+  local fileWords = {}
+  for token in Search.FileText(file):gsub("|", ""):gmatch("%S+") do
+    fileWords[#fileWords + 1] = token
+  end
+  local found = {}
+  for _, term in ipairs(queryTerms(query, opts.synonyms)) do
+    local best, where, via = 0, nil, nil
+    for i = 1, #term.variants, 2 do
+      local variant, quality = term.variants[i], term.variants[i + 1]
+      local needle = " " .. variant
+      local p = find(text, needle, 1, true)
+      while p do
+        local exact = byte(text, p + #needle) == 32
+        if exact or #variant >= 3 then
+          local field = fieldAt(text, p)
+          local score = FIELD_WEIGHTS[field] * quality * (exact and 1 or QUALITY_PREFIX)
+          if score > best then
+            best = score
+            via = i > 1 and variant or nil
+            if field <= 4 then
+              where = "name"
+            elseif field == DESC_FIELD then
+              where = "description"
+            else
+              where = "picture"
+              for _, fileWord in ipairs(fileWords) do
+                if startsWith(fileWord, variant) then
+                  where = "file"
+                end
+              end
+            end
+          end
+        end
+        p = find(text, needle, p + #needle, true)
+      end
+    end
+    for number, hit in pairs(categoryHits(index.categoryWords, term.variants)) do
+      for _, own in ipairs(index.cats[row] or NO_CATS) do
+        if own == number and hit > best then
+          best, where, via = hit, "category", nil
+        end
+      end
+    end
+    if where then
+      found[#found + 1] = { word = term.word, via = via, where = where }
+    end
+  end
+  for _, chip in ipairs(opts.chips or {}) do
+    local t = chip.target
+    local _, share = chipValue(index, row, chipBand(chip))
+    found[#found + 1] = { color = chip.preset or Search.ColorName(t[1], t[2], t[3]), share = math.floor(share + 0.5) }
+  end
+  return found
+end
+
+-- `text` with the words a query's words find coloured, by the same stemming, prefix and synonym rules as Find.
+-- opts: synonyms, file (split camel-case words as in file names).
+function Search.Highlight(text, query, opts)
+  local terms = queryTerms(query, opts and opts.synonyms)
+  if #terms == 0 then
+    return text
+  end
+  local function mark(word)
+    local normal = Search.Normalize(word)
+    if normal == "" or STOPWORDS[normal] then
+      return word
+    end
+    local stem = Search.Stem(normal)
+    for _, term in ipairs(terms) do
+      for i = 1, #term.variants, 2 do
+        local variant = term.variants[i]
+        if stem == variant or normal == variant then
+          return HIGHLIGHT .. word .. "|r"
+        elseif startsWith(normal, variant) or startsWith(stem, variant) then
+          -- A prefix match colours only the typed part, where it lines up with the word's letters.
+          for k = #variant, #word do
+            if Search.Normalize(sub(word, 1, k)) == variant then
+              return HIGHLIGHT .. sub(word, 1, k) .. "|r" .. sub(word, k + 1)
+            end
+          end
+          return HIGHLIGHT .. word .. "|r"
+        end
+      end
+    end
+    return word
+  end
+  return (
+    gsub(text, "[%w\128-\255]+", function(word)
+      if not (opts and opts.file) then
+        return mark(word)
+      end
+      -- File names glue words in camel case ("ArtifactAzshara"); search splits them there too.
+      local parts = {}
+      for part in gsub(word, "(%l)(%u)", "%1\1%2"):gmatch("[^\1]+") do
+        parts[#parts + 1] = mark(part)
+      end
+      return table.concat(parts)
+    end)
+  )
 end

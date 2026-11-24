@@ -19,6 +19,18 @@ local SUGGEST_WIDTH = 320
 local View = {}
 View.__index = View
 
+-- Blizzard's submenu arrow, a bit smaller than the text.
+local SYNONYM_ARROW = "|TInterface\\ChatFrame\\ChatFrameExpandArrow:8|t"
+
+-- How a tooltip names where a search word matched (Search.Explain).
+local MATCH_PLACES = {
+  name = "name",
+  file = "file name",
+  picture = "picture",
+  description = "description",
+  category = "item category",
+}
+
 -- Calls `fn` once the game has loaded spell or item names it was asked for (Catalog.NameOf); a later wait for the
 -- same key replaces an earlier one.
 -- The events that answer C_Item.RequestLoadItemDataByID and C_Spell.RequestLoadSpellData.
@@ -844,12 +856,40 @@ function View:ShowTooltip(owner, row)
       end
     end)
   end
-  GameTooltip:SetText(names[1] or index.file[row] or tostring(index.key[row]), 1, 1, 1)
+  -- While searching, the words a search word finds are coloured and a line says what found the icon.
+  local query = self.search and self.search:GetText() or ""
+  local searching = #Search.Normalize(query) >= MIN_QUERY or #self.chips > 0
+  local opts = { synonyms = ns.synonyms, chips = self.chips }
+  local function shown(name)
+    return searching and Search.Highlight(name, query, opts) or name
+  end
+  GameTooltip:SetText(names[1] and shown(names[1]) or index.file[row] or tostring(index.key[row]), 1, 1, 1)
   for i = 2, math.min(#names, 5) do
-    GameTooltip:AddLine(names[i], 0.8, 0.8, 0.8)
+    GameTooltip:AddLine(shown(names[i]), 0.8, 0.8, 0.8)
   end
   if index.file[row] and names[1] then
-    GameTooltip:AddLine(index.file[row], 0.5, 0.5, 0.5)
+    local file = index.file[row]
+    GameTooltip:AddLine(
+      searching and Search.Highlight(file, query, { synonyms = ns.synonyms, file = true }) or file,
+      0.5,
+      0.5,
+      0.5
+    )
+  end
+  if searching then
+    local parts = {}
+    for _, found in ipairs(Search.Explain(index, row, query, opts)) do
+      if found.word then
+        local word = found.via and ("%s %s %s"):format(found.word, SYNONYM_ARROW, found.via) or found.word
+        parts[#parts + 1] = ("%s (%s)"):format(word, L[MATCH_PLACES[found.where]])
+      else
+        local preset = Search.Preset(found.color)
+        parts[#parts + 1] = ("%s %d%%"):format(preset and L[preset.label] or found.color, found.share)
+      end
+    end
+    if #parts > 0 then
+      GameTooltip:AddLine(L["Found by: %s"]:format(table.concat(parts, ", ")), 1, 0.82, 0, true)
+    end
   end
   if index.id[row] and ns.ShowIconID(ns.db.settings.tooltipPicker) then
     GameTooltip:AddLine(L["Icon ID: %d"]:format(index.id[row]), 0.5, 0.8, 1)

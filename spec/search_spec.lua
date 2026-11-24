@@ -217,4 +217,65 @@ describe("Search", function()
     assert.are.equal(1, Search.Distance("makr", "mark", 2))
     assert.are.equal(3, Search.Distance("abc", "xyzabc", 2))
   end)
+
+  describe("explaining matches", function()
+    local index
+
+    before_each(function()
+      local explained = Catalog.Parse(addon.fakeData(ns, {
+        {
+          "1",
+          "spell_druid_tirelesspursuit",
+          names = { "Tireless Pursuit" },
+          desc = "increases movement speed",
+          tags = "werewolf wolf",
+          colors = "purple:34 black:40",
+        },
+      }))
+      index = explained.index
+    end)
+
+    it("says where each search word matched", function()
+      local opts = { synonyms = synonyms }
+      assert.are.same({ { word = "werewolf", where = "picture" } }, Search.Explain(index, 1, "werewolf", opts))
+      assert.are.same({ { word = "druid", where = "file" } }, Search.Explain(index, 1, "druid", opts))
+      assert.are.same({ { word = "pursuit", where = "name" } }, Search.Explain(index, 1, "pursuit", opts))
+      assert.are.same({ { word = "movement", where = "description" } }, Search.Explain(index, 1, "movement", opts))
+      assert.are.same(
+        { { word = "wolf", where = "picture" }, { word = "druid", where = "file" } },
+        Search.Explain(index, 1, "wolf druid", opts)
+      )
+    end)
+
+    it("names the synonym a search word matched through", function()
+      local potion = Catalog.Parse(addon.fakeData(ns, { { "1", "inv_potion_158", names = { "Shadow Protection" } } }))
+      assert.are.same(
+        { { word = "shield", via = "protection", where = "name" } },
+        Search.Explain(potion.index, 1, "shield", { synonyms = synonyms })
+      )
+    end)
+
+    it("gives a colour chip's share of the icon", function()
+      local chip = { target = addon.COLOR_LAB.purple, preset = "purple" }
+      assert.are.same({ { color = "purple", share = 34 } }, Search.Explain(index, 1, "", { chips = { chip } }))
+    end)
+
+    it("colours the words of a name that a search word finds", function()
+      local gold = "|cffffd100"
+      assert.are.equal("Kite " .. gold .. "Shield|r", Search.Highlight("Kite Shield", "shields"))
+      assert.are.equal(gold .. "Shield|rwall", Search.Highlight("Shieldwall", "shield"))
+      assert.are.equal("Mal des " .. gold .. "Jägers|r", Search.Highlight("Mal des Jägers", "jager"))
+      assert.are.equal("Tireless Pursuit", Search.Highlight("Tireless Pursuit", "wolf"))
+      assert.are.equal(
+        "INV_Shield_1H_Artifact" .. gold .. "Azshara|r_D_01",
+        Search.Highlight("INV_Shield_1H_ArtifactAzshara_D_01", "azshara", { file = true })
+      )
+      assert.are.equal(
+        "INV_" .. gold .. "Shield|r_1H_ArtifactAzshara_D_01",
+        Search.Highlight("INV_Shield_1H_ArtifactAzshara_D_01", "shield", { file = true })
+      )
+      assert.are.equal(gold .. "Inc|rorporeal Defense", Search.Highlight("Incorporeal Defense", "inc"))
+      assert.are.equal("Blessing of " .. gold .. "Prot|rection", Search.Highlight("Blessing of Protection", "prot"))
+    end)
+  end)
 end)
