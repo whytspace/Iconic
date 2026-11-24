@@ -101,7 +101,7 @@ if ! awk -v version="$version" -v today="$today" '
   /^## Unreleased[[:space:]]*$/ && updated == 0 {
     print
     print ""
-    print "## " version " - " today
+    print "## v" version " - " today
     updated = 1
     next
   }

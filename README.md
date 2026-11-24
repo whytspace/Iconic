@@ -14,7 +14,7 @@ This is where **Iconic** comes in. It adds a search box, filters and categories 
 
 > ⚠️ **Early version:** please report bugs on [GitHub](https://github.com/whytspace/Iconic/issues).
 
-*"Avenger Tank" is ready. Now it needs an icon… something purple.*<br>
+*My new "Avenger Tank" outfit is finally ready. Now it needs an icon… something purple.*<br>
 *A shield, maybe?*<br>
 *With a hint of gold. Just a hint.*
 
@@ -35,12 +35,14 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 
 ## Finding icons
 
-- **Words:** names of spells, items, mounts, pets and currencies, spell descriptions and icon file names. Related words count too ("target" finds marks), and typos still find close matches.
-- **Colours:** up to three colour chips next to the search box, from the colour picker or by typing a colour such as "green" and taking the suggestion. Icons rank by how much of each colour they have. Looking for an icon that's red and green? Iconic has you covered.
-- **Filters:** source, class, item category and profession, or only your own spells and items. The grid can be grouped the same ways.
-- **Suggested** icons come first: the items of the equipment set or bank tab you're editing, the spells in your macro, your spec icons and more.
-- **Recently used** icons follow.
+- **What icons show:** we analysed over 30,000 icons, so you can search by what they show, such as "werewolf" or "rose". Spell, item, mount, pet and currency names work too, and typos still find close matches.
+- **Colours:** search by one or more colours. Icons are sorted by how closely they match. Looking for an icon that's red and green? Iconic has you covered.
+- **Filters:** source, class, item category and profession, or only your own spells and items.
+- **Grouping:** group the icons by source, class, item category, profession or colour.
+- **Suggestions:** icons that fit where you opened the picker, such as the items in a bank tab, the spells in a macro or your spec icons.
+- **Recently used:** the icons you picked last.
 - **Icon IDs** in tooltips, always or while holding Shift, Ctrl or Alt (Options → AddOns → Iconic).
+- **German:** in a German game client, the interface is in German and icons are found by their German and English names.
 - `/iconic` opens a standalone browser to look up icons and copy their IDs.
 
 ![Colour search](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/colours.png)
