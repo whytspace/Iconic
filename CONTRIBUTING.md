@@ -194,7 +194,7 @@ After a patch to WoW Forever or retail:
 2. Let the launcher finish patching, then extract the icons: `devc python3 -I scripts/extract_icons.py`.
 3. Rebuild the colors: `devc python3 -I scripts/build_colors.py --sheets`.
 4. Rebuild the data with fresh tables: `devc python3 scripts/build_data.py --refresh`.
-5. Run the checks, `/reload` in both clients and open an icon picker.
+5. Run the checks, `/reload` in every client and run `/iconic check`: it tests the data, searches, client APIs and pickers there, opens the macro picker and the browser, and prints one line per check. It ships only in development checkouts.
 6. Commit and cut a release (see Releases).
 
 ## Releases

@@ -27,7 +27,9 @@ SlashCmdList.ICONIC = function(msg)
   if command == "settings" then
     ns.SettingsPage.Open()
     --@do-not-package@
-    -- Maintainer tools (README screenshots and animation); the packager strips them from releases.
+    -- Maintainer tools (client check, README screenshots and animation); the packager strips them from releases.
+  elseif command == "check" then
+    ns.Check:Start()
   elseif command == "shot" then
     ns.Screenshot:Capture()
   elseif command == "shot demo" then

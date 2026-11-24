@@ -33,6 +33,7 @@ UI/Settings.lua
 UI/Screenshot.lua
 UI/ScreenshotTour.lua
 UI/Demo.lua
+UI/Check.lua
 #@end-do-not-package@
 UI/API.lua
 UI/Events.lua

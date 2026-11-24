@@ -65,6 +65,7 @@ read_globals = {
   "GameTooltip",
   "GearManagerPopupFrame",
   "GearSetButton_OnClick",
+  "GetBuildInfo",
   "GetClassAtlas",
   "GetCurrentGuildBankTab",
   "GetGuildBankItemInfo",

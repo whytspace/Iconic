@@ -46,7 +46,8 @@ local function selectedButton(view)
   return found
 end
 
-local function openMacroPicker()
+-- Opens the macro window's icon picker; also used by /iconic check.
+function ScreenshotTour.OpenMacroPicker()
   if C_AddOns and C_AddOns.LoadAddOn then
     C_AddOns.LoadAddOn("Blizzard_MacroUI")
   end
@@ -66,7 +67,7 @@ local function openMacroPicker()
   return state and state.view
 end
 
-local function closeMacroPicker()
+function ScreenshotTour.CloseMacroPicker()
   if MacroPopupFrame and MacroPopupFrame:IsShown() then
     MacroPopupFrame:CancelButton_OnClick()
   end
@@ -79,7 +80,7 @@ local VIEWS = {
   {
     name = "picker",
     run = function(capture)
-      local view = openMacroPicker()
+      local view = ScreenshotTour.OpenMacroPicker()
       if not view then
         return capture(nil)
       end
@@ -94,7 +95,7 @@ local VIEWS = {
           GameTooltip:Hide()
           view.filters = filters
           view.search:SetText(query)
-          closeMacroPicker()
+          ScreenshotTour.CloseMacroPicker()
         end)
       end)
     end,
@@ -142,7 +143,7 @@ end
 
 local function restore(saved)
   if not saved.macroShown then
-    closeMacroPicker()
+    ScreenshotTour.CloseMacroPicker()
   end
   ns.db.groupBy = saved.groupBy
   ns.db.settings.tooltipPicker = saved.tooltipPicker
