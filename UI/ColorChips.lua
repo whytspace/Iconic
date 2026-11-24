@@ -193,6 +193,20 @@ local colorPicker, weightPanel
 
 local WEIGHT_OVERLAP = 8
 
+local STRATA_RANK = {}
+for i, strata in ipairs({
+  "BACKGROUND",
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "DIALOG",
+  "FULLSCREEN",
+  "FULLSCREEN_DIALOG",
+  "TOOLTIP",
+}) do
+  STRATA_RANK[strata] = i
+end
+
 -- Below the picker, in the same dialog border, joined to it.
 local function createWeightPanel(frame)
   local panel = CreateFrame("Frame", nil, frame)
@@ -239,6 +253,7 @@ local function prepareColorPicker(anchor)
           frame:SetPoint(unpack(point))
         end
         frame:SetClampedToScreen(colorPicker.clamped)
+        frame:SetFrameStrata(colorPicker.strata)
         colorPicker.points = nil
       end
       if weightPanel then
@@ -261,10 +276,14 @@ local function prepareColorPicker(anchor)
   end
   if not colorPicker.points then
     colorPicker.points, colorPicker.clamped = {}, frame:IsClampedToScreen()
+    colorPicker.strata = frame:GetFrameStrata()
     for i = 1, frame:GetNumPoints() do
       colorPicker.points[i] = { frame:GetPoint(i) }
     end
   end
+  -- Not below a window on a higher strata, such as DetailsFramework's picker.
+  local own, window = STRATA_RANK[colorPicker.strata] or 0, STRATA_RANK[anchor:GetFrameStrata()] or 0
+  frame:SetFrameStrata(window > own and anchor:GetFrameStrata() or colorPicker.strata)
   frame:ClearAllPoints()
   frame:SetPoint("TOPLEFT", anchor, "TOPRIGHT", -2, -1)
   frame:SetClampedToScreen(true)

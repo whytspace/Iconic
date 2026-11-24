@@ -635,6 +635,16 @@ function View.Create(parent, opts)
   end)
   -- Line the hint list up with the visible edge of the search box.
   local preview = self.search.searchPreviewContainer
+  -- Above pickers on a higher strata than Blizzard's DIALOG, such as DetailsFramework's.
+  preview:SetFrameStrata("FULLSCREEN_DIALOG")
+  local rows = { self.search.GetAllResultsButton and self.search:GetAllResultsButton() }
+  for _, button in ipairs(self.search:GetButtons()) do
+    rows[#rows + 1] = button
+  end
+  for _, button in ipairs(rows) do
+    button:SetFrameStrata("FULLSCREEN_DIALOG")
+    button:SetFrameLevel(preview:GetFrameLevel() + 2)
+  end
   preview:ClearAllPoints()
   preview:SetPoint("TOPLEFT", self.search, "BOTTOMLEFT", -5, -1)
 
