@@ -16,7 +16,7 @@ import sys
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CACHE, PICKER_NAME, ROOT, WAGO_CACHE, log, manifest_icons  # noqa: E402
+from common import CACHE, PICKER_NAME, ROOT, WAGO_CACHE, cached_icon_names, log, manifest_icons, unnamed_icon_ids  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "Iconic_Data")
 
@@ -295,8 +295,16 @@ def load_tables(branch, refresh, locale):
 
 def picker_icons(tables, stopwords):
     icons = Icons()
+    own = {}
     for file_id, name in manifest_icons(tables["ManifestInterfaceData"]):
+        own[file_id] = name
         if PICKER_NAME.match(name):
+            icons[file_id] = Icon(name, stopwords)
+    # Item and spell icons this client has no file name for; another client's name, when it has one, gives file words.
+    names = cached_icon_names(missing_ok=True)
+    for file_id in unnamed_icon_ids(tables, own):
+        name = names.get(file_id, "")
+        if not name or PICKER_NAME.match(name):
             icons[file_id] = Icon(name, stopwords)
     for file_id, tags in load_tags().items():
         if file_id in icons:

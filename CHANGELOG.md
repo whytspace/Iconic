@@ -5,6 +5,7 @@
 - **[New]** Filter and group icons by Iconic category, such as "Armor › Head" or "Creatures", based on what the icon shows; icons Iconic has no tags for yet are under "Unknown". ([#8](https://github.com/whytspace/Iconic/issues/8))
 - **[Change]** The "Item category" filter and grouping are now called "Blizzard category".
 - **[Change]** Picture tags use the singular only ("gem" instead of both "gem" and "gems").
+- **[Fix]** Item and spell icons without a file name in the game, about 120 in retail, no longer show without names, tags or colors.
 
 ## v3 - 2026-11-24
 

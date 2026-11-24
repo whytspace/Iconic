@@ -15,7 +15,7 @@ import sys
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import ICON_CACHE as OUT, cached_icon_names, log  # noqa: E402
+from common import ICON_CACHE as OUT, cached_icon_names, cached_unnamed_icon_ids, log  # noqa: E402
 
 DEFAULT_WOW = os.environ.get("WOW_DIR", "/Applications/Games/World of Warcraft")
 
@@ -203,7 +203,7 @@ def main():
     storage = Storage(args.wow_dir)
     log(f"{len(storage.entries)} local storage entries")
     os.makedirs(args.out, exist_ok=True)
-    wanted = set(cached_icon_names())
+    wanted = set(cached_icon_names()) | cached_unnamed_icon_ids()
     for product in args.product or ["wow", "wowf"]:
         # Products share the archives; each has its own root, so a later one adds only icons not yet written.
         extract(storage, args.wow_dir, product, wanted, args)

@@ -139,7 +139,7 @@ ns.TAG_CATEGORIES = {
       {
         key = "necklaces",
         label = "Necklaces",
-        words = "amulet collar medallion necklace pendant talisman",
+        words = "amulet beads collar medallion necklace pendant talisman",
       },
       {
         key = "gems",
@@ -321,22 +321,23 @@ ns.TAG_CATEGORIES = {
     label = "Tools & objects",
     words = "airship altar anchor anvil arena bait ball balloon basketball battery battleground bed bedroll "
       .. "bell bellows binoculars birdhouse board boat bobber bomb boombox brazier broom brush building "
-      .. "button camera campfire candle carpet carrier cart castle catapult cauldron chain chair chime "
-      .. "chisel chopper city clamp clock cogwheel coil collector comb communicator compass computer cube "
-      .. "cylinder device dice discoball distiller doll donut drill drone drum dumbbell dungeon dynamite "
-      .. "emitter engine fan figurine file film firecracker fishing flamethrower flute flying football "
-      .. "fork frame gadget gameboard gate gear giant gizmo glider globe gondola gong grenade grindstone "
-      .. "guitar gyrocopter handle harness harp hearthstone helicopter hobby hoe hook horseshoe hourglass "
-      .. "house hovercraft idol incense injector kettle key keychain kite ladder lantern leash lens "
-      .. "lightbulb loveseat lure machine magnet magnifier magnifying manacles matchbook mine mirror "
-      .. "module mortar motorcycle multitool needle net noose oilcan pan partition pedestal pickaxe "
-      .. "pillar pillow pipe pitchfork popper pot power pyramid raft rake razor remote rocket rod roller "
-      .. "rolling room rope saw sawblade scarecrow scissors scope screw screwdriver searchlight sextant "
-      .. "sharpening ship shovel siege skiff sled sleigh snowman soccer spanner speaker spoon sprayer "
-      .. "spring spyglass stabilizer statue stirrup stopwatch submarine sundial surfboard syringe tank "
-      .. "telescope temple tent tesla throne thumbtack tiki tongs tool toolbox torch totem tower train "
-      .. "trap triangle trigger trinket trophy trowel trumpet tube turret vehicle vending voodoo wall "
-      .. "watch watering wheel whip whistle windmill wire wrench zeppelin",
+      .. "button camera campfire candle carpet carrier cart castle catapult cauldron chain chair "
+      .. "chessboard chime chisel chopper city clamp clock cogwheel coil collector comb communicator "
+      .. "compass computer cube cylinder device dice discoball distiller doll donut drill drone drum "
+      .. "dumbbell dungeon dynamite emitter engine fan figurine file film firecracker fishing "
+      .. "flamethrower flute flying football fork frame gadget gameboard gate gear giant gizmo glider "
+      .. "globe gondola gong grenade grindstone guitar gyrocopter handle harness harp hearthstone "
+      .. "helicopter hobby hoe hook horseshoe hourglass house hovercraft idol incense injector kettle key "
+      .. "keychain kite ladder lantern leash lens lightbulb loveseat lure machine magnet magnifier "
+      .. "magnifying manacles matchbook mine mirror module mortar motorcycle multitool needle net noose "
+      .. "oilcan pan partition pedestal pickaxe pillar pillow pipe pitchfork popper pot power pyramid "
+      .. "raft rake razor remote rocket rod roller rolling room rope rug saw sawblade scarecrow scissors "
+      .. "scope screw screwdriver searchlight sextant sharpening ship shovel siege skiff sled sleigh "
+      .. "snowman soccer spanner speaker spoon sprayer spring spyglass stabilizer statue stirrup "
+      .. "stopwatch submarine sundial surfboard syringe tank telescope temple tent tesla throne thumbtack "
+      .. "tiki tongs tool toolbox torch totem tower train trap triangle trigger trinket trophy trowel "
+      .. "trumpet tube turret vehicle vending voodoo wall watch watering wheel whip whistle windmill wire "
+      .. "wrench zeppelin",
   },
   {
     key = "symbols",

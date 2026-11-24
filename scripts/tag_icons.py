@@ -18,7 +18,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CACHE, ICON_CACHE as ICONS, PICKER_NAME, ROOT, cached_icon_names, log  # noqa: E402
+from common import CACHE, ICON_CACHE as ICONS, PICKER_NAME, ROOT, cached_icon_names, cached_unnamed_icon_ids, log  # noqa: E402
 
 CHUNKS = os.path.join(CACHE, "tags", "chunks")
 TAGS = os.path.join(ROOT, "scripts", "icon_tags.json")
@@ -29,7 +29,8 @@ WORD = re.compile(r"[a-z]+")
 
 
 def wanted(names):
-    return {i for i, name in names.items() if PICKER_NAME.match(name)}
+    """Icons to tag: picker-named ones and those the pickers list by file ID only."""
+    return {i for i, name in names.items() if PICKER_NAME.match(name)} | cached_unnamed_icon_ids()
 
 
 def load_tags():
@@ -174,7 +175,7 @@ def prepare(args):
         with open(os.path.join(path, "ids.json"), "w", encoding="utf-8") as handle:
             json.dump(ids, handle)
         with open(os.path.join(path, "names.txt"), "w", encoding="utf-8") as handle:
-            handle.writelines(f"{n:03d} {names[i]}\n" for n, i in enumerate(ids, 1))
+            handle.writelines(f"{n:03d} {names.get(i, '(no file name)')}\n" for n, i in enumerate(ids, 1))
         print(os.path.basename(path))
         written += 1
     if unreadable:

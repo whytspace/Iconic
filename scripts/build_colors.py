@@ -21,7 +21,7 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CACHE, ICON_CACHE, cached_icon_names, log  # noqa: E402
+from common import CACHE, ICON_CACHE, cached_icon_names, cached_unnamed_icon_ids, log  # noqa: E402
 
 SHEET_DIR = os.path.join(CACHE, "colors")
 OUT = os.path.join(CACHE, "icon_colors.csv")
@@ -230,7 +230,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sheets", action="store_true", help="write a contact sheet of the top icons per color")
     args = parser.parse_args()
-    colors = analyze_all(sorted(cached_icon_names()))
+    colors = analyze_all(sorted(set(cached_icon_names()) | cached_unnamed_icon_ids()))
     write_csv(colors)
     if args.sheets:
         write_sheets(colors)

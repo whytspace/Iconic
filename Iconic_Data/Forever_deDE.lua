@@ -392,7 +392,7 @@ blutung	bleed bleeding
 blutunterlaufen	bloodshot
 boden	ground
 boe	gust
-bogen	arc arch bow
+bogen	arc arch archway bow
 bogenschiessen	archery
 bogenschutze	archer
 bohne	bean
@@ -477,6 +477,7 @@ citrin	citrine
 clownfisch	clownfish
 creme	cream
 dach	roof
+dame	checkers
 damon	demon devil
 damonen	demon
 damonin	demoness
@@ -528,7 +529,7 @@ drapierung	drape
 dreck	dirt
 drehend	spinning
 drehspiess	spit
-drehung	twist
+drehung	spin twist
 drei	three
 dreieck	triangle
 dreiecke	triangle
@@ -699,6 +700,7 @@ feldflasche	canteen
 fell	fur hide pelt
 felsbrocken	boulder
 felsen	cliff rock
+fenster	window
 ferkel	piglet
 fernbedienung	remote
 ferngla	binoculars
@@ -1394,6 +1396,7 @@ koch	chef cook
 kochen	boil cook cooking
 kocher	quiver
 kochgeschirr	cookware
+kochmutze	toque
 koder	bait lure
 kodex	codex
 kohl	cabbage
@@ -1635,6 +1638,7 @@ masken	mask
 maskenball	masquerade
 maskerade	masquerade
 mathematik	math
+matte	mat
 mau	mouse
 mauer	wall
 maul	mouth
@@ -2092,9 +2096,11 @@ saure	acid caustic
 schabe	roach
 schabernack	prank
 schach	chess
+schachbrett	chessboard
 schadel	cranium skull
 schaf	sheep
 schaft	shaft
+schakal	jackal
 schal	scarf shawl
 schale	bowl husk shell
 schalentier	shellfish
@@ -2212,9 +2218,10 @@ schneeflocken	snowflake
 schneemann	snowman
 schneeschuh	snowshoe
 schneesturm	blizzard
+schneiden	cutting
 schneiderei	tailoring
 schnell	fast quick swift
-schnitt	cut
+schnitt	cut cutting
 schnitte	cut
 schnitter	reaper
 schnitzerei	carving
@@ -2247,6 +2254,7 @@ schrei	scream
 schreiben	missive
 schreien	shouting
 schreiend	screaming
+schrein	shrine
 schreiter	strider
 schrift	script writing
 schriftrolle	scroll
@@ -2622,6 +2630,7 @@ topf	pot
 topfe	pot
 topferware	pottery
 tor	gate gateway
+torbogen	archway
 tortchen	tart
 torte	cake
 tortollaner	tortollan
@@ -2877,7 +2886,7 @@ windung	coil
 winkel	chevron
 winterschlaf	hibernate
 wippe	seesaw
-wirbel	swirl vertebrae vortex whirl
+wirbel	spin swirl vertebrae vortex whirl
 wirbelnd	swirling
 wirbelsaule	spine
 wirbelsturm	cyclone tornado
@@ -3055,6 +3064,7 @@ arch	bogen
 arched	gewölbt
 archer	bogenschütze
 archery	bogenschießen
+archway	torbogen
 arctic	arktis
 armadillo	gürteltier
 armillary	armillarsphäre
@@ -3338,10 +3348,12 @@ charge	ansturm
 charging	ansturm
 charm	zauber
 checkered	kariert
+checkers	dame
 cheese	käse
 chef	koch
 cherry	kirsche
 chess	schach
+chessboard	schachbrett
 chest	truhe
 chestplate	brustplatte
 chevron	winkel
@@ -3509,6 +3521,7 @@ cut	schliff
 cute	niedlich
 cutlass	entermesser
 cutlery	besteck
+cutting	schneiden
 cyan	türkis
 cycle	kreislauf
 cyclone	zyklon
@@ -3801,6 +3814,7 @@ garment	gewand
 garnish	garnierung
 gasping	keuchend
 gate	tor
+gateway	portal
 gauge	messgerät
 gauntlet	handschuh
 gear	ausrüstung
@@ -4011,6 +4025,7 @@ iron	eisen
 island	insel
 isopod	assel
 jack	kürbislaterne
+jackal	schakal
 jacket	jacke
 jackolantern	kürbislaterne
 jagged	gezackt
@@ -4117,6 +4132,7 @@ lobster	hummer
 lock	schloss
 lockbox	schließkassette
 locked	verschlossen
+locket	medaillon
 lockpick	dietrich
 locomotive	lokomotive
 log	baumstamm
@@ -4167,6 +4183,7 @@ marmoset	krallenaffe
 maroon	kastanienbraun
 mask	maske
 masquerade	maskerade
+mat	matte
 matchbook	streichholzbrief
 matchbox	streichholzschachtel
 matches	streichhölzer
@@ -4715,6 +4732,7 @@ shovel	schaufel
 shrapnel	schrapnell
 shredder	schredder
 shrimp	garnele
+shrine	schrein
 siamese	siamesisch
 sick	krank
 sickle	sichel
@@ -4822,6 +4840,7 @@ spike	stachel
 spiked	stachelig
 spiky	stachelig
 spill	verschütten
+spin	drehung
 spindle	spindel
 spine	wirbelsäule
 spinneret	spinndrüse
@@ -5036,6 +5055,7 @@ tooth	zahn
 top	oberteil
 topaz	topas
 tophat	zylinder
+toque	kochmütze
 torch	fackel
 torn	zerrissen
 torso	oberkörper
@@ -5179,6 +5199,7 @@ wick	docht
 wicker	korbgeflecht
 wide	breit
 windmill	windmühle
+window	fenster
 wine	wein
 wing	flügel
 winged	geflügelt
@@ -8672,6 +8693,7 @@ zipper	reißverschluss
 841218,
 841379,
 841383,
+874857,
 876372,
 893777,
 895875,
@@ -9007,6 +9029,7 @@ zipper	reißverschluss
 5536647,
 5559627,
 5578050,
+5588107,
 5656675,
 5735003,
 5740296,
@@ -9058,6 +9081,10 @@ zipper	reißverschluss
 6642735,
 6699680,
 6725876,
+6893242,
+6893244,
+6893245,
+6893247,
 7672667,
 7672671,
 7672673,
@@ -9151,6 +9178,13 @@ zipper	reißverschluss
 7831521,
 7831522,
 7831523,
+7889090,
+7929458,
+7929459,
+7929460,
+7929461,
+7929462,
+7929463,
 7931167,
 7941048,
 7941049,
@@ -9158,11 +9192,45 @@ zipper	reißverschluss
 7941397,
 7941422,
 7941423,
+7949967,
+7949968,
+7949969,
+7949972,
 7956963,
 7957558,
 7957675,
 7957676,
 7957678,
+7959843,
+7959844,
+7959845,
+7959846,
+7959847,
+7962715,
+7962716,
+7962717,
+7962718,
+7962719,
+7967612,
+7967613,
+7967614,
+7967615,
+8101155,
+8119728,
+8188276,
+8382581,
+8382582,
+8382583,
+8382584,
+8382585,
+8382586,
+8382587,
+8382588,
+8392824,
+8408196,
+8422168,
+8426877,
+8517112,
     },
     refs = {
 nil,
@@ -12873,6 +12941,7 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "i213550|i277486|i277484|i277491|i277494|i277495|i277498",
 nil,
 nil,
@@ -12957,7 +13026,53 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "s1312330|s1326019",
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
 nil,
 nil,
 nil,
@@ -16566,6 +16681,7 @@ nil,
 "teufelsholz|||||",
 "fixieren|||||",
 "wutend|befehl toten||||",
+"bluhende urtum|||||rechtsklick euer bluhende urtum beschworen freigeben dies haustier verandert jahreszeit",
 "bauxit|||||",
 "elementaranlocker|gekuhlt||||",
 "probierpaket mit kandierten fruchten|||||",
@@ -16901,6 +17017,7 @@ nil,
 "partikel der verderbni|||||",
 "fluch des kielholer|||||",
 "papageienmorph|||||",
+"selbstgefundener abenteurer|ungebrochener||||",
 "blenden|||||",
 "zerbrochene krabbenschere|||||",
 "gruner kuschelflossenmurloc anzug|||||",
@@ -16952,6 +17069,10 @@ nil,
 "haiangriff|||||",
 "schlichter rock|windgepeitschter||||",
 "climgefahr|||||beschwort climgefahr reittier hochkommandantin geschwindigkeit",
+"scharpe des beschwipsten weisen|||||",
+"umhang der verschleierten pfoten|||||",
+"strohhut der frostigen strome|gewand des stillwasserfischer||||",
+"fischermantel|||||",
 "geistruferstiefel|||||",
 "geistruferhandschuhe|||||",
 "geistruferkilt|||||",
@@ -17045,6 +17166,13 @@ nil,
 "beschworen|pandahalsband||||rechtsklick euer pandababy beschworen freigeben",
 "beschworen|zerglinglasso||||rechtsklick euren beschworen wieder freigeben",
 "beschworen|diablostein||||rechtsklick beschworen freigeben",
+"|||||rechtsklick diesen begleiter beschworen freigeben",
+"violetten beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"roten beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"blauen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"grauen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"orangefarbenen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"gelben beschworen|||||rechtsklick euren beschworen wieder freigeben",
 "treuer gefahrte des abenteuerveteranen|||||beschwort reitbaren baren gibt ihn wieder frei",
 "wappenrock der|||||",
 "wappenrock von|||||",
@@ -17052,11 +17180,45 @@ nil,
 "wappenrock der versorgung und logistik|||||",
 "wappenrock der burg|||||",
 "wappenrock des spektralbaren|||||",
+"schwarzer druidenreitelch|||||beschwort reitbaren elch gibt ihn wieder frei",
+"weisser druidenreitelch|||||beschwort reitbaren elch gibt ihn wieder frei",
+"gruner druidenreitelch|||||beschwort reitbaren elch gibt ihn wieder frei",
+"grauer druidenreitelch|||||beschwort reitbaren elch gibt ihn wieder frei",
 "immergruner schild|bollwerk der verlorenen jahreszeiten||||",
 "grunhammer|||||",
 "axt des waldverteidiger|faulnisspalter||||",
 "nachsinnen|schwert der stillen winde||||",
 "seelenriss|||||",
+"schwarzen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"braunen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"grauen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"hellbraunen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"weissen beschworen|||||rechtsklick euren beschworen wieder freigeben",
+"schwarze teufelssaurierreittier|||||beschwort reitbaren teufelssaurier gibt ihn wieder frei",
+"blaue teufelssaurierreittier|||||beschwort reitbaren teufelssaurier gibt ihn wieder frei",
+"grune teufelssaurierreittier|||||beschwort reitbaren teufelssaurier gibt ihn wieder frei",
+"lila teufelssaurierreittier|||||beschwort reitbaren teufelssaurier gibt ihn wieder frei",
+"weiss teufelssaurierreittier|||||beschwort reitbaren teufelssaurier gibt ihn wieder frei",
+"schwarzer reitsabler der wache|||||beschwort reitsabler wache gibt ihn wieder frei",
+"brauner reitsabler der wache|||||beschwort reitsabler wache gibt ihn wieder frei",
+"grauer reitsabler der wache|||||beschwort reitsabler wache gibt ihn wieder frei",
+"weisser reitsabler der wache|||||beschwort reitsabler wache gibt ihn wieder frei",
+"wappenrock der|himmelsgeborenen||||",
+"wappenrock der ewigen erkundung|||||",
+"schriftrolle verstehen|||||",
+"guldener gurtel des klingenmeister|||||",
+"guldene stiefel des klingenmeister|||||",
+"guldene des klingenmeister|||||",
+"guldener brustharnisch des klingenmeister|||||",
+"guldene handschuhe des klingenmeister|||||",
+"guldene halsband des klingenmeister|rustung||||",
+"guldene beinschutzer des klingenmeister|||||",
+"guldene schultern des klingenmeister|||||",
+"robuste totemtasche|||||",
+"spektralwolfrudel|geist des|verweigerung ruf|||beschwort reitbare spektralwolfrudel gibt wieder frei bis zwei gruppenmitglieder nahe konnen beim aufsitzen rudel anschliessen",
+"guldene grossschwert des klingenmeister|||||",
+"purpurroter hahn|||||beschwort reitbaren hahn gibt ihn wieder frei",
+"tiefgrune meeresschildkrote|||||beschwort reitbare meeresschildkrote gibt wieder frei",
     },
   },
 }

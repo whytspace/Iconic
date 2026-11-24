@@ -35,7 +35,7 @@ Use the WoW Forever client's AddOns folder the same way. The Git setting prevent
 
 ## Icon data
 
-`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes `Iconic_Data/Forever.lua` and `Iconic_Data/Retail.lua`. It keeps only the icons Blizzard's picker offers (`PICKER_NAME`), since Iconic shows no others. Rerun it after a game patch and commit the result:
+`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes `Iconic_Data/Forever.lua` and `Iconic_Data/Retail.lua`. It keeps only the icons Blizzard's picker offers, since Iconic shows no others: `Interface\Icons` files named like `PICKER_NAME`, plus item and spell icons the client has no file name for (`unnamed_icon_ids` in `scripts/common.py`; the pickers list those by file ID, except housing decor). Rerun it after a game patch and commit the result:
 
 ```sh
 devc python3 scripts/build_data.py            # both versions, cached downloads
@@ -83,7 +83,7 @@ Grouping by color names each dominant color after the nearest reference shade (`
 
 `scripts/icon_tags.json` holds words for what each icon shows ("rose", "thorns", "jellyfish"), one line per file ID, subject first. They may repeat words of the file name. `build_data.py` ships them readable in their own column for tooltips, and `Catalog.Parse` adds them to each icon's file-name search words at load, without repeats, so tags and file name count the same. Claude Code subagents write them by looking at the icons; `scripts/tag_icons.py` prepares their work and collects it. Commit the file: tagging all icons uses about 25M tokens.
 
-Only icons Blizzard's picker offers get tags. In both clients that is exactly the `Interface\Icons` files named `inv_…`, `ability_…` or `spell_…`, in any case (`PICKER_NAME`).
+Only icons Blizzard's picker offers get tags: the `Interface\Icons` files named `inv_…`, `ability_…` or `spell_…`, in any case (`PICKER_NAME`), and the unnamed item and spell icons above. The macro picker also shows the icons of the player's own spells and talents, which can be any file; those stay under the Iconic category "Unknown".
 
 After a patch, once `extract_icons.py` has the new images, tag only the icons that have no tags yet:
 

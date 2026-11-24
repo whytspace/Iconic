@@ -177,6 +177,7 @@ IconicDataLocale = {
 19:12	Inschriftenkunde
 20	Behausung
 20:0	Dekoration
+20:2	Raum
 20:5	Dienstgegenstand
 ]=],
   professions = [=[
@@ -472,7 +473,7 @@ blutung	bleed bleeding
 blutunterlaufen	bloodshot
 boden	ground
 boe	gust
-bogen	arc arch bow
+bogen	arc arch archway bow
 bogenschiessen	archery
 bogenschutze	archer
 bohne	bean
@@ -557,6 +558,7 @@ citrin	citrine
 clownfisch	clownfish
 creme	cream
 dach	roof
+dame	checkers
 damon	demon devil
 damonen	demon
 damonin	demoness
@@ -608,7 +610,7 @@ drapierung	drape
 dreck	dirt
 drehend	spinning
 drehspiess	spit
-drehung	twist
+drehung	spin twist
 drei	three
 dreieck	triangle
 dreiecke	triangle
@@ -779,6 +781,7 @@ feldflasche	canteen
 fell	fur hide pelt
 felsbrocken	boulder
 felsen	cliff rock
+fenster	window
 ferkel	piglet
 fernbedienung	remote
 ferngla	binoculars
@@ -1474,6 +1477,7 @@ koch	chef cook
 kochen	boil cook cooking
 kocher	quiver
 kochgeschirr	cookware
+kochmutze	toque
 koder	bait lure
 kodex	codex
 kohl	cabbage
@@ -1715,6 +1719,7 @@ masken	mask
 maskenball	masquerade
 maskerade	masquerade
 mathematik	math
+matte	mat
 mau	mouse
 mauer	wall
 maul	mouth
@@ -2172,9 +2177,11 @@ saure	acid caustic
 schabe	roach
 schabernack	prank
 schach	chess
+schachbrett	chessboard
 schadel	cranium skull
 schaf	sheep
 schaft	shaft
+schakal	jackal
 schal	scarf shawl
 schale	bowl husk shell
 schalentier	shellfish
@@ -2292,9 +2299,10 @@ schneeflocken	snowflake
 schneemann	snowman
 schneeschuh	snowshoe
 schneesturm	blizzard
+schneiden	cutting
 schneiderei	tailoring
 schnell	fast quick swift
-schnitt	cut
+schnitt	cut cutting
 schnitte	cut
 schnitter	reaper
 schnitzerei	carving
@@ -2327,6 +2335,7 @@ schrei	scream
 schreiben	missive
 schreien	shouting
 schreiend	screaming
+schrein	shrine
 schreiter	strider
 schrift	script writing
 schriftrolle	scroll
@@ -2702,6 +2711,7 @@ topf	pot
 topfe	pot
 topferware	pottery
 tor	gate gateway
+torbogen	archway
 tortchen	tart
 torte	cake
 tortollaner	tortollan
@@ -2957,7 +2967,7 @@ windung	coil
 winkel	chevron
 winterschlaf	hibernate
 wippe	seesaw
-wirbel	swirl vertebrae vortex whirl
+wirbel	spin swirl vertebrae vortex whirl
 wirbelnd	swirling
 wirbelsaule	spine
 wirbelsturm	cyclone tornado
@@ -3135,6 +3145,7 @@ arch	bogen
 arched	gewölbt
 archer	bogenschütze
 archery	bogenschießen
+archway	torbogen
 arctic	arktis
 armadillo	gürteltier
 armillary	armillarsphäre
@@ -3418,10 +3429,12 @@ charge	ansturm
 charging	ansturm
 charm	zauber
 checkered	kariert
+checkers	dame
 cheese	käse
 chef	koch
 cherry	kirsche
 chess	schach
+chessboard	schachbrett
 chest	truhe
 chestplate	brustplatte
 chevron	winkel
@@ -3589,6 +3602,7 @@ cut	schliff
 cute	niedlich
 cutlass	entermesser
 cutlery	besteck
+cutting	schneiden
 cyan	türkis
 cycle	kreislauf
 cyclone	zyklon
@@ -3881,6 +3895,7 @@ garment	gewand
 garnish	garnierung
 gasping	keuchend
 gate	tor
+gateway	portal
 gauge	messgerät
 gauntlet	handschuh
 gear	ausrüstung
@@ -4091,6 +4106,7 @@ iron	eisen
 island	insel
 isopod	assel
 jack	kürbislaterne
+jackal	schakal
 jacket	jacke
 jackolantern	kürbislaterne
 jagged	gezackt
@@ -4197,6 +4213,7 @@ lobster	hummer
 lock	schloss
 lockbox	schließkassette
 locked	verschlossen
+locket	medaillon
 lockpick	dietrich
 locomotive	lokomotive
 log	baumstamm
@@ -4247,6 +4264,7 @@ marmoset	krallenaffe
 maroon	kastanienbraun
 mask	maske
 masquerade	maskerade
+mat	matte
 matchbook	streichholzbrief
 matchbox	streichholzschachtel
 matches	streichhölzer
@@ -4795,6 +4813,7 @@ shovel	schaufel
 shrapnel	schrapnell
 shredder	schredder
 shrimp	garnele
+shrine	schrein
 siamese	siamesisch
 sick	krank
 sickle	sichel
@@ -4902,6 +4921,7 @@ spike	stachel
 spiked	stachelig
 spiky	stachelig
 spill	verschütten
+spin	drehung
 spindle	spindel
 spine	wirbelsäule
 spinneret	spinndrüse
@@ -5116,6 +5136,7 @@ tooth	zahn
 top	oberteil
 topaz	topas
 tophat	zylinder
+toque	kochmütze
 torch	fackel
 torn	zerrissen
 torso	oberkörper
@@ -5259,6 +5280,7 @@ wick	docht
 wicker	korbgeflecht
 wide	breit
 windmill	windmühle
+window	fenster
 wine	wein
 wing	flügel
 winged	geflügelt
@@ -21461,6 +21483,7 @@ zipper	reißverschluss
 2143120,
 2143125,
 2143644,
+2147656,
 2147912,
 2147913,
 2153980,
@@ -22034,6 +22057,7 @@ zipper	reißverschluss
 2741468,
 2741477,
 2741545,
+2741548,
 2741655,
 2743563,
 2743564,
@@ -22071,6 +22095,7 @@ zipper	reißverschluss
 2835966,
 2843118,
 2888529,
+2892271,
 2901574,
 2901576,
 2901578,
@@ -23945,6 +23970,7 @@ zipper	reißverschluss
 3934485,
 3934487,
 3934488,
+3937156,
 3937693,
 3939182,
 3939183,
@@ -29602,6 +29628,7 @@ zipper	reißverschluss
 6855687,
 6856023,
 6856847,
+6865682,
 6866618,
 6867147,
 6874875,
@@ -30496,6 +30523,10 @@ zipper	reißverschluss
 7415196,
 7415197,
 7420450,
+7421843,
+7422791,
+7422841,
+7423249,
 7426313,
 7426314,
 7426315,
@@ -30636,6 +30667,7 @@ zipper	reißverschluss
 7460404,
 7460425,
 7460556,
+7462510,
 7463452,
 7464169,
 7464583,
@@ -30766,6 +30798,9 @@ zipper	reißverschluss
 7515797,
 7515798,
 7515799,
+7515806,
+7516220,
+7516223,
 7516858,
 7517186,
 7519638,
@@ -31073,6 +31108,7 @@ zipper	reißverschluss
 7554478,
 7554479,
 7554481,
+7556034,
 7557369,
 7557370,
 7558105,
@@ -31086,6 +31122,7 @@ zipper	reißverschluss
 7570145,
 7570980,
 7576051,
+7578215,
 7578560,
 7578705,
 7579159,
@@ -31337,6 +31374,17 @@ zipper	reißverschluss
 7705649,
 7705650,
 7711675,
+7711852,
+7711853,
+7711854,
+7711859,
+7711860,
+7711861,
+7711862,
+7711863,
+7711864,
+7711998,
+7713111,
 7722275,
 7722276,
 7722278,
@@ -31367,6 +31415,7 @@ zipper	reißverschluss
 7734061,
 7734062,
 7734063,
+7734931,
 7736101,
 7736246,
 7736461,
@@ -31391,6 +31440,14 @@ zipper	reißverschluss
 7739698,
 7745835,
 7745836,
+7751144,
+7751145,
+7751146,
+7751147,
+7751148,
+7751149,
+7751150,
+7751152,
 7751465,
 7751468,
 7751469,
@@ -31400,7 +31457,13 @@ zipper	reißverschluss
 7751473,
 7751474,
 7751475,
+7754063,
+7754350,
+7754351,
+7754352,
+7754353,
 7761089,
+7786929,
 7789849,
 7789850,
 7789851,
@@ -31414,6 +31477,14 @@ zipper	reißverschluss
 7792711,
 7792712,
 7794032,
+7802575,
+7802576,
+7802577,
+7802578,
+7802579,
+7802580,
+7802581,
+7802582,
 7807649,
 7807651,
 7807652,
@@ -31457,6 +31528,7 @@ zipper	reißverschluss
 7850590,
 7852823,
 7853755,
+7864628,
 7865322,
 7865323,
 7865325,
@@ -31507,6 +31579,7 @@ zipper	reißverschluss
 7871828,
 7871829,
 7871830,
+7873094,
 7873624,
 7873826,
 7874485,
@@ -31541,6 +31614,7 @@ zipper	reißverschluss
 7881305,
 7881307,
 7884331,
+7889090,
 7893615,
 7893790,
 7893791,
@@ -31549,6 +31623,7 @@ zipper	reißverschluss
 7902265,
 7902398,
 7928038,
+7931171,
 7931761,
 7933423,
 7935945,
@@ -31596,6 +31671,7 @@ zipper	reißverschluss
 7956752,
 7956755,
 7956757,
+7958208,
 7958551,
 7966624,
 7976398,
@@ -31605,6 +31681,128 @@ zipper	reißverschluss
 7977787,
 7977817,
 7979957,
+8014728,
+8014864,
+8015084,
+8017453,
+8018396,
+8019261,
+8026692,
+8026694,
+8026696,
+8026697,
+8026698,
+8026699,
+8026700,
+8026785,
+8026786,
+8026787,
+8026788,
+8026789,
+8026790,
+8026791,
+8028501,
+8028502,
+8028503,
+8028504,
+8029660,
+8030676,
+8032870,
+8032872,
+8032873,
+8032874,
+8032875,
+8032876,
+8039056,
+8039057,
+8039569,
+8062734,
+8068517,
+8093508,
+8095063,
+8097232,
+8100612,
+8100619,
+8100620,
+8100621,
+8100626,
+8100627,
+8100628,
+8100632,
+8100633,
+8101155,
+8101292,
+8124207,
+8124208,
+8124209,
+8124210,
+8124211,
+8124212,
+8124213,
+8124214,
+8124994,
+8125100,
+8125117,
+8125118,
+8125119,
+8125120,
+8129859,
+8129860,
+8129861,
+8129862,
+8129863,
+8129864,
+8166882,
+8199011,
+8201433,
+8201595,
+8202891,
+8202892,
+8202893,
+8202894,
+8202895,
+8202896,
+8202897,
+8202898,
+8202899,
+8243182,
+8243183,
+8243184,
+8243185,
+8246091,
+8246169,
+8261021,
+8261112,
+8261365,
+8262534,
+8262637,
+8263309,
+8263311,
+8263312,
+8263313,
+8263314,
+8263315,
+8263316,
+8263317,
+8267112,
+8268560,
+8268561,
+8268562,
+8268563,
+8268569,
+8269989,
+8270409,
+8270410,
+8270411,
+8270412,
+8270504,
+8284165,
+8284180,
+8286069,
+8373661,
+8393508,
+8393517,
+8393518,
     },
     refs = {
 nil,
@@ -47772,6 +47970,7 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "s280730|i182172|s313679|s316539|s316649|s316653|s326239|s326240|s326241|s329067|s329091|s329143|s329406|s331687|s350897|s353171",
 nil,
 nil,
@@ -48360,7 +48559,9 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "i166779|s290154|s290218|s297571|s1237944",
+nil,
 nil,
 nil,
 nil,
@@ -50194,6 +50395,7 @@ nil,
 nil,
 nil,
 "i185780|i185824|s348366|s356417|s366193|s1236348|s1240684|s1244415",
+nil,
 nil,
 nil,
 nil,
@@ -56037,6 +56239,7 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "i230443|i230444|i237553|i237684",
 nil,
 nil,
@@ -56832,6 +57035,10 @@ nil,
 nil,
 nil,
 nil,
+nil,
+nil,
+nil,
+nil,
 "i258724|i258680|i258681|i258682|i258683|i258725|i258727|i258728|s1263852",
 nil,
 nil,
@@ -56975,7 +57182,11 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "i266101",
+nil,
+nil,
+nil,
 nil,
 nil,
 nil,
@@ -57385,7 +57596,9 @@ nil,
 nil,
 nil,
 nil,
+nil,
 "s1304581|s1307902|s1287060|s1289182|s1293772",
+nil,
 nil,
 nil,
 nil,
@@ -57717,6 +57930,7 @@ nil,
 nil,
 nil,
 nil,
+"i271727|i271731|i271738|i271751|i271761|i271744|i271755|i271765|s1289402|s1289407|s1289417|s1289419",
 nil,
 nil,
 nil,
@@ -57877,6 +58091,166 @@ nil,
 nil,
 nil,
 nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+"i279017|i279076|i279086|i279099|i279111",
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+nil,
+"s1300064|s1300088",
 nil,
 nil,
 nil,
@@ -74079,6 +74453,7 @@ nil,
 "apfelschimmel|||||beschwort euren apfelschimmel sturmwacht gibt ihn wieder frei",
 "verangstigte packmuli|transportmittel|fahrzeug|packmulipfeife||beschwort euer verangstigte packmuli gibt wieder frei",
 "stab des dusteren|aspiranten|ast der schildwache zier kaldoreibeschutzer|||",
+"fleischwagen|||||beschwort reitbaren fleischwagen gibt ihn wieder frei",
 "kriegsbanner des von sturmwind|||||",
 "kriegsbanner des helden von|||||",
 "reinherzrenner|pferdeseele|equu exquisitu beschworen|leiten wiederbeleben traumweber mondbeere verangstigter sprigganjagd beschworung aufgebrachte federleicht jagen mit jagd huln||beschwort euren reinherzrenner gibt ihn wieder frei",
@@ -74652,6 +75027,7 @@ nil,
 "blutroter gezeitenhengst|||||beschwort dies reittier gibt wieder frei kann nur wasser benutzt",
 "silberner gezeitenhengst|fabiu||||beschwort dies reittier gibt wieder frei kann nur wasser benutzt",
 "krone der herbstlichen|kranz des ardenwald|hubsche blume blumenkrone|wellenzwick||",
+"klingel|||||rechtsklick diesen begleiter beschworen wieder freigeben",
 "verblassende andenken|waffen des beruchtigten aspiranten|grossschwert korallengescharfte|geborgene ahnenklinge der tiefen||",
 "rufen|herbeirufen||||",
 "verstummer|freiheit|abtauchen|||",
@@ -74689,6 +75065,7 @@ nil,
 "schnitzler des beruchtigten aspiranten|schlitzer|grossschwert|||",
 "dampfschuppeneinascherer|||||beschwort dies reittier gibt wieder frei",
 "trenner schneide des wahnsinn|kriegsgleve beruchtigten||||",
+"zeitloser mechanischer drachl|||||",
 "fusionshacker|erfinden|geborgene brandwerkzeug schweissbrenner des schrottmeister|||",
 "des beruchtigten|umhang der schlechten neuigkeiten||||",
 "plattengurt des beruchtigten|plattenschnallengurtel|sturmgeharteter gurt grossgurtel ewigkeitshuter|osmenitgurtung verstarkte||",
@@ -76563,6 +76940,7 @@ nil,
 "archetyp der metamorphose beschworen|||||rechtsklick euren archetyp metamorphose beschworen wieder freigeben",
 "ambystidenflitzer beschworen|||||rechtsklick euren ambystidenflitzer beschworen wieder freigeben",
 "beschworen|||||rechtsklick beschworen wieder freigeben",
+"eindammungszelle|notigung||||",
 "reisszahn von|gefrassiger scheibendolch|zeitlose zauberklinge erleuchteter dolch|fangzahn kralle des himmelsretter zoridian gravierter stachel briefoffner senzazauberklinge overturenklinge ausbrechende schlitzen||",
 "scharpe des abtrunnigen totenbeschworer|totenbeschworerinitianden|von helfer fronttotenbeschworer|||",
 "pantoffeln des abtrunnigen totenbeschworer|totenbeschworerinitianden|von helfer fronttotenbeschworer|||",
@@ -82220,6 +82598,7 @@ nil,
 "grossartiger des sonnenwendfest|||||",
 "konigliche leerenschwinge|zugel der koniglichen|fraktalbilder|||beschwort dies reittier gibt wieder frei",
 "krone des frostfursten|||||",
+"prophetisch gewand des grossmeister|tiefengewand|koniglich rauchgewand|||",
 "spiraltoxine|||||",
 "wirker des aufgerissenen strom|armbrust astralen|gammawerfer manaschmiederauber kosmischer werfer|umbralwerfer verschlingender||",
 "prophetisch gewand des grossmeister|prophetischer gurtel|tiefer koniglicher|rauchgurtel tiefengewand koniglich rauchgewand||",
@@ -83114,6 +83493,10 @@ nil,
 "himmelblauer falkenschreiter|||||beschwort dies reittier gibt wieder frei",
 "blutroter falkenschreiter aus silbermond|||||beschwort dies reittier gibt wieder frei",
 "kleiner blauer wirbelwind|schwarzer|kleine marineblaue axt gruner|roter||",
+"kissen des priester von|||||",
+"prachtvoller elfischer wandvorhang|||||",
+"knabberbuffet aus silbermond|||||",
+"pandarenheilerteppich|schlafmatte||||",
 "klingenschiftung der zwielichtklinge|||||",
 "goldener runengeatzter reif|vergoldete schiftung der zwielichtklinge||||",
 "leerenberuhrte schiftung der zwielichtklinge|||||",
@@ -83254,6 +83637,7 @@ nil,
 "liebkosung der nestgefahrten|falsch|des galaktischen streitkolben|||",
 "schild des hauerschnitzer|rekrutenschild blutritter|ausrangierter verteidiger stahlborkenbollwerk|waldlauferrekruten||",
 "dolchgezackter fruhlingsrechen|gruner rechen|herbstrechen roter|||",
+"sanktuario schachbrett|schachspielkollektion||||",
 "verzierte sonnengleve|kriegsgleve des galaktischen||||",
 "moosbewachsener stab des waldbewohner|dammerungsstab|gluhkappenstab nachtstab sumpfbewohner|||",
 "waldpseudomuschel|||||beschwort dies reittier gibt wieder frei",
@@ -83384,6 +83768,9 @@ nil,
 "kriegerrustung des toxischen|korrodierte schadelkappe koloss|plattenhelm plattenhelmkappe|abgestimmte horner jadekriegsfursten elitegladiator||",
 "schienbeinschutzer des giftwarter|plattenbeinschutzer toxischen|plattenkriegsbeinschutzer jadekriegsfursten|||",
 "plattenschultern des toxischen|plattenschulterstucke|rasende schulterstucke jadekriegsfursten|||",
+"fernzunder|||||",
+"antlitz von des kriege|||||",
+"antlitz von des feuer|||||",
 "rebellenknochenknacker aus muhlenbern|lohenscheit|loyalistenknochenknacker glutstein|||",
 "lichtholzschnitzmesser|schlimmster kanalisierer des bosen|gnade weltenwanderer messer thalassischen wettkampfer|dammerungsgeschmiedete schneide angelhaken der mordergasse steingeast gemalten erinnerungen dolch kashuklehrling dunkelheitsdolch immersangstecher leerenwirker leerengeformter stecher befleckte morgenlichtmesser kugelruckenzauberbrecher||",
 "rebellenfaustklingen aus muhlenbern|lohenscheit|loyalistenfaustklingen glutstein|||",
@@ -83691,6 +84078,7 @@ nil,
 "anomale kommandantenstulpen|kettenstulpen des toxischen|kettenhandschutzer hautdurchbohrer der lauernden|||",
 "jagerrustung des toxischen|kettenhelm|kettengesichtsschutz zerschmetternde windehelmkappe|weinende fangzahne der lauernden elitegladiator||",
 "kettenschiftung des toxischen|kettenschulterschutz|kiefer der lauernden|||",
+"grosse maske von der graber|handgefertigte miniaturmaske||||",
 "wilde schuppenstiefel|kettensabaton des toxischen|kettenstiefel spuren der lauernden|||",
 "kettengamaschen des toxischen|kettenbundhosen|gewundene beinwickel der lauernden|||",
 "des seelenwinder|||||",
@@ -83704,6 +84092,7 @@ nil,
 "steingeschmiedeter wachter|||||beschwort dies reittier gibt wieder frei",
 "sonnenflimmertreibmotte|||||rechtsklick dies haustier beschworen wieder freigeben",
 "atzender huterzermalmer|zermalmer des toxischen||||",
+"aschene ei|||||",
 "atzender sieg|odem der verderbni|einstich des reisszahn geist zersetzen|ritualermachtigung fangzahn von ritualbarriere korrosive verstarkung atzend vom ermachtigt nekrotischer riss||",
 "|tempelfischen||||empfohlene fertigkeit jagen gejagt gesetz hochaggressive fische bieten anglern herausforderung stellen mochten hohere risiko aber gewinne schwarme dieser oberflachenkrauseln verschleierter schwarm jagerwoge zahflussige leere verschlampte fracht verlorene schatze gewundenen insel gibt ort nur wenige gern rute auswerfen verdichtete gift erfullt kreaturen",
 "scharpe des verlorenen gefass|ledergurtel toxischen|lederriemen siegelverzierte gurtung geheimnisvollen traumbehuter|||",
@@ -83955,6 +84344,17 @@ nil,
 "kettenweste des toxischen|kettentunika|fangbewehrte gewandung schlangenorakel|||",
 "seelenschlangelschiftung|kettenschiftung des toxischen|kettenschulterschutz zischender mantel schlangenorakel|||",
 "spalter der reiche|grossklinge des toxischen kriegstreiber|aspiranten|kriegsklinge krummschwert beutejager schlangenschlachter auserwahlten von giftverfluchte schattenseitenschlitzer||",
+"gurtel des erfahrenen abenteurer|||||",
+"stiefel des erfahrenen abenteurer|||||",
+"armschienen des erfahrenen abenteurer|||||",
+"umhang des erfahrenen abenteurer|||||",
+"brustharnisch des erfahrenen abenteurer|||||",
+"handschuhe des erfahrenen abenteurer|||||",
+"kapuze des erfahrenen abenteurer|freizeitkleidung||||",
+"beinschutzer des erfahrenen abenteurer|||||",
+"schulterpolster des erfahrenen abenteurer|||||",
+"des erfahrenen abenteurer|||||",
+"fur immer|||||",
 "verzierter gurtel des grafen|verzierte grafengewand||||",
 "verzierte treter des grafen|||||",
 "verzierte armschienen des grafen|||||",
@@ -83985,6 +84385,7 @@ nil,
 "glorreiche sammlung mit nebelwappen der mythen|||||",
 "tasche mit nebelwappen des veteranen|kriegsmeutengebundene paket||||",
 "ehrwurdige sackchen mit nebelwappen des veteranen|||||",
+"bluhender mantel|||||",
 "rache des kriegsfursten|waffen toxischen|zeremonielle spaltbeil von starkblut hackbeil|spalter schnitzler axt elitegladiator||",
 "goldene beutekiste|||||",
 "smaragdgruner himmelszahn|||||beschwort dies reittier gibt wieder frei",
@@ -84009,6 +84410,14 @@ nil,
 "sonnenerhellte blutentuchmantelung|scharlachrote|rosige azurblaue|||",
 "prestigetrachtige des umbralchampion|||||",
 "prestigetrachtige des toxischen|||||",
+"gurtel des|friedensbewahrer|himmelsdeuter eiferer der|||",
+"stiefel des|friedensbewahrer|himmelsdeuter eiferer der|||",
+"umhang des|friedensbewahrer|himmelsdeuter eiferer der|||",
+"des|weste|friedensbewahrer himmelsdeuter|eiferer der||",
+"handschuhe des|friedensbewahrer|himmelsdeuter eiferer der|||",
+"des|gewand|friedensbewahrer himmelsdeuter|eiferer der tracht||",
+"gamaschen des|friedensbewahrer|himmelsdeuter eiferer der|||",
+"schulterstucke des|friedensbewahrer|himmelsdeuter eiferer der|||",
 "risskanalisierer des nullsignal|||||",
 "schnallengurtel des rechtschaffenen gesetzeshuter|gesetzlosen der blutwacht|dammerwache odland|mitternachtlichen||",
 "stiefel des rechtschaffenen gesetzeshuter|gesetzlosen der blutwacht|dammerwache odland|mitternachtlichen briganten treter||",
@@ -84018,7 +84427,13 @@ nil,
 "rechtschaffener gesetzeshuter|kopfbedeckung des rechtschaffenen|gesetzlosen der blutwacht dammerwache|odland mitternachtlichen hut kopftuch stiefel||",
 "beinkleider des rechtschaffenen gesetzeshuter|gesetzlosen der blutwacht|dammerwache odland|mitternachtlichen kniehosen||",
 "schulterklappen des rechtschaffenen gesetzeshuter|gesetzlosen der blutwacht|dammerwache odland|mitternachtlichen||",
+"die sanfte des grafen|||||beschwort dies reittier gibt wieder frei",
+"himmelblaue stolzklaue|||||beschwort dies reittier gibt wieder frei",
+"|||||beschwort dies reittier gibt wieder frei",
+"|||||beschwort dies reittier gibt wieder frei",
+"|||||beschwort dies reittier gibt wieder frei",
 "waffen der|giftbenetzter kriegsstab|spitze des beutejager siegreicher geisterstab|giftverfluchter ritualstab stab allwissenden bewahrte zeremonienszepter loabeseelter kampfstab auserwahlten von toxischen kriegstreiber stock aspiranten wilder dusterstab verlorene ausrustung||",
+"schattenfalke der spitzen|||||beschwort dies reittier gibt wieder frei",
 "ruferrustung des toxischen|kettenhelm|kettengesichtsschutz magmaformer verhangnisvollen|elitegladiator||",
 "beinschienen der entschlungenen einheit|kettengamaschen des toxischen|kettenbundhosen irdene saulen katastrophe|||",
 "kettenschiftung des toxischen|kettenschulterschutz|entzweite gipfel verhangnisvollen|||",
@@ -84032,6 +84447,14 @@ nil,
 "schulterstucke des hextrager|||||",
 "schultern des hextrinker|||||",
 "zauberbogen des arkanen waldlaufer|||||",
+"azurblauer drachengurtel|||||",
+"azurblaue drachensabaton|||||",
+"azurblauer drachenumhang|||||",
+"azurblaue drachenbrustplatte|||||",
+"azurblaue drachenklauen|||||",
+"azurblaue drachenkrone|drachengewand||||",
+"azurblaue drachenbeinschutzer|||||",
+"azurblaue drachenschulterstucke|||||",
 "gurtung der abyssischen grotte|seidenkordel des toxischen|seidengurtel juwelenbesetzter schnallengurtel urweltlichen leyhuter|||",
 "gackernde seelentreter|seidenpantoffeln des toxischen|seidentreter kampfstiefel urweltlichen leyhuter|||",
 "giftversengte manschetten|seidengelenkbander des toxischen|seidenarmbinden urweltlichen leyhuter|||",
@@ -84075,6 +84498,7 @@ nil,
 "der seelenfang|seelenfangeifer|seelenfanggift|||",
 "pilzbewuch|||||",
 "klopfatath|||||beschwort dies reittier gibt wieder frei",
+"|||||rechtsklick dies haustier beschworen wieder freigeben",
 "schleiertuchhandschutz|handlappen des toxischen kriegstreiber|lederhandschutz aspiranten lederhandschuhe|handschutz nebelpirscher geschmeidige stulpen beutejager himmelsklauenhandschutzer giftschleuderer handschuhe auserwahlten von klauen giftverfluchten luchs handwickel fangbrecher verrottete||",
 "schlachtrustung des auserwahlten von|lederrustung toxischen scharmutzler|ersatzkapuze sprecher kapuze kriegstreiber|ledermaske aspiranten lederhelm gugel nebelpirscher geschmeidige maske beutejager himmelsklauenkopfputz blick giftverfluchten luchs schleier wildheitsritu kopfbedeckung schlangengeneral harnisch||",
 "schlangenhautschiftung|schulterschutz des toxischen kriegstreiber|ledermantel aspiranten lederschiftung|schiftung nebelpirscher geschmeidige schulterpolster beutejager himmelsklauenschulterpolster mantel auserwahlten von giftverfluchten luchs gewand wildwachter opferer||",
@@ -84125,6 +84549,7 @@ nil,
 "des auserwahlten von|toxischen kriegstreiber|aspiranten schleier boenreiter|robuste stola beutejager himmelsklauenumhang umhang der bekoderung mantel giftverfluchten adler||",
 "robuste rustung des beutejager|schuppenrustung giftverfluchten adler|brustschutz der zersetzten schuppen toxischen kriegstreiber|kettentunika aspiranten kettenweste brunne boenreiter himmelsklauenhalsberge triefende kettenhemd auserwahlten von brustpanzer blutstromhalsberge gruftlauterer||",
 "schleiertuchunterarmschienen|handschutz des toxischen kriegstreiber|kettenhandschutzer aspiranten kettenstulpen|kettenschnallen boenreiter robuster beutejager himmelsklauenhandschuhe stulpen auserwahlten von giftverfluchten adler fangbrecher||",
+"einsiedlerkreb der|||||beschwort dies reittier gibt wieder frei",
 "mitternachtsschwarzer hut des revolverhelden|azurblauer|sepiafarbener grasgruner|wolkenblauer dunkler tarnfarbener ziegelroter lebhafter verblasster karottenroter rosiger pflaumenfarbener purpurroter violetter grunblauer||",
 "pilzkappe des sporenherrscher|platzender pilz||||",
 "kordel des toxischen kriegstreiber|seidengurtel aspiranten|seidenkordel lohenwandler|raffinierte beutejager flammenschnabelkordel scharpe auserwahlten von huftgurt giftverfluchten drachenfalken grabversiegelte huftwickel gezahnten||",
@@ -84159,6 +84584,7 @@ nil,
 "prismawachter des beutejager|||||rechtsklick dies haustier beschworen wieder freigeben",
 "rissbrecher des beutejager|||||rechtsklick dies haustier beschworen wieder freigeben",
 "handkanone des gesetzlosen der blutwacht|dammerwache|rechtschaffenen gesetzeshuter odland|||",
+"pinkie|||||rechtsklick dies haustier beschworen wieder freigeben",
 "polierter lichtholzkanalisierer|flusterdornritualmesser|glutschleierritualmesser gescharfter lichtholzschlitzer|||",
 "amanibildni|||||",
 "geisterbildni|||||",
@@ -84167,6 +84593,7 @@ nil,
 "lied der warme|gnade|bindung starke|||",
 "drachenthron|sitzen|beschworen|||",
 "freundschaftsarmband aus mondstein|seelenit|moosachat rosige|violette sternrubin silberne drachenaugendiamant||",
+"treuer gefahrte des erfahrenen abenteurer|||||beschwort dies reittier gibt wieder frei",
 "wuffel dornenschwinge|||||beschwort dies reittier gibt wieder frei",
 "grosser|||||beschwort dies reittier gibt wieder frei",
 "reiter der herbstlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|errotenden karminroten winterlichen||beschwort reitbaren magischen besen gibt ihn wieder frei",
@@ -84214,6 +84641,7 @@ nil,
 "ritualgefass des seelenwinder|seelenwinderbarriere||||",
 "guillotinentechnik|guillotine|perfektionierte|||",
 "wildheit|greifende fangzahne|atzende klauen sturmkampfer|verheeren verstummeln raubtierinstinkte verflucht verdrehter fluch||",
+"papageientaucherrucksack|||||",
 "aschener schreckensgleiter|||||beschwort dies reittier gibt wieder frei",
 "zorn der gefesselten|schlangenmaul|ulatekbasilisken schlangenende|||",
 "mantel des morgenfeuerphonix|||||",
@@ -84223,6 +84651,128 @@ nil,
 "katzrama|katzthuzad||||rechtsklick diesen begleiter beschworen wieder freigeben",
 "miaukahen|amiaubisath||||rechtsklick diesen begleiter beschworen wieder freigeben",
 "sammlung des dramatiker bemalte hexenmasken|klassische hexenmaske|blaue violette|rote||",
+"verderbter schwarmer|||||beschwort dies reittier gibt wieder frei",
+"katzchen der|des erzmagier||||rechtsklick diesen begleiter beschworen wieder freigeben",
+"sammlung des dramatiker bemalte monstrositatenmasken|klassische monstrositatenmaske|blaue grune|rote||",
+"sammlung des dramatiker bemalte masken|klassische maske|blaue grune|rote||",
+"sammlung des dramatiker bemalte hainhutermasken|violette maske|uralte klassische|siechende||",
+"sammlung des dramatiker bemalte sonnenmasken|klassische tolvirmaske|violette grune|sandgepeitschte||",
+"gezielter schuss|||||",
+"prismatischer blitz|||||",
+"aszendenz|||||",
+"aszendenz|||||",
+"aszendenz|||||",
+"seelenbrunnen erschaffen|verderbnisschuppenkessel||||erschafft seelenbrunnen gruppen schlachtzugsmitglieder verwenden konnen gesundheitsstein erhalten",
+"speerwerfer|||||",
+"stiefel des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"gewand des rabenholdtassassinen|blutfangassassinen|tunika dornschattenassassinen|mondhellen assassinen||",
+"handschuhe des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"maske des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"gamaschen des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"schiftung des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"gurtel des rabenholdtassassinen|dornschattenassassinen|blutfangassassinen mondhellen assassinen|||",
+"glutroter verzierter laubtauscher|||||beschwort dies reittier gibt wieder frei",
+"turkisfarbener verzierter laubtauscher|||||beschwort dies reittier gibt wieder frei",
+"tiefgruner verzierter laubtauscher|||||beschwort dies reittier gibt wieder frei",
+"violetter verzierter laubtauscher|||||beschwort dies reittier gibt wieder frei",
+"klassischer aufziehquaker|aquatischer|mechanisch huhn|||rechtsklick dies haustier beschworen wieder freigeben",
+"springer|||||rechtsklick dies haustier beschworen wieder freigeben",
+"korrosiver windl|umschlungen|von beschworen|||rechtsklick dies haustier beschworen wieder freigeben",
+"atzender windl|||||rechtsklick dies haustier beschworen wieder freigeben",
+"schlangelbiss|beute von|ich kann das allein sagenumwoben|||rechtsklick dies haustier beschworen wieder freigeben",
+"|||||rechtsklick euren malerfrosch beschworen wieder freigeben",
+"|||||rechtsklick dies haustier beschworen wieder freigeben",
+"schlangelseelenbeute|giftige korrosive munze|handvoll munzen verfluchte abzeichen der seelenwinder|vollstandig bezahlt||",
+"amulett der starke|verehrte loawaffe||||",
+"mantel von|||||",
+"giftfall||die kammern lautern|||",
+"haiangriffspaket|||||",
+"saug o mat|||||",
+"geisterausrustung|geisterbrille|erhalten|||",
+"ruhelose geisterfesseln|ledergelenkbander des toxischen|lederhandgelenksschutzer wickel geheimnisvollen traumbehuter|||",
+"verknocherte relikt|||||",
+"gurtel der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"stiefel der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"brustharnisch der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"handschuhe der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"winterlich hexenkerzenensemble|katzenhut der winterlichen hexenkerze|moosigen fliessender|mondbeschienenen scharlachroten herbstlichen errotenden moosige mondbeschienene scharlachrote||",
+"rock der winterlichen hexenkerze|mondbeschienenen|scharlachroten herbstlichen|errotenden||",
+"schulterpolster der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"kurbishut der winterlichen hexenkerze|fliessender|moosigen|mondbeschienenen scharlachroten herbstlichen errotenden||",
+"schulterrustung der winterlichen hexenkerze|moosigen|mondbeschienenen scharlachroten|herbstlichen errotenden||",
+"wappenrock der|||||",
+"bundel des angler|||||",
+"violetter des braumeister|||||",
+"roter des braumeister|||||",
+"violette barett des braumeister|||||",
+"rote barett des braumeister|||||",
+"violetter schulterumhang des braumeister|||||",
+"roter schulterumhang des braumeister|||||",
+"violetter gurtel des braumeister|||||",
+"roter gurtel des braumeister|||||",
+"nachtschwarze dusterkappe|azurblaue|sepiafarbene grasgrune|wolkige tiefe tarnfarbene ziegelrote lebhafte verblasste karottenfarbene rosige pflaumenfarbene karminrote violette grunblaue||",
+"fluchtiger giftzahn|ruf der schlange||||rechtsklick dies haustier beschworen wieder freigeben",
+"leuchtender giftzahn|||||rechtsklick dies haustier beschworen wieder freigeben",
+"|||||rechtsklick dies haustier beschworen wieder freigeben",
+"ulatuk|||||rechtsklick dies haustier beschworen wieder freigeben",
+"quirli|||||rechtsklick dies haustier beschworen wieder freigeben",
+"jacke des kuchendirektor|chefkoch|souschef konditor|sossenkoch grillkoch||",
+"handschuhe des kuchendirektor|chefkoch|sossenkoch konditor|grillkoch souschef||",
+"des kuchendirektor|mutze|chefkoch sossenkoch|konditor grillkoch souschef||",
+"hose des kuchendirektor|chefkoch|sossenkoch konditor|grillkoch souschef||",
+"gurtel des kuchendirektor|chefkoch|sossenkoch konditor|grillkoch souschef||",
+"stiefel des kuchendirektor|chefkoch|sossenkoch konditor|grillkoch souschef||",
+"herumstreifende karawane des herdhuter|||||",
+"schwarze bosheit|||||beschwort dies reittier gibt wieder frei",
+"spirituelle erdleitung|erscheinung von||||",
+"erscheinung von grummel|||||",
+"sagenumwobener umhang|||||",
+"sagenumwobener brustschutz|||||",
+"sagenumwobene handschuhe|||||",
+"sagenumwobene gugel|gewand||||",
+"sagenumwobene gamaschen|||||",
+"sagenumwobene polsterschultern|||||",
+"sagenumwobene stachelschultern|||||",
+"sagenumwobener gurtel|||||",
+"sagenumwobene stiefel|||||",
+"schattenhafter schachzug|list des raubtier||||",
+"beschamende zurschaustellung|loageistleitungen||||",
+"mojoeruption|unberechenbare mojo||||",
+"wirbelnde axte|||||",
+"frostszepter des waldgeiste|frostfetisch eisganger|glimmender frostgeiste|glimmende||",
+"balgstecher des eisganger|glimmender|frostgeiste waldgeiste|||",
+"glockenstab des eisganger|waldgeiste|frostgeiste glimmender|glockensense glimmende||",
+"tiefgekuhlte kochbuch des backer|mysterios|feurige verzauberte|||",
+"saphirbollwerk des backer|smaragdbollwerk|morganitbollwerk amethystbollwerk|citrinbollwerk||",
+"sporentrager pilzschreiter|||||beschwort dies reittier gibt wieder frei",
+"plane waffenkammer von sturmwind|ausstellungsraum silbermond|kleine studierzimmer|vornehme grosse halle kuche besprechungszimmer tempelzimmer gemutlich schlafzimmer ratskammer steinbruchzimmer||",
+"stiefel des waldgeiste|eisganger|glimmende frostgeiste|||",
+"umhang des waldgeiste|eisganger|glimmender frostgeiste|||",
+"halsberge des waldgeiste|eisganger|glimmende frostgeiste|||",
+"handschuhe des waldgeiste|eisganger|glimmende frostgeiste|||",
+"waldgeistgewand der schreckgestalt|des waldgeiste|eisganger glimmender|frostgeiste eisgangergewand glimmende gewand frostgeistgewand||",
+"gamaschen des waldgeiste|eisganger|glimmende frostgeiste|||",
+"schulterstucke des waldgeiste|eisganger|glimmende frostgeiste|umgedrehte||",
+"gurtel des waldgeiste|eisganger|glimmender frostgeiste|||",
+"blauer himbeer|saurer apfel|orangefarbener zuckerwatte|trauben kirsch minz zitronen||",
+"des schwarmrufer|den schwarm rufen|saurebrutgeissel|||",
+"ruhestein des schattenweber|||||",
+"siegel der hereinbrechenden finsterni|das ende abwenden||||",
+"tentakel des verderbten schrecken|verheerende macht||||",
+"schildfragment des lichtbringer|||||",
+"loageweihter wanderer|||||beschwort dies reittier gibt wieder frei",
+"moto brotchenflitzer|||||beschwort dies reittier gibt wieder frei",
+"moto brotchenflitzer|||||beschwort dies reittier gibt wieder frei",
+"moto brotchenflitzer|||||beschwort dies reittier gibt wieder frei",
+"moto brotchenflitzer|||||beschwort dies reittier gibt wieder frei",
+"gefahrliche lufte|||||",
+"|||||rechtsklick dies haustier beschworen wieder freigeben",
+"augenpirscher|||||rechtsklick dies haustier beschworen wieder freigeben",
+"saphirtablett des backer|smaragdtablett|morganittablett amethysttablett|citrintablett||",
+"verschlagene truhe|beschworen||||",
+"loaberuhrter rucken|||||",
+"loaberuhrte antlitz|||||",
+"loaberuhrte schultern|||||",
     },
   },
 }
