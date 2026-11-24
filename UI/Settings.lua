@@ -22,8 +22,16 @@ function ns.SetupSettings()
   if not (Settings and Settings.RegisterVerticalLayoutCategory) then
     return
   end
-  local category = Settings.RegisterVerticalLayoutCategory(L["Iconic"])
+  local category, layout = Settings.RegisterVerticalLayoutCategory(L["Iconic"])
   local settings = ns.db.settings
+  -- A section header, which also gives the page some room.
+  local function section(title)
+    if layout and CreateSettingsListSectionHeaderInitializer then
+      layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(title))
+    end
+  end
+
+  section(L["Tooltips"])
 
   local picker = Settings.RegisterAddOnSetting(
     category,
@@ -35,6 +43,22 @@ function ns.SetupSettings()
     ns.DEFAULTS.settings.tooltipPicker
   )
   Settings.CreateDropdown(category, picker, modeOptions, L["When the tooltip of an icon in the picker shows its ID."])
+
+  local names = Settings.RegisterAddOnSetting(
+    category,
+    "ICONIC_TOOLTIP_NAMES",
+    "tooltipNames",
+    settings,
+    Settings.VarType.String,
+    L["All names in the icon picker"],
+    ns.DEFAULTS.settings.tooltipNames
+  )
+  Settings.CreateDropdown(
+    category,
+    names,
+    modeOptions,
+    L["When the tooltip of an icon in the picker lists all its names, not only the ones the search finds."]
+  )
 
   local game = Settings.RegisterAddOnSetting(
     category,
@@ -52,6 +76,7 @@ function ns.SetupSettings()
     L["When spell, item, mount and currency tooltips elsewhere in the game show their icon ID."]
   )
 
+  section(L["Icon picker"])
   local suggested = Settings.RegisterAddOnSetting(
     category,
     "ICONIC_SHOW_SUGGESTED",
@@ -87,4 +112,23 @@ function ns.OpenSettings()
   if ns.settingsCategory then
     Settings.OpenToCategory(ns.settingsCategory:GetID())
   end
+end
+
+-- A small gear button on `parent` that opens Iconic's settings.
+function ns.CreateSettingsButton(parent)
+  local button = CreateFrame("Button", nil, parent)
+  button:SetSize(15, 16)
+  button:SetNormalAtlas("questlog-icon-setting")
+  button:SetHighlightAtlas("questlog-icon-setting", "ADD")
+  button:GetHighlightTexture():SetAlpha(0.4)
+  button:SetScript("OnClick", ns.OpenSettings)
+  button:SetScript("OnEnter", function(owner)
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:SetText(L["Settings"])
+    GameTooltip:Show()
+  end)
+  button:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+  end)
+  return button
 end

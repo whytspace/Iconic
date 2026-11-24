@@ -24,8 +24,6 @@ local SYNONYM_ARROW = "|TInterface\\ChatFrame\\ChatFrameExpandArrow:8|t"
 
 -- How a tooltip names where a search word matched (Search.Explain).
 local MATCH_PLACES = {
-  name = "name",
-  tag = "tag",
   description = "description",
   category = "item category",
 }
@@ -800,7 +798,6 @@ end
 function View:CreateIconButton(parent)
   local view = self
   local button = CreateFrame("Button", nil, parent)
-  button.iconicButton = true
   button.icon = button:CreateTexture(nil, "ARTWORK")
   button.icon:SetAllPoints()
   button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
@@ -863,15 +860,54 @@ function View:ShowTooltip(owner, row)
     return searching and Search.Highlight(name, query, opts) or name
   end
   GameTooltip:SetText(names[1] and shown(names[1]) or index.file[row] or tostring(index.key[row]), 1, 1, 1)
-  for i = 2, math.min(#names, 5) do
-    GameTooltip:AddLine(shown(names[i]), 0.8, 0.8, 0.8)
+  -- Below the best name only the names a search word finds, or all with the setting; the rest are counted.
+  local all = ns.ShowIconID(ns.db.settings.tooltipNames)
+  local hidden = 0
+  for i = 2, #names do
+    local name = searching and shown(names[i]) or names[i]
+    if all or name ~= names[i] then
+      GameTooltip:AddLine(name, 0.8, 0.8, 0.8)
+    else
+      hidden = hidden + 1
+    end
+  end
+  if hidden > 0 then
+    GameTooltip:AddLine(hidden == 1 and L["+1 more name"] or L["+%d more names"]:format(hidden), 0.5, 0.5, 0.5)
+  end
+  -- Picture tags in the client's language, the ones a search word finds coloured.
+  local tags = {}
+  for tag in (index.tags[row] or ""):gmatch("%S+") do
+    tags[#tags + 1] = self.data.tagNames and self.data.tagNames[tag] or tag
+  end
+  local tagText = table.concat(tags, ", ")
+  if tagText ~= "" then
+    GameTooltip:AddLine(
+      L["Tags: %s"]:format(searching and Search.Highlight(tagText, query, opts) or tagText),
+      0.6,
+      0.6,
+      0.6,
+      true
+    )
   end
   if searching then
     local parts = {}
     for _, found in ipairs(Search.Explain(index, row, query, opts)) do
       if found.word then
-        local word = found.via and ("%s %s %s"):format(found.word, SYNONYM_ARROW, found.via) or found.word
-        parts[#parts + 1] = ("%s (%s)"):format(word, L[MATCH_PLACES[found.where]])
+        -- Direct hits in a shown name or tag are coloured there; only the rest need saying.
+        local seen = not found.via
+          and (
+            found.where == "name" or (found.where == "tag" and Search.Highlight(tagText, found.word, opts) ~= tagText)
+          )
+        if not seen then
+          local word = found.word
+          for _, step in ipairs(found.via or {}) do
+            word = ("%s %s %s"):format(word, SYNONYM_ARROW, step)
+          end
+          -- Places the tooltip doesn't show get named; a direct hit in the tag field not among the tags is the file name.
+          local place = (found.where == "description" or found.where == "category") and MATCH_PLACES[found.where]
+            or (not found.via and found.where == "tag" and "file name")
+          parts[#parts + 1] = place and ("%s (%s)"):format(word, L[place]) or word
+        end
       else
         local preset = Search.Preset(found.color)
         parts[#parts + 1] = ("%s %d%%"):format(preset and L[preset.label] or found.color, found.share)
@@ -885,6 +921,9 @@ function View:ShowTooltip(owner, row)
     GameTooltip:AddLine(L["Icon ID: %d"]:format(index.id[row]), 0.5, 0.8, 1)
   end
   GameTooltip:Show()
+  ns.WatchModifiers(owner, function()
+    self:ShowTooltip(owner, row)
+  end)
 end
 
 -- Icons per row, and sets self.iconSize so that many icons fill the width between the insets.
@@ -1364,8 +1403,15 @@ function ns.CreateView(parent, opts)
   footer.count = footer:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   footer.count:SetPoint("LEFT")
   footer.brand = footer:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  footer.brand:SetPoint("RIGHT")
   footer.brand:SetText(L["Iconic"])
+  -- Pickers get a settings button after the brand; the browser has one in its title bar.
+  if opts and opts.settingsButton then
+    footer.settings = ns.CreateSettingsButton(footer)
+    footer.settings:SetPoint("RIGHT")
+    footer.brand:SetPoint("RIGHT", footer.settings, "LEFT", -4, 0)
+  else
+    footer.brand:SetPoint("RIGHT")
+  end
   self.footer = footer
   self.scrollBar = CreateFrame("EventFrame", nil, frame, "MinimalScrollBar")
   self.scrollBar:SetPoint("TOPLEFT", self.scrollBox, "TOPRIGHT", 8, -GRID_PAD_TOP)

@@ -181,6 +181,7 @@ function Pickers.Attach(popup, overrides)
   local function onShow()
     if not state.view then
       state.view = ns.CreateView(popup, {
+        settingsButton = true,
         onSelect = function(texture, position)
           adapter.SetIcon(popup, texture, position)
         end,

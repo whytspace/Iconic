@@ -86,6 +86,34 @@ describe("Search", function()
     assert.are.same({ 1002 }, keys((find("cloak"))))
   end)
 
+  it("finds English picture tags through a translation's tag words", function()
+    local translated = Search.BuildSynonyms(ns.SYNONYMS, { totenkopf = "skull" })
+    assert.are.same({ 132690 }, keys((Search.Find(data.index, rows, "Totenkopf", { synonyms = translated }))))
+    assert.are.same({ 132690 }, keys((Search.Find(data.index, rows, "skull", { synonyms = translated }))))
+    assert.are.same({ 132690 }, keys((Search.Find(data.index, rows, "Totenko", { synonyms = translated }))))
+  end)
+
+  it("expands a partly typed word only to a few translated tag words", function()
+    local words = { totenkopf = "skull" }
+    for i = 1, 5 do
+      words["totenw" .. string.char(96 + i)] = "werewolf"
+    end
+    local translated = Search.BuildSynonyms(ns.SYNONYMS, words)
+    assert.are.same({}, keys((Search.Find(data.index, rows, "Toten", { synonyms = translated }))))
+    assert.are.same({ 132690 }, keys((Search.Find(data.index, rows, "Totenk", { synonyms = translated }))))
+  end)
+
+  it("doesn't widen a complete translated word to longer ones", function()
+    local translated = Search.BuildSynonyms(ns.SYNONYMS, { totenkopf = "skull", totenkopfring = "cape" })
+    assert.are.same({ 132690 }, keys((Search.Find(data.index, rows, "Totenkopf", { synonyms = translated }))))
+  end)
+
+  it("follows a translated tag word on to the tag's synonyms", function()
+    local translated = Search.BuildSynonyms(ns.SYNONYMS, { umhang = "cloak" })
+    assert.are.same({ 1002 }, keys((Search.Find(data.index, rows, "Umhang", { synonyms = translated }))))
+    assert.are.same({ 1002 }, keys((Search.Find(data.index, rows, "Umha", { synonyms = translated }))))
+  end)
+
   it("matches synonyms as whole words only", function()
     assert.are.same({}, keys((find("helmet"))))
     assert.are.same({}, Search.Explain(data.index, 6, "helmet", { synonyms = synonyms }))
@@ -256,9 +284,19 @@ describe("Search", function()
     it("names the synonym a search word matched through", function()
       local potion = Catalog.Parse(addon.fakeData(ns, { { "1", "inv_potion_158", names = { "Shadow Protection" } } }))
       assert.are.same(
-        { { word = "shield", via = "protection", where = "name" } },
+        { { word = "shield", via = { "protection" }, where = "name" } },
         Search.Explain(potion.index, 1, "shield", { synonyms = synonyms })
       )
+    end)
+
+    it("names every step from a translated word, in readable words", function()
+      local cape = Catalog.Parse(addon.fakeData(ns, { { "1", "inv_misc_cape_01", names = { "Tattered Capes" } } }))
+      local translated = Search.BuildSynonyms(ns.SYNONYMS, { umhang = "cloaks" })
+      assert.are.same(
+        { { word = "umhang", via = { "cloak", "cape" }, where = "name" } },
+        Search.Explain(cape.index, 1, "Umhang", { synonyms = translated })
+      )
+      assert.are.equal("iris", Search.Readable(Search.BuildSynonyms({}, { schwertlilie = "iris" }), "iri"))
     end)
 
     it("gives a colour chip's share of the icon", function()
@@ -274,6 +312,18 @@ describe("Search", function()
       assert.are.equal("Tireless Pursuit", Search.Highlight("Tireless Pursuit", "wolf"))
       assert.are.equal(gold .. "Inc|rorporeal Defense", Search.Highlight("Incorporeal Defense", "inc"))
       assert.are.equal("Blessing of " .. gold .. "Prot|rection", Search.Highlight("Blessing of Protection", "prot"))
+    end)
+
+    it("colours a translated name word whose English word a search word finds", function()
+      local translated = Search.BuildSynonyms(ns.SYNONYMS, { schwert = "sword", klinge = "blade" })
+      assert.are.equal(
+        "Fanatische |cffffd100Klinge|r",
+        Search.Highlight("Fanatische Klinge", "Schwert", { synonyms = translated })
+      )
+      assert.are.equal(
+        "Warp|cffffd100klinge|r der Leerenschnitterin",
+        Search.Highlight("Warpklinge der Leerenschnitterin", "Schwert", { synonyms = translated })
+      )
     end)
   end)
 end)

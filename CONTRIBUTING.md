@@ -43,7 +43,7 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
-Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`, plus the picture tags from `tags`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
 
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together.
 
@@ -79,7 +79,7 @@ Grouping by colour names each dominant colour after the nearest reference shade 
 
 ## Icon tags
 
-`scripts/icon_tags.json` holds words for what each icon shows ("rose", "thorns", "jellyfish"), one line per file ID, subject first. They may repeat words of the file name: `build_data.py` adds them to each icon's file-name search words without repeats, so tags and file name count the same. Claude Code subagents write them by looking at the icons; `scripts/tag_icons.py` prepares their work and collects it. Commit the file: tagging all icons uses about 25M tokens.
+`scripts/icon_tags.json` holds words for what each icon shows ("rose", "thorns", "jellyfish"), one line per file ID, subject first. They may repeat words of the file name. `build_data.py` ships them readable in their own column for tooltips, and `Catalog.Parse` adds them to each icon's file-name search words at load, without repeats, so tags and file name count the same. Claude Code subagents write them by looking at the icons; `scripts/tag_icons.py` prepares their work and collects it. Commit the file: tagging all icons uses about 25M tokens.
 
 Only icons Blizzard's picker offers get tags. In both clients that is exactly the `Interface\Icons` files named `inv_…`, `ability_…` or `spell_…`, in any case (`PICKER_NAME`).
 
@@ -110,8 +110,9 @@ German (`deDE`) is the first translation; others follow the same steps:
 
 - Interface texts: `Locales/<locale>.lua`, loaded from `Iconic.toc`. `spec/locale_spec.lua` fails while a text the code uses has no translation. Extra colour words go into `ns.LocaleColorHints`.
 - Icon data: add the locale to `LOCALES` in `scripts/build_data.py` and its two files to `Iconic_Data/Iconic_Data.toc` with `[AllowLoadTextLocale <locale>]`, so only that client loads them.
+- Search words: `scripts/search_words_<locale>.json` gives each picture tag and synonym word one or more single-word translations. Add the locale to the list in `spec/locale_spec.lua`, which fails while a tag or synonym has none, so new ones need translating before the checks pass.
 
-Each `<Flavor>_<locale>.lua` holds translated labels and search text for icons whose text differs; display names come from the game in its language. Its search text has the translated words first and the English ones after, so both find an icon. `Catalog.ApplyLocale` merges it into the English data at load.
+Each `<Flavor>_<locale>.lua` holds translated labels, the search words the English text lacks, the translated search words, and each tag's first translation for tooltips; display names come from the game in its language. `Catalog.ApplyLocale` puts the translated words before the English ones, field by field, so both find an icon. A translated word counts as if its English words were typed, synonyms included (`Search.BuildSynonyms`). A partly typed one expands only while it starts a few translated words, and a complete one never reaches longer compounds (Schwert isn't Schwertlilie).
 
 `Search.Normalize` and `normalize` in `build_data.py` fold accented letters (ä → a, ß → ss), so "jager" finds "Jäger". Stemming stays English-only and applies the same way to every language's words.
 

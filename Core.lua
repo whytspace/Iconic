@@ -7,6 +7,7 @@ ns.TOOLTIP_MODES = { "always", "shift", "ctrl", "alt", "never" }
 ns.DEFAULTS = {
   settings = {
     tooltipPicker = "always",
+    tooltipNames = "shift",
     tooltipGame = "shift",
     showSuggested = true,
     showRecent = true,

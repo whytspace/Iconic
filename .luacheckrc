@@ -28,6 +28,7 @@ globals = {
 
 read_globals = {
   "Baganator",
+  "CreateSettingsListSectionHeaderInitializer",
   "BankPanel",
   "BreakUpLargeNumbers",
   "ButtonFrameTemplate_HideAttic",

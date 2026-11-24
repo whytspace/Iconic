@@ -48,7 +48,7 @@ function M.rawData(file, global)
 end
 
 -- Search field as scripts/build_data.py writes it: name buckets (1st, 2nd, 3rd-4th, rest), file and tags, description.
-local function searchField(Search, names, file, desc, tags)
+local function searchField(Search, names, file, desc)
   local buckets = { { names[1] }, { names[2] }, { names[3], names[4] }, {} }
   for i = 5, #names do
     table.insert(buckets[4], names[i])
@@ -64,9 +64,7 @@ local function searchField(Search, names, file, desc, tags)
     end
     fields[i] = table.concat(list, " ")
   end
-  fields[5] = (Search.FileText(file):gsub("|", "") .. " " .. table.concat(Search.Tokens(tags or ""), " "))
-    :gsub("^%s+", "")
-    :gsub("%s+$", "")
+  fields[5] = Search.FileText(file):gsub("|", ""):gsub("^%s+", ""):gsub("%s+$", "")
   fields[6] = table.concat(Search.Tokens(desc or ""), " ")
   return table.concat(fields, "|")
 end
@@ -110,7 +108,7 @@ M.COLOR_LAB = COLOR_LAB
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
   fileIds = {}
-  local icons = { id = {}, refs = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
+  local icons = { id = {}, refs = {}, text = {}, tags = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
@@ -126,7 +124,8 @@ function M.fakeData(ns, rows)
     icons.id[row] = tonumber(r[1])
     fileIds["interface\\icons\\" .. r[2]:lower()] = icons.id[row]
     icons.refs[row] = #names > 0 and table.concat(names, "|") or nil
-    icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc, r.tags))
+    icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc))
+    icons.tags[row] = r.tags
     local src = 0
     for letter in (r.src or ""):gmatch(".") do
       src = src + SOURCE_BITS[letter]

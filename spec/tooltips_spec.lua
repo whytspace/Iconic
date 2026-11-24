@@ -23,23 +23,59 @@ local function load(owner)
   return ns, tooltip
 end
 
-describe("OnModifierChanged", function()
-  it("redraws the tooltip of an Iconic button", function()
-    local entered = 0
-    local button = { iconicButton = true }
-    function button.GetScript()
-      return function()
-        entered = entered + 1
-      end
+describe("WatchModifiers", function()
+  local ns, tooltip, env, frame, owned, shift
+
+  before_each(function()
+    owned, shift = true, false
+    ns, tooltip = load({})
+    function tooltip.IsOwned()
+      return owned
     end
-    local ns = load(button)
-    ns.OnModifierChanged()
-    assert.are.equal(1, entered)
+  end)
+
+  -- Loads with fake key state and a frame whose OnUpdate the test runs by hand.
+  local function setup()
+    frame = {}
+    function frame.SetScript(self, _, fn)
+      self.onUpdate = fn
+    end
+    env = getfenv(ns.WatchModifiers)
+    env.CreateFrame = function()
+      return frame
+    end
+    env.IsShiftKeyDown = function()
+      return shift
+    end
+    env.IsControlKeyDown = function()
+      return false
+    end
+    env.IsAltKeyDown = function()
+      return false
+    end
+  end
+
+  it("redraws an Iconic tooltip when a modifier changes, then stops with the tooltip", function()
+    setup()
+    local redrawn = 0
+    ns.WatchModifiers({}, function()
+      redrawn = redrawn + 1
+    end)
+    frame:onUpdate()
+    assert.are.equal(0, redrawn)
+    shift = true
+    frame:onUpdate()
+    assert.are.equal(1, redrawn)
+    owned = false
+    frame:onUpdate()
+    assert.is_nil(frame.onUpdate)
   end)
 
   it("never rebuilds a game tooltip", function()
-    local ns, tooltip = load({})
-    ns.OnModifierChanged()
+    setup()
+    ns.WatchModifiers({}, function() end)
+    shift = true
+    frame:onUpdate()
     assert.are.equal(0, tooltip.refreshed)
   end)
 end)

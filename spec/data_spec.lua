@@ -52,6 +52,13 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
         shared = shared or top.pyroblast[key]
       end
       assert.is_true(shared, "no icon in the top 3 for both pyroschlag and pyroblast")
+      -- German words find the English picture tags: 538517 shows a werewolf.
+      local germanOpts = { synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS, german.translatedWords) }
+      local found
+      for _, row in ipairs(ns.Search.Find(german.index, germanRows, "werwolf", germanOpts)) do
+        found = found or german.index.key[row] == 538517
+      end
+      assert.is_true(found, "538517 not found for 'werwolf'")
     end)
 
     it("finds icons by their picture tags", function()

@@ -34,15 +34,18 @@ describe("Catalog", function()
     assert.are.same({ 185 }, index.profs[index.byKey[40]])
   end)
 
-  it("applies a translation's names, search text and labels", function()
+  it("applies a translation's names, search words, tag words and labels", function()
+    data.index.text[data.index.byKey[10]] = " hunter mark |  |  | x "
     Catalog.ApplyLocale(data, {
       classes = "3\tJäger\n",
-      icons = { id = { 10, 999 }, refs = { "Mal des Jägers", "Unbekannt" }, text = { " mal jager | hunter ", " x " } },
+      translatedWords = "werwolf\twerewolf\n",
+      icons = { id = { 10, 999 }, refs = { "Mal des Jägers", "Unbekannt" }, text = { "mal jager||wolf", "x" } },
     })
     local row = data.index.byKey[10]
     assert.are.equal("Jäger", data.classes[3])
+    assert.are.equal("werewolf", data.translatedWords.werwolf)
     assert.are.same({ "Mal des Jägers" }, Catalog.Names(data.index, row))
-    assert.are.equal(" mal jager | hunter ", data.index.text[row])
+    assert.are.equal(" mal jager hunter mark |  | wolf | x ", data.index.text[row])
     assert.are.same({ "Fireball" }, Catalog.Names(data.index, data.index.byKey[20]))
     assert.are.equal("One-Handed Swords", data.itemClasses["2:7"])
   end)

@@ -21,6 +21,6 @@ function ns.LoadData()
   else
     ns.data = false
   end
-  ns.synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS)
+  ns.synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS, ns.data and ns.data.translatedWords)
   return ns.data or nil
 end

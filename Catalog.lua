@@ -59,8 +59,30 @@ local function lookup(body)
   return map, icons
 end
 
+local function fields(text)
+  local list, start = {}, 1
+  while true do
+    local bar = text:find("|", start, true)
+    list[#list + 1] = text:sub(start, bar and bar - 1 or nil):match("^%s*(.-)%s*$")
+    if not bar then
+      return list
+    end
+    start = bar + 1
+  end
+end
+
+-- Padded search text with a translation's extra words ("a||b") put before the English words, field by field.
+local function mergeText(extra, english)
+  local added, merged = fields(extra), fields(english)
+  for i, words in ipairs(merged) do
+    local more = added[i] or ""
+    merged[i] = (more ~= "" and words ~= "") and (more .. " " .. words) or (more .. words)
+  end
+  return " " .. table.concat(merged, " | ") .. " "
+end
+
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file (only for textures
--- without data), refs (names, "a|b"), text (padded search text), src (source bits), cls (class bits), cats (category numbers),
+-- without data), refs (names, "a|b"), text (padded search text), tags (picture tags, "a b"), src (source bits), cls (class bits), cats (category numbers),
 -- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant colour, the
 -- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest colour key).
 function Catalog.NewIndex()
@@ -73,6 +95,7 @@ function Catalog.NewIndex()
     file = {},
     refs = {},
     text = {},
+    tags = {},
     src = {},
     cls = {},
     cats = {},
@@ -97,7 +120,35 @@ local function addRow(index, key, id, texture, file)
   return row
 end
 
-local COLUMNS = { "refs", "text", "src", "cls", "cats", "profs", "spells" }
+local COLUMNS = { "refs", "text", "tags", "src", "cls", "cats", "profs", "spells" }
+
+-- Adds each row's picture tags (readable words, "rose thorns") to the file name field of its search text, stemmed
+-- and without repeats.
+local function addTags(index)
+  local stems = {}
+  local text = index.text
+  for row, tags in pairs(index.tags) do
+    local line = text[row]
+    local start, bar = 0, 0
+    for _ = 1, 5 do
+      start, bar = bar, line:find("|", bar + 1, true)
+    end
+    local field, added = line:sub(start + 1, bar - 1), false
+    for tag in tags:gmatch("%S+") do
+      local stem = stems[tag]
+      if not stem then
+        stem = ns.Search.Tokens(tag)[1] or ""
+        stems[tag] = stem
+      end
+      if stem ~= "" and not field:find(" " .. stem .. " ", 1, true) then
+        field, added = field .. stem .. " ", true
+      end
+    end
+    if added then
+      text[row] = line:sub(1, start) .. field .. line:sub(bar)
+    end
+  end
+end
 
 -- Search words per item category number (class * 256 + subclass) the icons use: its own and its class's name, padded
 -- like search text (" a b "), for Search.Find.
@@ -156,6 +207,7 @@ function Catalog.Parse(raw)
     key[row], texture[row], byKey[id] = id, id, row
   end
   index.count = #ids
+  addTags(index)
   index.categoryWords = categoryWords(data)
   return data
 end
@@ -173,13 +225,17 @@ function Catalog.ApplyLocale(data, raw)
   if raw.professions then
     data.professions, data.professionIcons = lookup(raw.professions)
   end
+  data.translatedWords = raw.translatedWords and lookup(raw.translatedWords) or nil
+  data.tagNames = raw.tagNames and lookup(raw.tagNames) or nil
   local index, icons = data.index, raw.icons or {}
   local refs, text = icons.refs or {}, icons.text or {}
   for i, id in ipairs(icons.id or {}) do
     local row = index.byKey[id]
     if row then
       index.refs[row] = refs[i] or index.refs[row]
-      index.text[row] = text[i] or index.text[row]
+      if text[i] then
+        index.text[row] = mergeText(text[i], index.text[row])
+      end
     end
   end
 end

@@ -28,7 +28,6 @@ FLAVORS = {
 LOCALES = ["deDE"]
 
 MAX_NAMES = 16
-MAX_DISPLAY_NAMES = 6
 MAX_DESC_TOKENS = 48
 
 SKILL_CATEGORY_CLASS = 7
@@ -186,8 +185,9 @@ def file_tokens(file):
     return [t for t in tokens(re.sub(r"\d+", " ", CAMEL.sub(" ", file))) if t not in FILE_NOISE]
 
 
-def search_text(names, file, desc, tags=()):
-    """Field layout read by Search.lua: name buckets (1st, 2nd, 3rd-4th, rest), file name and tags, description."""
+def search_text(names, file, desc):
+    """Field layout read by Search.lua: name buckets (1st, 2nd, 3rd-4th, rest), file name, description. Catalog.Parse
+    adds the picture tags (the "tags" column) to the file name field."""
     buckets = [names[0:1], names[1:2], names[2:4], names[4:]]
     seen = set()
     fields = []
@@ -199,7 +199,7 @@ def search_text(names, file, desc, tags=()):
                 field.append(token)
         fields.append(" ".join(field))
     file_field = []
-    for token in file_tokens(file) + tokens(" ".join(tags)):
+    for token in file_tokens(file):
         if token not in file_field:
             file_field.append(token)
     fields.append(" ".join(file_field))
@@ -463,18 +463,19 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
     color_columns = [color_columns[k] for k in keep]
     colors = {file_id: [values[k] if k < len(values) else "" for k in keep] for file_id, values in colors.items()}
     ids = sorted(icons)
-    columns = {name: [] for name in ("id", "refs", "text", "src", "cls", "cats", "profs", "spells")}
+    columns = {name: [] for name in ("id", "refs", "text", "tags", "src", "cls", "cats", "profs", "spells")}
     # Dominant colours: l, a, b (OKLab * 100) and w (weight, 0 for no colour).
     shares = {name: [] for name in color_columns}
     for file_id in ids:
         t = icons[file_id]
         ranked = sorted(t.names)[:MAX_NAMES]
         names = [n for _, _, n, _ in ranked]
-        display = "|".join(ref for _, _, _, ref in ranked[:MAX_DISPLAY_NAMES])
+        display = "|".join(ref for _, _, _, ref in ranked)
         columns["id"].append(str(file_id))
         columns["refs"].append(lua_string(display) if display else "nil")
         # Padded as Search.PadText does, so the game reads it as is.
-        columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc, t.tags).replace("|", " | ") + " "))
+        columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc).replace("|", " | ") + " "))
+        columns["tags"].append(lua_string(" ".join(t.tags)) if t.tags else "nil")
         columns["src"].append(str(sum(SOURCE_BITS[s] for s in t.src)))
         columns["cls"].append(str(t.cls or 0))
         columns["cats"].append(lua_numbers(sorted(category_number(c) for c in t.cats)))
@@ -511,21 +512,46 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
     log(f"{flavor}: wrote {path} ({os.path.getsize(path) // 1024} KB)")
 
 
-def merge_text(first, second):
-    """Search texts joined field by field, first's tokens first, without repeats inside a field."""
+def text_delta(translated, english):
+    """Per field, the translated text's tokens that the English field lacks; Catalog.ApplyLocale adds them back in."""
     fields = []
-    for a, b in zip(first.split("|"), second.split("|")):
-        seen, merged = set(), []
-        for token in (a + " " + b).split():
-            if token not in seen:
-                seen.add(token)
-                merged.append(token)
-        fields.append(" ".join(merged))
+    for a, b in zip(translated.split("|"), english.split("|")):
+        known = set(b.split())
+        fields.append(" ".join(t for t in a.split() if t not in known))
     return "|".join(fields)
 
 
+def load_translated_words(locale):
+    """Translated search token -> English words, from scripts/search_words_<locale>.json (English word -> words):
+    every picture tag and synonym word. The game stems the English words itself, keeping them readable."""
+    path = os.path.join(ROOT, "scripts", f"search_words_{locale}.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as handle:
+        translations = json.load(handle)
+    words = {}
+    for english, translated in translations.items():
+        en = normalize(english)
+        for token in tokens(" ".join(translated)):
+            targets = words.setdefault(token, [])
+            if token not in tokens(en) and en not in targets:
+                targets.append(en)
+    return {token: targets for token, targets in words.items() if targets}
+
+
+def load_tag_names(locale):
+    """English picture tag -> its first translation, shown in tooltips."""
+    path = os.path.join(ROOT, "scripts", f"search_words_{locale}.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as handle:
+        translations = json.load(handle)
+    tags = {tag for words in load_tags().values() for tag in words}
+    return {tag: translations[tag][0] for tag in sorted(tags) if translations.get(tag) and translations[tag][0] != tag}
+
+
 def write_locale(flavor, locale, english, translated):
-    """Translated names, labels and search text (translated, then English) for icons whose text differs."""
+    """Translated names, labels, search words the English text lacks, and translated search words."""
     _, _, en_icons, _, _, _ = english
     build_version, branch, icons, classes, item_classes, professions = translated
     ids, names_col, text_col = [], [], []
@@ -536,15 +562,15 @@ def write_locale(flavor, locale, english, translated):
         ranked, en_ranked = sorted(t.names)[:MAX_NAMES], sorted(en.names)[:MAX_NAMES]
         names = [n for _, _, n, _ in ranked]
         en_names = [n for _, _, n, _ in en_ranked]
-        text = merge_text(search_text(names, t.words, t.desc, t.tags), search_text(en_names, en.words, en.desc, en.tags))
+        text = text_delta(search_text(names, t.words, t.desc), search_text(en_names, en.words, en.desc))
         # Only names kept as text differ by language; references are looked up in the player's language.
-        display = "|".join(ref for _, _, _, ref in ranked[:MAX_DISPLAY_NAMES])
-        en_display = "|".join(ref for _, _, _, ref in en_ranked[:MAX_DISPLAY_NAMES])
-        if text == search_text(en_names, en.words, en.desc, en.tags) and display == en_display:
+        display = "|".join(ref for _, _, _, ref in ranked)
+        en_display = "|".join(ref for _, _, _, ref in en_ranked)
+        if not text.replace("|", "").strip() and display == en_display:
             continue
         ids.append(str(file_id))
         names_col.append(lua_string(display) if display and display != en_display else "nil")
-        text_col.append(lua_string(" " + text.replace("|", " | ") + " "))
+        text_col.append(lua_string(text))
 
     path = os.path.join(OUT_DIR, f"{os.path.splitext(FLAVORS[flavor]['file'])[0]}_{locale}.lua")
     with open(path, "w", encoding="utf-8", newline="\n") as out:
@@ -554,6 +580,10 @@ def write_locale(flavor, locale, english, translated):
         out.write(f"  classes = {long_string(lookup_body(classes))},\n")
         out.write(f"  itemClasses = {long_string(lookup_body(item_classes))},\n")
         out.write(f"  professions = {long_string(lookup_body(professions))},\n")
+        translated_words = "".join(f"{w}\t{' '.join(en)}\n" for w, en in sorted(load_translated_words(locale).items()))
+        out.write(f"  translatedWords = {long_string(translated_words)},\n")
+        tag_names = "".join(f"{tag}\t{name}\n" for tag, name in load_tag_names(locale).items())
+        out.write(f"  tagNames = {long_string(tag_names)},\n")
         out.write("  icons = {\n")
         columns = [("id", ids), ("refs", names_col), ("text", text_col)]
         # Display names are references looked up in the game's language, so a translation rarely has its own.

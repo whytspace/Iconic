@@ -66,13 +66,22 @@ function ns.SetupTooltips()
   end
 end
 
--- Re-renders an Iconic button's tooltip so a modifier press shows or hides the icon ID at once.
-function ns.OnModifierChanged()
-  if not GameTooltip:IsShown() then
-    return
-  end
-  local owner = GameTooltip:GetOwner()
-  if owner and owner.iconicButton then
-    owner:GetScript("OnEnter")(owner)
-  end
+local function modifiers()
+  return (IsShiftKeyDown() and "s" or "") .. (IsControlKeyDown() and "c" or "") .. (IsAltKeyDown() and "a" or "")
+end
+
+-- Calls `redraw` when Shift, Ctrl or Alt changes while GameTooltip belongs to `owner`, so the settings that depend
+-- on them apply at once; one watch at a time.
+local watcher
+function ns.WatchModifiers(owner, redraw)
+  watcher = watcher or CreateFrame("Frame")
+  local state = modifiers()
+  watcher:SetScript("OnUpdate", function(frame)
+    if not GameTooltip:IsOwned(owner) then
+      frame:SetScript("OnUpdate", nil)
+    elseif modifiers() ~= state then
+      state = modifiers()
+      redraw()
+    end
+  end)
 end

@@ -13,6 +13,9 @@ local CATEGORY_WEIGHT = 5
 local NO_CATS = {}
 local DESC_FIELD = 6
 local QUALITY_EXACT, QUALITY_PREFIX, QUALITY_SYNONYM, QUALITY_FUZZY = 1, 0.7, 0.6, 0.5
+-- Keys of the synonym map's translated words ({ words = sorted list, english = word -> tokens }) and readable words
+-- (token -> word); no token has "#".
+local TRANSLATED, READABLE = "#translated", "#readable"
 local BONUS_PHRASE, BONUS_USABLE, BONUS_PLAYER, SCORE_ID = 5, 2, 2, 1000
 -- With words and colour chips, the share of the word match in the order; colour closeness has the rest. Both are
 -- taken relative to the best result.
@@ -117,31 +120,57 @@ function Search.PadText(text)
   return " " .. gsub(text or "", "|", " | ") .. " "
 end
 
--- Synonym groups ({ {"cloak", "cape", ...}, ... }) become token -> { other tokens }.
-function Search.BuildSynonyms(groups)
-  local map = {}
+-- Synonym groups ({ {"cloak", "cape", ...}, ... }) become token -> { other tokens }. `translated` (translated token ->
+-- "english words") lets a translation's words count as the English words they stand for. The map also keeps a
+-- readable word per token (Search.Readable).
+function Search.BuildSynonyms(groups, translated)
+  local map, readable = {}, {}
+  local function token(word)
+    local t = Search.Tokens(word)[1]
+    if t and not readable[t] then
+      readable[t] = Search.Normalize(word)
+    end
+    return t
+  end
   for _, group in ipairs(groups or {}) do
     local stems = {}
     for _, word in ipairs(group) do
-      for _, token in ipairs(Search.Tokens(word)) do
-        stems[#stems + 1] = token
-      end
+      stems[#stems + 1] = token(word)
     end
-    for _, token in ipairs(stems) do
-      map[token] = map[token] or {}
+    for _, t in ipairs(stems) do
+      map[t] = map[t] or {}
       local seen = {}
-      for _, other in ipairs(map[token]) do
+      for _, other in ipairs(map[t]) do
         seen[other] = true
       end
       for _, other in ipairs(stems) do
-        if other ~= token and not seen[other] then
+        if other ~= t and not seen[other] then
           seen[other] = true
-          map[token][#map[token] + 1] = other
+          map[t][#map[t] + 1] = other
         end
       end
     end
   end
+  local words, english = {}, {}
+  for word, list in pairs(translated or {}) do
+    words[#words + 1] = word
+    english[word] = {}
+    for en in list:gmatch("%S+") do
+      english[word][#english[word] + 1] = token(en)
+    end
+  end
+  if #words > 0 then
+    table.sort(words)
+    map[TRANSLATED] = { words = words, english = english }
+  end
+  map[READABLE] = readable
   return map
+end
+
+-- The word to show for a search token, such as "iris" for "iri".
+function Search.Readable(synonyms, token)
+  local readable = synonyms and synonyms[READABLE]
+  return readable and readable[token] or token
 end
 
 -- Edit distance with adjacent swaps, capped at `max` (returns max + 1 when exceeded).
@@ -266,24 +295,72 @@ local function tokenScore(text, variants)
   return bestName + bestDesc
 end
 
+-- A partly typed word expands to translated words only while it starts at most this many.
+local MAX_PREFIX_WORDS = 5
+
+-- Adds `term` with `quality`, once per term at its best quality, reached from `parent`; `seen` maps term -> its
+-- quality slot, `from` term -> parent.
+local function addTerm(variants, seen, from, term, quality, parent)
+  local slot = seen[term]
+  if not slot then
+    variants[#variants + 1] = term
+    variants[#variants + 1] = quality
+    seen[term], from[term] = #variants, parent
+  elseif quality > variants[slot] then
+    variants[slot], from[term] = quality, parent
+  end
+end
+
+-- Adds `word` with `quality` and its synonyms.
+local function addWord(variants, seen, from, synonyms, word, quality, parent)
+  addTerm(variants, seen, from, word, quality, parent)
+  for _, other in ipairs(synonyms[word] or {}) do
+    addTerm(variants, seen, from, other, QUALITY_SYNONYM, word)
+  end
+end
+
+-- The query token's variants as { term, quality, ... }, and term -> the term it was reached from.
 local function variantsFor(token, synonyms, vocabulary)
-  local variants = { token, QUALITY_EXACT }
-  for _, other in ipairs(synonyms[token] or {}) do
-    variants[#variants + 1] = other
-    variants[#variants + 1] = QUALITY_SYNONYM
+  local variants, seen, from = {}, {}, {}
+  addWord(variants, seen, from, synonyms, token, QUALITY_EXACT)
+  -- A translated word counts as its English words typed. A partly typed one counts as their prefix, but a complete
+  -- word doesn't reach longer ones: "schwert" isn't "schwertlilie".
+  local translated = synonyms[TRANSLATED]
+  if translated then
+    local own = translated.english[token]
+    for _, en in ipairs(own or {}) do
+      addWord(variants, seen, from, synonyms, en, QUALITY_EXACT, token)
+    end
+    local started = {}
+    if not own and #token >= 3 then
+      for _, word in ipairs(translated.words) do
+        if find(word, token, 1, true) == 1 then
+          started[#started + 1] = word
+          if #started > MAX_PREFIX_WORDS then
+            break
+          end
+        end
+      end
+    end
+    if #started <= MAX_PREFIX_WORDS then
+      for _, word in ipairs(started) do
+        for _, en in ipairs(translated.english[word]) do
+          addWord(variants, seen, from, synonyms, en, QUALITY_PREFIX, token)
+        end
+      end
+    end
   end
   if vocabulary then
     local budget = fuzzyBudget(token)
     if budget > 0 then
       for _, word in ipairs(vocabulary) do
         if word ~= token and couldBeTypo(token, word) and Search.Distance(token, word, budget) <= budget then
-          variants[#variants + 1] = word
-          variants[#variants + 1] = QUALITY_FUZZY
+          addTerm(variants, seen, from, word, QUALITY_FUZZY, token)
         end
       end
     end
   end
-  return variants
+  return variants, from
 end
 
 -- Minimum share (0-100) of an icon in a chip's colour band for the chip to match.
@@ -663,7 +740,8 @@ local function queryTerms(query, synonyms)
   for word in Search.Normalize(query):gmatch("%S+") do
     local token = Search.Tokens(word)[1]
     if token then
-      terms[#terms + 1] = { word = word, variants = variantsFor(token, synonyms or {}) }
+      local variants, from = variantsFor(token, synonyms or {})
+      terms[#terms + 1] = { word = word, token = token, variants = variants, from = from }
     end
   end
   return terms
@@ -673,7 +751,8 @@ local function startsWith(text, term, quality)
   return text == term or (prefixAllowed(term, quality) and sub(text, 1, #term) == term)
 end
 
--- Why a row matches a query: per search word { word, via = the synonym it matched through, if any, where = "name" | "tag" | "description" |
+-- Why a row matches a query: per search word { word, via = the words it matched through, such as { "sword", "claymore" },
+-- if any, where = "name" | "tag" | "description" |
 -- "category" }, then per colour chip { color = name, share = 0-100 }. Words that don't match are left out.
 -- opts: synonyms, chips (as for Search.Find).
 function Search.Explain(index, row, query, opts)
@@ -714,7 +793,16 @@ function Search.Explain(index, row, query, opts)
       end
     end
     if where then
-      found[#found + 1] = { word = term.word, via = via, where = where }
+      local path
+      if via then
+        path = {}
+        local step = via
+        while step and step ~= term.token do
+          table.insert(path, 1, Search.Readable(opts.synonyms, step))
+          step = term.from[step]
+        end
+      end
+      found[#found + 1] = { word = term.word, via = path, where = where }
     end
   end
   for _, chip in ipairs(opts.chips or {}) do
@@ -732,6 +820,25 @@ function Search.Highlight(text, query, opts)
   if #terms == 0 then
     return text
   end
+  local translated = opts and opts.synonyms and opts.synonyms[TRANSLATED]
+  local found = {}
+  for _, term in ipairs(terms) do
+    for i = 1, #term.variants, 2 do
+      found[term.variants[i]] = true
+    end
+  end
+  -- Whether a search word finds `token` as a whole word, directly or through its English translation.
+  local function finds(token)
+    if found[token] then
+      return true
+    end
+    for _, en in ipairs(translated and translated.english[token] or {}) do
+      if found[en] then
+        return true
+      end
+    end
+    return false
+  end
   local function mark(word)
     local normal = Search.Normalize(word)
     if normal == "" or STOPWORDS[normal] then
@@ -748,6 +855,24 @@ function Search.Highlight(text, query, opts)
           for k = #variant, #word do
             if Search.Normalize(sub(word, 1, k)) == variant then
               return HIGHLIGHT .. sub(word, 1, k) .. "|r" .. sub(word, k + 1)
+            end
+          end
+          return HIGHLIGHT .. word .. "|r"
+        end
+      end
+    end
+    -- A translated word whose English word a search word finds, such as "Klinge" (blade) for "sword".
+    if finds(stem) then
+      return HIGHLIGHT .. word .. "|r"
+    end
+    -- A compound ending in such a word: "Warpklinge".
+    if translated then
+      for k = 2, #normal - 3 do
+        local tail = sub(normal, k)
+        if finds(Search.Stem(tail)) then
+          for j = 2, #word do
+            if Search.Normalize(sub(word, j)) == tail then
+              return sub(word, 1, j - 1) .. HIGHLIGHT .. sub(word, j) .. "|r"
             end
           end
           return HIGHLIGHT .. word .. "|r"
