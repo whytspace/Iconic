@@ -69,6 +69,34 @@ def words(values):
     return out
 
 
+IRREGULAR_PLURALS = {
+    "leaves": "leaf", "knives": "knife", "teeth": "tooth", "feet": "foot", "hooves": "hoof", "elves": "elf",
+    "men": "man", "women": "woman", "halves": "half",
+}
+# Plural-looking tags whose singular means something else.
+NOT_PLURALS = {"glasses", "shorts", "shoots"}
+
+
+def singular(word, vocabulary):
+    """The singular of a plural tag whose singular is also a tag; otherwise the word itself."""
+    if word in IRREGULAR_PLURALS:
+        return IRREGULAR_PLURALS[word]
+    if word in NOT_PLURALS:
+        return word
+    for suffix, replacement in (("s", ""), ("ies", "y"), ("es", "")):
+        if word.endswith(suffix):
+            base = word[: -len(suffix)] + replacement
+            if base != word and base in vocabulary:
+                return base
+    return word
+
+
+def singular_tags(tags):
+    """Tags by file ID with plural tags folded into their singular, so "gems" and "gem" are one tag."""
+    vocabulary = {word for words_ in tags.values() for word in words_}
+    return {i: words(singular(word, vocabulary) for word in words_) for i, words_ in tags.items()}
+
+
 def clean_entry(entry):
     """(tags, problem) of one icon's entry: a list of words, or an older {main, minor} entry read main first."""
     if isinstance(entry, dict) and isinstance(entry.get("main"), list) and isinstance(entry.get("minor"), list):
@@ -180,8 +208,8 @@ def status(_args):
 
 def merge(_args):
     want = wanted(cached_icon_names())
-    tags = load_tags()
-    merged = 0
+    before = load_tags()
+    tags = dict(before)
     for name, path, ids in chunks():
         result = read_chunk(path, ids)
         if result is None:
@@ -189,14 +217,14 @@ def merge(_args):
         good, problems = result
         for problem in problems:
             log(f"{name} {problem}")
-        good = {i: t for i, t in good.items() if i in want and tags.get(i) != t}
-        tags.update(good)
-        merged += len(good)
+        tags.update({i: t for i, t in good.items() if i in want})
     dropped = [i for i in tags if i not in want]
     for i in dropped:
         del tags[i]
     if dropped:
         log(f"dropped {len(dropped)} icons the pickers don't offer")
+    tags = singular_tags(tags)
+    merged = sum(1 for i, t in tags.items() if before.get(i) != t)
     save_tags(tags)
     log(f"merged {merged} icons from finished chunks; {len(tags)} icons in {os.path.relpath(TAGS, ROOT)}")
 

@@ -222,7 +222,7 @@ achse	axle
 acht	eight
 achteck	octagon
 ader	vein
-adern	veins
+adern	vein
 adler	eagle
 adlig	noble
 affe	ape monkey
@@ -266,7 +266,7 @@ antik	ancient
 antilope	antelope
 anzeige	gauge
 anzug	suit
-apfel	apple apples
+apfel	apple
 apparat	contraption gizmo
 ara	macaw
 arkan	arcane
@@ -275,22 +275,22 @@ arktisch	arctic
 armband	bracelet wristband
 armbander	wristwraps
 armbrust	crossbow
-arme	arms
+arme	arm
 armel	sleeves
 armello	sleeveless
 armillarsphare	armillary
 armschiene	bracer vambrace
-armschienen	bracers vambraces wristguards
+armschienen	bracer bracers vambrace wristguards
 armschutz	wristguard wristguards
 artefakt	artifact
-asche	ash ashes
+asche	ash
 aspekte	aspects
 aspik	aspic
 ass	ace
 assassine	assassin
 assel	isopod
 ast	bough branch
-aste	branches
+aste	branch
 asteroiden	asteroids
 atem	breath
 ather	ether
@@ -308,9 +308,9 @@ aufprall	impact
 aufschliessen	unlock
 aufschlitzen	lacerate
 aufwart	upward
-augapfel	eyeball eyeballs
+augapfel	eyeball
 auge	eye
-augen	eyes
+augen	eye eyes
 augenbinde	blindfold
 augenklappe	eyepatch
 augenlid	eyelid
@@ -323,28 +323,28 @@ auster	oyster
 auszeichnung	award
 automat	automaton vending
 axt	axe
-axte	axes
+axte	axe
 azerit	azerite
 bach	stream
 backofen	oven
 bajonett	bayonet
-balle	balls
+balle	ball
 ballon	balloon
 bambu	bamboo
 banane	banana
-bananen	bananas
+bananen	banana
 band	ribbon
-bandagen	bandages
-bander	bands ribbons
+bandagen	bandage
+bander	band ribbon
 bankett	banquet
 bannen	dispel
 bar	bear ursine
 barbar	barbarian
-baren	bears
+baren	bear
 barenhaft	ursine
 bargeld	cash
 barrakuda	barracuda
-barren	bar bars ingot
+barren	bar ingot
 barriere	barrier
 barsch	perch
 bart	beard
@@ -358,11 +358,11 @@ bauernhof	farm
 bauhelm	hardhat
 bauholz	lumber timber
 baum	tree
-baume	trees
+baume	tree
 baumhirte	treant
 baumriese	ent
 baumstamm	log
-baumstamme	logs
+baumstamme	log
 baumstumpf	stump
 bauplan	blueprint schematic
 beben	quake
@@ -370,9 +370,9 @@ becher	cup mug tumbler
 becken	pool
 bedrohung	threat
 beere	berry
-beeren	berries
+beeren	berry
 befiederung	fletching
-begleiter	companion pet pets
+begleiter	companion pet
 behaart	hairy
 behalter	canister container
 behandschuht	gloved
@@ -381,7 +381,7 @@ beherrschen	dominate
 beil	axe hatchet
 beilage	garnish
 bein	leg
-beine	legs
+beine	leg legs
 beinkleider	leggings
 beinkleidung	legwear
 beinplatten	legplates
@@ -396,7 +396,7 @@ benommenheit	daze
 berechnen	calculate
 berg	mountain
 bergbau	mining
-berge	mountains
+berge	mountain
 bergmann	miner
 bernstein	amber
 berserker	berserk
@@ -411,14 +411,14 @@ besessen	possessed
 besteck	cutlery
 bestickt	embroidered
 bestie	beast
-bestien	beasts
+bestien	beast
 betauben	stun
 betaubt	dazed
 betaubung	daze stun
 betend	praying
 betrachter	beholder
 bett	bed
-beutel	bag pouch pouches
+beutel	bag pouch
 bewaffnung	armament
 bewegung	motion
 biber	beaver
@@ -431,14 +431,14 @@ binden	bind
 bindungen	bindings
 bischofsmutze	miter
 biss	bite
-bizep	bicep biceps
+bizep	bicep
 blase	bubble
 blasebalg	bellows
-blasen	bubbles
+blasen	bubble
 blasrohr	blowdart
 blass	pale
 blatt	leaf
-blatter	leaves
+blatter	leaf
 blau	blue
 blaugrun	teal
 bleich	pale
@@ -447,23 +447,23 @@ blick	gaze
 blickend	looking
 blinzeln	blink
 blitz	bolt flash lightning
-blitze	bolts
+blitze	bolt
 blitzgetroffen	thunderstruck
 blitzschlag	thunderstruck
-blocke	blocks
+blocke	block
 blond	blonde
 bloss	bare
 blubbernd	bubbling
 blume	flower
-blumen	flowers
+blumen	flower
 blumenstrauss	bouquet
 blumentopf	flowerpot
 bluse	blouse
 blut	blood gore
 blute	bloom blossom
-bluten	bleed blossoms
+bluten	bleed blossom
 blutenblatt	petal
-blutenblatter	petals
+blutenblatter	petal
 blutenstaub	pollen
 blutig	bloody
 blutrausch	bloodlust
@@ -472,7 +472,7 @@ blutung	bleed bleeding
 blutunterlaufen	bloodshot
 boden	ground
 boe	gust
-bogen	arc arch arcs bow
+bogen	arc arch bow
 bogenschiessen	archery
 bogenschutze	archer
 bohne	bean
@@ -481,9 +481,9 @@ bohrer	bit borer drill
 boje	buoy
 boller	firecracker
 bollwerk	bulwark
-bolzen	bolt bolts
+bolzen	bolt
 bombe	bomb
-bomben	bombs
+bomben	bomb
 bommel	pompom
 bonbon	candy
 boot	boat skiff submarine
@@ -508,11 +508,11 @@ brett	board
 bretter	planks
 brezel	pretzel
 brief	envelope letter missive
-briefe	envelopes letters
+briefe	envelope letter
 briefoffner	opener
 brille	glasses goggles spectacles
 brise	breeze
-brocken	chunk chunks
+brocken	chunk
 brombeere	bramble
 brot	bread
 brotchen	bun
@@ -520,7 +520,7 @@ brotdose	lunchbox
 brotlaib	loaf
 bruch	breach break
 bruchstuck	fragment
-bruchstucke	fragments
+bruchstucke	fragment
 brucke	bridge
 bruhe	broth
 brullen	roar
@@ -535,7 +535,7 @@ brustschutz	chestguard
 brustteil	chestpiece
 buch	book libram
 buchstabe	letter
-buchstaben	letters
+buchstaben	letter
 bulette	patty
 bullauge	porthole
 bumerang	boomerang
@@ -558,14 +558,14 @@ clownfisch	clownfish
 creme	cream
 dach	roof
 damon	demon devil
-damonen	demons
+damonen	demon
 damonin	demoness
 damonisch	demonic
 dampf	steam vapor
 dampfgarer	steamer
 dampfkorb	steamer
 darm	intestine
-darme	intestines
+darme	intestine
 decke	blanket
 deckel	lid
 deckung	cover
@@ -576,7 +576,7 @@ detonieren	detonate
 diadem	circlet tiara
 diagramm	chart
 diamant	diamond
-diamanten	diamonds
+diamanten	diamond
 diener	minion
 dietrich	lockpick
 dingsbum	gizmo
@@ -588,17 +588,17 @@ dogge	mastiff
 doktorfisch	tang
 dokument	document
 dolch	dagger dirk kris shiv stiletto
-dolche	daggers
+dolche	dagger
 donner	thunder
 donnerbuchse	blunderbuss
 donut	doughnut
 doppelt	double dual
 dorn	thorn
 dornbusch	bramble
-dornen	thorns
+dornen	thorn
 dose	can
 drache	dragon
-drachen	dragons kite
+drachen	dragon kite
 drachenfalke	dragonhawk
 drachenschild	kite
 drachkin	dragonkin
@@ -611,14 +611,14 @@ drehspiess	spit
 drehung	twist
 drei	three
 dreieck	triangle
-dreiecke	triangles
+dreiecke	triangle
 dreifach	triple
 dreirad	trike
 dreispitz	tricorn
 dreissig	thirty
 dreizack	trident
 drohne	drone
-druckflaschen	tanks
+druckflaschen	tank
 druide	druid
 druse	gland
 duell	dueling
@@ -637,13 +637,13 @@ eber	boar
 ecke	corner
 edel	noble
 edelstein	gem gemstone jewel
-edelsteine	gems jewels
+edelsteine	gem jewel
 ehre	honor
 ei	egg
 eichel	acorn
 eichhornchen	squirrel
 eidechse	lizard
-eier	eggs
+eier	egg
 eile	haste
 eimer	bucket pail
 ein	a one
@@ -653,7 +653,7 @@ einfrieren	freeze
 eingekerbt	scored
 eingelegt	pickled
 eingerollt	curled
-eingeweide	entrails guts intestines
+eingeweide	entrails guts intestine
 einhandig	handed
 einhorn	unicorn
 einschlag	impact
@@ -673,9 +673,9 @@ elektrisch	electric static
 elektrizitat	electricity
 elementar	elemental
 elemente	elements
-elfen	elves
+elfen	elf
 elixier	elixir
-embleme	emblems
+embleme	emblem
 endgegner	boss
 energie	energy
 energiezelle	powercell
@@ -717,7 +717,7 @@ essen	eat food meal
 essenz	essence tincture
 essstabchen	chopsticks
 etikett	label tag
-etiketten	tags
+etiketten	tag
 etui	case
 eule	owl
 eulenbar	owlbear
@@ -730,8 +730,8 @@ facetten	facets
 facettiert	faceted
 facher	fan
 fackel	torch
-fackeln	torches
-faden	thread threads
+fackeln	torch
+faden	thread
 fadenkreuz	crosshair reticle
 fae	faerie
 fahne	flag
@@ -742,31 +742,31 @@ falle	snare trap
 fallend	falling
 faltbar	folding
 falte	fold
-falten	folds
+falten	fold
 faltig	wrinkled
 fangzahn	fang
-fangzahne	fangs
+fangzahne	fang
 farbe	paint
 farbemittel	dye
 farbstoff	dye pigment
 farn	fern
 fasern	fibers
 fass	barrel cask keg
-fasser	barrels
+fasser	barrel
 fassung	setting socket
 faul	rotten
 faulni	blight rot
 faultier	sloth
 faust	fist
-fauste	fists
+fauste	fist
 faustkampf	unarmed
 faustlinge	mittens mitts
 faustschlag	punch
 feder	feather pen plume quill spring
 federbusch	plume
-federbusche	plumes
+federbusche	plume
 federkiel	quill
-federn	feathers plumes quills springs
+federn	feather feathers plume quill spring
 fee	faerie fairy
 fegen	sweep
 fegend	sweeping
@@ -777,15 +777,15 @@ feile	file
 fel	rock
 feldflasche	canteen
 fell	fur hide pelt
-felsbrocken	boulder boulders
-felsen	cliff rocks
+felsbrocken	boulder
+felsen	cliff rock
 ferkel	piglet
 fernbedienung	remote
 ferngla	binoculars
 fernkampf	ranged
 fernrohr	spyglass telescope
 fessel	manacle shackle
-fesseln	bind bindings manacles shackles
+fesseln	bind bindings manacles shackle
 festgeschnallt	strapped
 festlich	festive
 festmahl	feast
@@ -793,15 +793,15 @@ fetisch	fetish
 fett	fat
 feuer	fire
 feuerball	fireball
-feuerballe	fireballs
+feuerballe	fireball
 feuerfisch	lionfish
 feuerschale	brazier
 feuerwaffe	firearm
 feuerwerk	firework fireworks
 feurig	fiery
 figur	character figure figurine statuette
-figuren	figures
-filet	fillet fillets
+figuren	figure
+filet	fillet
 filigran	filigree
 filmstreifen	filmstrip
 filz	felt
@@ -817,13 +817,13 @@ fladenbrot	flatbread
 flagge	flag
 flakon	flask
 flamme	blaze flame
-flammen	flames
+flammen	flame flames
 flammend	flaming
 flammenwerfer	flamethrower
 flanke	flank
 flaschchen	phial vial
 flasche	bottle flask
-flaschen	bottles flasks
+flaschen	bottle flask
 flaschenkurbi	gourd
 flauschig	fluffy fuzzy
 flechte	lichen
@@ -832,17 +832,17 @@ fledermau	bat
 flegel	flail
 fleisch	flesh meat
 fleischer	butcher
-flicken	patch patches
+flicken	patch
 fliege	bowtie fly
 fliegen	fly
 fliegend	flying
 flieger	flyer
 fliese	tile
-fliesen	tiles
+fliesen	tile
 flink	quick swift
 floss	raft
 flosse	fin
-flossen	fins
+flossen	fin
 flote	flute
 fluch	curse hex malediction
 fluchtig	volatile
@@ -864,15 +864,15 @@ forscher	explorer
 fracht	cargo
 frage	question
 fragezeichen	question questionmark
-fragmente	fragments
+fragmente	fragment
 fraktion	faction
 fransen	fringe
 frau	woman
-frauen	women
+frauen	woman
 frettchen	ferret
 friedhof	graveyard
 frikadelle	patty
-fritten	chips
+fritten	chip
 frittieren	frying
 frittiert	fried
 frohlich	happy
@@ -885,7 +885,7 @@ frucht	fruit
 fruhl	spring
 fruhlingsrollen	springrolls
 fruhlingszwiebel	scallion
-fruhlingszwiebeln	scallions
+fruhlingszwiebeln	scallion
 fruhstuck	breakfast
 fuch	fox
 fuhler	antennae
@@ -897,23 +897,23 @@ funfeck	pentagon
 funfzehn	fifteen
 funk	radio
 funke	spark
-funkeln	glint sparkle sparkles
-funken	sparks
+funkeln	glint sparkle
+funken	spark
 furcht	afraid fear
 furor	fury
 fursprache	intercession
 fuss	foot
 fussabdruck	footprint
-fussabdrucke	footprints
+fussabdrucke	footprint
 fussball	football soccer
 fussbandagen	footwraps
-fusse	feet
-fussspuren	footprints
+fusse	feet foot
+fussspuren	footprint
 fusswickel	footwraps
 gabe	boon
 gabel	fork
 galaxie	galaxy
-ganseblumchen	daisies daisy
+ganseblumchen	daisy
 garn	yarn
 garnele	prawn shrimp
 garnierung	garnish
@@ -925,9 +925,9 @@ geadert	veined
 geatzt	etched
 geback	pastry
 gebacken	baked
-gebaude	building buildings
+gebaude	building
 gebet	prayer
-gebirge	mountains
+gebirge	mountain
 gebogen	arched bent curved
 gebraten	cooked fried roasted
 gebrau	brew concoction
@@ -941,7 +941,7 @@ gefaltet	folded
 gefangen	captured
 gefangni	prison
 gefass	jar vessel
-gefasse	jars
+gefasse	jar
 geflanscht	flanged
 geflecht	mesh
 gefleckt	mottled spotted
@@ -965,7 +965,7 @@ gehstock	cane
 geier	vulture
 geissel	scourge
 geist	ghost mind spirit wraith
-geister	ghosts spirits
+geister	ghost spirit
 geisterhaft	ghostly spectral
 gekocht	cooked
 gekreuzt	crossed
@@ -976,7 +976,7 @@ geldbeutel	purse
 gelenk	joint
 gelockt	curled
 gemetzel	gore
-gemuse	vegetable vegetables
+gemuse	vegetable
 gemustert	patterned
 genaht	stitched
 genauigkeit	accuracy precision
@@ -1004,15 +1004,15 @@ geschmolzen	melted molten
 geschnitten	sliced
 geschnitzt	carved
 geschoss	bullet missile projectile
-geschosse	bullets missiles
+geschosse	bullet missile
 geschosshagel	volley
 geschutzturm	turret
 geschwindigkeit	haste speed
 geschwur	boil
-geschwure	boils
+geschwure	boil
 gesegnet	blessed
 gesicht	face
-gesichter	faces
+gesichter	face
 gesichtsschutz	faceguard
 gespalten	forked split
 gespenstisch	ghostly
@@ -1027,29 +1027,29 @@ gesundheit	health
 getigert	tabby
 getrank	beverage draught drink
 getreide	grain
-getriebe	gears
+getriebe	gear
 getrocknet	dried
 gewand	garment gown raiment robe
 gewandet	robed
 gewebe	weave
 gewebt	woven
 gewehr	gun rifle
-geweih	antler antlers
+geweih	antler
 gewicht	weight
-gewichte	weights
+gewichte	weight
 gewichtsstein	weightstone
 gewirr	tangle
 gewolbt	arched
 geworfen	thrown
 gewurz	spice
-gewurze	spices
+gewurze	spice
 gezackt	jagged serrated
 gezahnt	serrated
 gezeichnet	marked
 gezeiten	tide
 ghettoblaster	boombox
 ghul	ghoul
-ghule	ghouls
+ghule	ghoul
 giessen	pouring watering
 giesskanne	can
 gift	poison toxin venom
@@ -1059,18 +1059,18 @@ giftpilz	toadstool
 gilde	guild
 gipfel	peak
 gitarre	guitar
-gitter	bars lattice mesh
-gitterstabe	bars
+gitter	bar lattice mesh
+gitterstabe	bar
 gla	glass jar
 glanz	radiance shine
 glanzend	shiny
-glaser	glasses jars
+glaser	glasses jar
 glasiert	glazed
 glasur	frosting glaze icing
 glatt	smooth
 glatze	bald
 glefe	glaive
-glefen	glaives
+glefen	glaive
 gleich	equals
 gleichgewicht	balance
 gleichungen	equations
@@ -1078,15 +1078,15 @@ gleiten	gliding
 gleiter	glider skimmer
 gletscher	glacier
 gleve	glaive
-gleven	glaives
+gleven	glaive
 glibber	goo
 glieder	links
 gliedmasse	limbs
-glitzer	sparkles
+glitzer	sparkle
 glitzern	glint
 globu	globe
 glocke	bell
-glocken	bells
+glocken	bell
 gluck	fortune luck
 glucklich	happy
 gluckskek	fortune
@@ -1095,7 +1095,7 @@ gluhbirne	bulb lightbulb
 gluhen	glow
 gluhend	glowing molten
 gluhwurmchen	firefly
-glut	ember embers
+glut	ember
 glyphe	glyph
 gnom	gnome
 gnomisch	gnomish
@@ -1119,7 +1119,7 @@ graviert	engraved
 greif	griffin griffon gryphon
 greifend	grasping reaching
 griff	grasp grip handle
-griffe	grips handles
+griffe	grips handle
 grill	barbecue
 grille	cricket
 grimmig	fierce
@@ -1137,8 +1137,8 @@ gruppe	group
 gummi	rubber
 gurt	strap
 gurtband	webbing
-gurte	straps
-gurtel	belt belts girdle waistband
+gurte	strap
+gurtel	belt girdle waistband
 gurteltier	armadillo
 gussform	mold
 gyrokopter	gyrocopter
@@ -1160,7 +1160,7 @@ hal	neck
 halb	half
 halbmond	crescent
 halfte	half
-halften	halves
+halften	half
 halfter	halter
 halle	hall
 halsband	choker collar
@@ -1171,15 +1171,15 @@ haltend	holding
 handbandagen	handwraps
 handbeil	hatchet
 handbuch	manual
-hande	hands
+hande	hand hands
 handflache	palm
 handgelenk	wrist
 handgelenkwickel	wristwraps
 handlanger	minion
 handschelle	manacle
-handschellen	cuffs manacles
+handschellen	cuff cuffs manacles
 handschuh	gauntlet glove
-handschuhe	gauntlets gloves grips handguards mitts
+handschuhe	gauntlet gauntlets glove gloves grips handguards mitts
 handschutz	handguard handguards
 handteller	palm
 handwerk	crafting
@@ -1196,9 +1196,9 @@ hau	house
 haube	bonnet
 haufen	cluster heap mound pile
 hausschuh	slipper
-hausschuhe	slippers
+hausschuhe	slipper slippers
 haustier	pet
-haustiere	pets
+haustiere	pet
 haut	hide membrane skin
 haxe	shank
 hecht	pike
@@ -1220,7 +1220,7 @@ hellseher	psychic
 helm	casque headguard helmet
 hemd	shirt
 hengst	stallion
-henkel	handle handles
+henkel	handle
 henkelkreuz	ankh
 henne	hen
 heraldik	heraldry
@@ -1233,7 +1233,7 @@ herrscher	ruler
 herstellung	crafting
 hervortretend	bulging
 herz	heart
-herzen	hearts
+herzen	heart
 heu	hay
 heugabel	pitchfork
 heulend	howling
@@ -1241,7 +1241,7 @@ heuler	howler
 hexe	witch
 hexenmeister	warlock
 hieb	bash blow slash swipe
-hiebe	slashes
+hiebe	slash
 hilfe	aid medkit
 himmel	sky
 himmlisch	celestial
@@ -1262,29 +1262,29 @@ holz	lumber timber wood
 holzern	wooden
 holzhammer	mallet
 holzscheit	log
-holzscheite	logs
+holzscheite	log
 honig	honey
 honigwabe	honeycomb
 hopfen	hops
 horizont	horizon
 horn	bugle
 hornchen	croissant
-horner	horns
+horner	horn
 hornfrosch	hornswog
 hose	breeches pants trousers
 hubschrauber	helicopter
 huf	hoof
-hufe	hooves
+hufe	hoof
 hufeisen	horseshoe
 hufte	waist
-hugel	hill hills mound
+hugel	hill mound
 huhn	chicken hen
 huhnchen	chicken
-huhner	chickens
+huhner	chicken
 huhnerkeule	drumstick
 hulle	casing husk
 hummer	lobster
-humpen	mug mugs stein
+humpen	mug stein
 hund	dog hound
 hundemarke	dogtags
 hurrikan	hurricane
@@ -1299,13 +1299,13 @@ injektor	injector
 innereien	entrails guts
 inschrift	inscription
 insekt	bug insect
-insekten	bugs insects
+insekten	bug insect
 insel	island
 instanz	dungeon
 irden	earthen
 irokese	mohawk
 irrlicht	wisp
-irrlichter	wisps
+irrlichter	wisp
 jacke	jacket jerkin
 jagd	hunting
 jagdhund	hound
@@ -1321,12 +1321,12 @@ jubilaum	anniversary
 junge	cub
 jungtier	hatchling
 juwel	gem jewel
-juwelen	gems jewels
+juwelen	gem jewel
 juwelenbesetzt	jeweled
 juwelenschleifen	jewelcrafting
 kachel	tile
-kacheln	tiles
-kafer	beetle bug bugs
+kacheln	tile
+kafer	beetle bug
 kaffee	coffee
 kafig	cage
 kahl	bald
@@ -1350,11 +1350,11 @@ kampfstab	quarterstaff
 kaninchen	rabbit
 kanister	canister
 kanone	cannon
-kanonen	cannons
+kanonen	cannon
 kanonenkugel	cannonball
 kapitulation	surrender
 kappe	cap
-kappen	caps
+kappen	cap
 kapsel	pod
 kapselwesen	podling
 kaputt	broken
@@ -1363,14 +1363,14 @@ karamell	caramel
 kariert	checkered
 karmesin	crimson
 karotte	carrot
-karotten	carrots
+karotten	carrot
 karpfen	carp
 karren	cart
 karte	card chart map ticket
-karten	cards
+karten	card
 kartenspiel	deck
 kartoffel	potato
-kartoffeln	potatoes
+kartoffeln	potato
 kase	cheese
 kasino	casino
 kastanienbraun	maroon
@@ -1388,18 +1388,18 @@ kegelformig	conical
 keil	wedge
 keim	sprout
 kek	biscuit cookie cracker
-kekse	biscuits
+kekse	biscuit
 kelch	chalice goblet
 kelle	ladle scoop trowel
 keramik	ceramic pottery
 kerbero	cerberus
 kern	core kernel
-kerne	kernels
+kerne	kernel
 kerze	candle
-kerzen	candles
+kerzen	candle
 kessel	cauldron kettle
 kette	chain chainmail choker necklace
-ketten	chains
+ketten	chain chains
 kettengli	links
 kettenhaube	coif
 kettenhemd	chainmail hauberk mail
@@ -1407,7 +1407,7 @@ kettenrustung	mail
 kettensage	chainsaw
 keuchend	gasping
 keule	club cudgel haunch
-kiefer	jaw jaws mandibles pine
+kiefer	jaw mandibles pine
 kiefernzapfen	pinecone
 kieferzangen	mandibles
 kiemen	gills
@@ -1415,22 +1415,22 @@ kiesel	pebble
 kind	child
 kino	cinema
 kirsche	cherry
-kirschen	cherries
+kirschen	cherry
 kissen	cushion pillow
 kiste	box crate
-kisten	crates
+kisten	crate
 klammer	bracket
-klammern	brackets
+klammern	bracket
 klang	sound
 klangspiel	chime
 klaue	claw
-klauen	claws
+klauen	claw
 klebrig	sticky
 kleck	blob glob
-kleckse	blobs
+kleckse	blob
 klee	clover
 kleeblatt	shamrock
-kleeblatter	clovers
+kleeblatter	clover
 kleid	dress gown
 kleidung	clothing outfit raiment
 kleidungsstuck	garment
@@ -1439,13 +1439,13 @@ klemmbrett	clipboard
 klemme	clamp
 klettern	climbing
 klinge	blade bladed razor
-klingen	blades
+klingen	blade
 klippe	cliff
 klone	clones
 kloppel	clapper
 kloss	dumpling
-klosse	dumplings
-klumpen	glob lump nugget nuggets
+klosse	dumpling
+klumpen	glob lump nugget
 klumpig	lumpy
 knallbonbon	cracker
 knallkorper	firecracker popper
@@ -1459,11 +1459,11 @@ kniesehne	hamstring
 knoblauch	garlic
 knochen	bone bones crossbones
 knolle	tuber
-knollen	tubers
+knollen	tuber
 knopf	button
-knopfe	buttons
+knopfe	button
 knospe	bud
-knospen	buds
+knospen	bud
 knoten	knot node
 knuppel	club cudgel
 knurren	growl
@@ -1474,7 +1474,7 @@ koch	chef cook
 kochen	boil cook cooking
 kocher	quiver
 kochgeschirr	cookware
-koder	bait lure lures
+koder	bait lure
 kodex	codex
 kohl	cabbage
 kohlenbecken	brazier
@@ -1483,7 +1483,7 @@ kokosnuss	coconut
 kolben	pistons
 koloss	juggernaut
 komet	comet
-kometen	comets
+kometen	comet
 kommunikator	communicator
 komodowaran	komodo
 kompass	compass
@@ -1499,13 +1499,13 @@ kontur	outline
 konzentration	focus
 kopf	cranium head
 kopfbedeckung	headpiece
-kopfe	heads
+kopfe	head
 kopfschmuck	headdress
 kopfschutz	headguard
 kopfteil	headpiece
 koralle	coral
 korb	basket
-korbe	baskets
+korbe	basket
 korbgeflecht	wicker
 kordel	cord
 korken	cork
@@ -1520,10 +1520,10 @@ krabbe	crab
 kraft	power
 kragen	collar
 krahe	crow
-krahen	crows
+krahen	crow
 krake	octopus
 kralle	claw talon
-krallen	claws talons
+krallen	claw talon
 krallenaffe	marmoset
 kranich	crane
 krank	diseased sick
@@ -1531,33 +1531,33 @@ krankheit	disease sickness
 kranz	wreath
 krapfen	doughnut
 krater	crater
-kratzer	scratch scratches
+kratzer	scratch
 krauselung	ripple
 kraut	herb
-krauter	herbs
+krauter	herb
 krauterkunde	herbalism
 krawatte	tie
 kreatur	creature
-kreaturen	creatures
+kreaturen	creature
 krebstier	crustacean
 krei	circle
-kreise	circles
+kreise	circle
 kreisformig	circular
 kreislauf	cycle
 krempe	brim brimmed
 kreuz	cross
-kreuze	crosses
+kreuze	cross
 kreuzknochen	crossbones
 kriecher	crawler creeper
 krieg	war
-krieger	warrior warriors
+krieger	warrior
 kriegsbemalung	warpaint
 kriegsfuch	warfox
 kriegsgleve	warglaive
 kriegshammer	warhammer
 kristall	crystal
 kristalldruse	geode
-kristalle	crystals
+kristalle	crystal
 krit	crit
 kritisch	crit critical
 kroketten	croquettes
@@ -1566,15 +1566,15 @@ krokodil	crocodile
 krone	crown
 krote	toad
 krug	jug mug pitcher
-kruge	mugs
+kruge	mug
 krumel	crumbles crumbs
 krumm	hunched
 krummsabel	scimitar
 kruste	crust
 kuche	kitchen
-kuchen	cake cakes pie
+kuchen	cake pie
 kugel	ball bullet globe orb sphere
-kugeln	balls bullets orbs spheres
+kugeln	ball bullet orb sphere
 kuh	cow
 kuken	chick
 kupfer	copper
@@ -1613,18 +1613,18 @@ lanze	lance
 lappen	lobes
 larve	grub larva
 laterne	lantern
-laternen	lanterns
+laternen	lantern
 lau	louse
 laub	foliage
 lauch	leek
 lauf	barrel
-laufe	barrels
+laufe	barrel
 laufen	running
 laufer	runners
 laufflache	tread
 laute	lute
 lautern	cleanse purge purify
-lautsprecher	speaker speakers
+lautsprecher	speaker
 leben	health life
 lebkuchen	gingerbread
 leder	leather
@@ -1654,19 +1654,19 @@ leuchtturm	lighthouse
 leute	people
 libelle	dragonfly
 licht	light
-lichter	lights
+lichter	light
 liebe	affection love valentine
 lied	song
 lila	purple
 lilie	fleur lily
 lineal	ruler
 linie	line
-linien	lines
+linien	line
 linse	lens
-linsen	lenses
+linsen	lens
 lippen	lips
 loch	blackhole hole pit
-locher	holes
+locher	hole
 lochkarte	punchcard
 locke	curl
 lockmittel	lure
@@ -1697,10 +1697,10 @@ makrele	mackerel
 mal	mark
 mammut	mammoth
 mann	man
-manner	men
+manner	man
 mannlich	male
 manschette	cuff
-manschetten	cuffs
+manschetten	cuff cuffs
 mantel	coat mantle trench
 marienkafer	ladybug
 marionette	puppet
@@ -1711,7 +1711,7 @@ maschine	engine machine
 maschinen	machinery
 maschinerie	machinery
 maske	mask
-masken	masks
+masken	mask
 maskenball	masquerade
 maskerade	masquerade
 mathematik	math
@@ -1735,10 +1735,10 @@ menge	crowd
 mensch	human
 menschen	people
 mess	brass
-messer	knife knives shiv
+messer	knife shiv
 messgerat	gauge
 metall	metal
-meteore	meteors
+meteore	meteor
 metzger	butcher
 meuchelmorder	assassin
 miesmuschel	mussel
@@ -1753,7 +1753,7 @@ mobel	furniture
 modul	module
 mohn	poppy
 mohre	carrot
-mohren	carrots
+mohren	carrot
 monch	monk
 mond	lunar moon
 mondgleve	moonglaive
@@ -1778,22 +1778,22 @@ mundstuck	mouthpiece
 mundung	muzzle
 munition	ammo ammunition
 munze	coin
-munzen	coins
+munzen	coin coins
 muschel	clam mussel seashell shell
 muschelhorn	conch
-muscheln	clams seashells shells
+muscheln	clam seashell shell
 musik	music
 musiker	musician
 muskel	muscle
 muskelkraft	brawn
-muskeln	muscles
+muskeln	muscle
 muskete	musket
 muskulo	muscular
-muster	pattern patterns
+muster	pattern
 mutter	nut
-muttern	nuts
+muttern	nut
 mutze	cap
-mutzen	caps
+mutzen	cap
 mystiker	mystic
 mystisch	mystic
 nachricht	message
@@ -1807,7 +1807,7 @@ nackt	bare naked nude unclothed undressed
 nacktschnecke	slug
 nadel	needle pin
 nadelkissen	pincushion
-nadeln	needles pins
+nadeln	needle pin
 nadelstreifen	pinstripe
 nagel	nails
 nagetier	rodent
@@ -1834,20 +1834,20 @@ neuronen	neurons
 niederschlag	knockout
 niedlich	cute
 niete	rivet stud
-nieten	rivets studs
+nieten	rivet stud
 nilpferd	hippo hippopotamus
 nimbu	halo
 nische	alcove
 norden	north
-noten	notes
+noten	note
 notiz	note
-notizen	notes
+notizen	note
 nudeln	noodles pasta
 nuklear	nuclear
 null	zero
 nummer	number
 nuss	nut
-nusse	nuts
+nusse	nut
 oberkorper	torso
 oberkorperfrei	shirtless
 oberschenkelknochen	femur
@@ -1860,15 +1860,15 @@ offen	open
 offner	opener
 oger	ogre
 ohr	ear
-ohren	ears
+ohren	ear
 ohrenschutzer	earmuffs
 ohrr	earring
 oktopu	octopus
 ol	oil
-oliven	olives
+oliven	olive
 olkanne	oilcan
 orchidee	orchid
-organe	organs
+organe	organ
 organisch	organic
 ork	orc
 orkan	hurricane
@@ -1881,15 +1881,15 @@ paket	pack package parcel
 paneel	panel
 panik	panic
 pantoffel	slipper
-pantoffeln	slippers
+pantoffeln	slipper slippers
 panzer	carapace tank
 panzerhandschuh	gauntlet
-panzerhandschuhe	gauntlets
+panzerhandschuhe	gauntlet gauntlets
 panzerhemd	hauberk
-panzerplatten	plates
+panzerplatten	plate
 papagei	parrot
 papier	paper
-papiere	papers
+papiere	paper
 paprika	pepper
 parfum	perfume
 parierstange	crossguard guard handguard
@@ -1906,31 +1906,31 @@ pentagramm	pentagram
 peperoni	jalapeno
 pergament	parchment vellum
 perle	pearl
-perlen	beads pearls
+perlen	beads pearl
 pest	plague
 pfad	path trail
 pfahl	post
 pfanne	pan
-pfannen	pans
+pfannen	pan
 pfannengericht	stirfry
 pfannkuchen	pancake
 pfau	peacock
 pfeffer	pepper
 pfefferminze	peppermint
 pfeife	pipe whistle
-pfeifen	pipes
+pfeifen	pipe
 pfeil	arrow
-pfeile	arrows
+pfeile	arrow
 pfeilspitze	arrowhead
 pferd	horse
 pferderustung	barding
 pfirsich	peach
 pflanze	plant
-pflanzen	plants
+pflanzen	plant
 pflaume	plum
 pfosten	post
 pfote	paw
-pfoten	paws
+pfoten	paw
 pfotenabdruck	pawprint
 pfutze	puddle
 phiole	phial vial
@@ -1939,7 +1939,7 @@ picknick	picnic
 piktogramm	pictogram
 pilger	pilgrim
 pilz	fungus mushroom
-pilze	mushrooms
+pilze	mushroom
 pinguin	penguin
 pinnwandnadel	pushpin
 pinsel	brush paintbrush
@@ -1952,7 +1952,7 @@ plakette	badge plaque
 planken	planks
 platin	platinum
 platte	plate platter slab
-platten	plates
+platten	plate
 plattenrustung	plate
 plattenstiefel	sabatons
 plattform	platform
@@ -1965,9 +1965,9 @@ pol	pole
 polieren	polishing
 poliert	polished
 polster	pad
-pomme	chips fries
+pomme	chip fries
 portal	gateway
-portrat	portrait portraits
+portrat	portrait
 porzellan	porcelain
 prankenhieb	swipe
 prarie	prairie
@@ -1999,27 +1999,27 @@ puppe	doll pupa puppet
 purpurrot	crimson
 pyramide	pyramid
 quadrat	square
-quadrate	squares
+quadrate	square
 qualle	jellyfish
 quark	curds
 quaste	tassel
-quasten	tassels
+quasten	tassel
 querbalken	crossbar
 rabe	crow raven
-raben	crows
-rachen	jaws maw
+raben	crow
+rachen	jaw maw
 rad	wheel
-rader	wheels
+rader	wheel
 radieschen	radish
 radioaktiv	radioactive
-rahmen	border frame frames
+rahmen	border frame
 rakete	missile rocket
-raketen	missiles rockets
+raketen	missile rocket
 rammbock	battering
 rand	border rim
 rang	rank
 ranke	tendril vine
-ranken	tendrils vines
+ranken	tendril vine
 rasend	berserk
 raserei	frenzy
 rasiermesser	razor
@@ -2052,18 +2052,18 @@ rehkitz	fawn
 rei	rice
 reichtum	wealth
 reif	hoop
-reifen	hoops tire
+reifen	hoop tire
 reinigen	cleanse purify
 reise	travel
 reisen	travel
 reissen	rend
 reissverschluss	zipper
 reisszahn	fang
-reisszahne	fangs
+reisszahne	fang
 reisszwecke	pushpin thumbtack
 reitbar	rideable
 reiten	ride riding
-reiter	rider riders
+reiter	rider
 reitgerte	crop
 reitkunst	riding
 reittier	mount
@@ -2073,24 +2073,24 @@ rennfahrer	racer
 reparieren	mend
 reptil	reptile
 ressource	resource
-reste	scraps
+reste	scrap
 rettich	radish
 rever	lapel
 rezept	recipe
 riegel	bar latch
-riemen	strap straps
+riemen	strap
 riese	giant
 riesig	giant
 rillen	ridges
 rinde	bark
 ring	hoop
-ringe	hoops rings
+ringe	hoop ring
 ringelblumen	marigolds
 rippchen	rack
 rippen	ribs
 rippenkafig	ribcage
 riss	crack fissure rift
-risse	cracks
+risse	crack
 rissig	cracked
 ritter	knight
 robbe	seal
@@ -2102,16 +2102,16 @@ rock	skirt
 rogen	roe
 roh	raw
 rohr	pipe
-rohre	pipes tube
-rohren	tubes
+rohre	pipe tube
+rohren	tube
 rohstoff	resource
 rolle	reel roll
-rollen	rolls
+rollen	roll
 rollend	rolling
 rollig	roly
 roman	novel
 rosa	pink
-rosen	roses
+rosen	rose
 ross	steed
 rost	rust
 rostig	rusty
@@ -2119,7 +2119,7 @@ rot	red
 rotfeuerfisch	lionfish
 rube	turnip
 rubin	ruby
-rubine	rubies
+rubine	ruby
 rucken	back
 ruckgrat	spine
 ruckkehr	return
@@ -2130,11 +2130,11 @@ ruinen	ruins
 rumpf	hull
 rund	circular round
 rundschild	buckler
-runen	runes
+runen	rune
 runenbesetzt	runed
 runenklinge	runeblade
 rusche	ruffle
-ruschen	ruffles
+ruschen	ruffle
 rustung	armor
 rute	rod
 saal	hall
@@ -2146,18 +2146,18 @@ sage	saw
 sageblatt	sawblade
 sahne	cream
 saite	string
-saiten	strings
+saiten	string
 salat	salad
 salbe	salve
 salbei	sage
 salto	somersault
 salve	barrage volley
 salz	salt
-samen	seed seeds
+samen	seed
 sammler	collector
 sammlung	collection
 sandale	sandal
-sandalen	sandals
+sandalen	sandal sandals
 sandkrabbe	sandcrab
 sandsturm	sandstorm
 sanduhr	hourglass
@@ -2167,12 +2167,12 @@ sarg	coffin
 sattel	saddle
 saubern	purge
 saule	column pillar
-saulen	pillars
+saulen	pillar
 saure	acid caustic
 schabe	roach
 schabernack	prank
 schach	chess
-schadel	cranium skull skulls
+schadel	cranium skull
 schaf	sheep
 schaft	shaft
 schal	scarf shawl
@@ -2187,7 +2187,7 @@ scharf	sharp
 scharfen	sharpening
 scharfschutze	sniper
 scharpe	sash
-schatten	shadow shadows
+schatten	shadow
 schattenflamme	shadowflame
 schattenhaftigkeit	shadowmeld
 schattenmeld	shadowmeld
@@ -2200,12 +2200,12 @@ schauerlich	eldritch
 schaufel	scoop shovel
 schaum	foam
 scheibe	disc slice
-scheiben	discs disks slices
+scheiben	disc disks slice
 scheinwerfer	spotlight
 scherbe	shard
-scherben	shards
+scherben	shard
 schere	pincer scissors shears
-scheren	pincers
+scheren	pincer
 scherz	joke
 schichten	layers
 schiefer	shale slate
@@ -2215,7 +2215,7 @@ schiesspulver	gunpowder
 schiff	ship
 schiffsrumpf	hull
 schild	shield sign
-schilde	shields
+schilde	shield
 schildkrote	tortoise turtle
 schimare	chimera
 schimmernd	shimmering
@@ -2234,14 +2234,14 @@ schlagstock	baton
 schlagzeug	percussion
 schlamm	ooze
 schlange	python serpent snake
-schlangen	serpents snakes
+schlangen	serpent snake
 schlapphut	fedora
 schlegel	haunch
 schleichen	prowl sneak
 schleicher	skulker
 schleier	shroud
 schleife	loop ribbon
-schleifen	grinding loops
+schleifen	grinding loop
 schleifstein	grindstone
 schleim	blob goo ooze slime
 schleimig	slimy
@@ -2271,7 +2271,7 @@ schmelzend	melting
 schmelzofen	furnace
 schmerle	loach
 schmetterl	butterfly
-schmetterlinge	butterflies
+schmetterlinge	butterfly
 schmettern	bash
 schmi	blacksmith
 schmiede	forge
@@ -2280,7 +2280,7 @@ schmuck	jewelry
 schmuckstuck	trinket
 schnabel	beak
 schnalle	buckle
-schnallen	buckles
+schnallen	buckle
 schnap	booze
 schnapper	snapper
 schnauze	snout
@@ -2288,25 +2288,25 @@ schnecke	snail
 schnee	snow
 schneeball	snowball
 schneeflocke	snowflake
-schneeflocken	snowflakes
+schneeflocken	snowflake
 schneemann	snowman
 schneeschuh	snowshoe
 schneesturm	blizzard
 schneiderei	tailoring
 schnell	fast quick swift
 schnitt	cut
-schnitte	cuts
+schnitte	cut
 schnitter	reaper
 schnitzerei	carving
 schnorkel	scrollwork
 schnur	cord line string
-schnure	strings
+schnure	string
 schnurrhaare	whiskers
-schnursenkel	laces
+schnursenkel	lace
 schock	shock
 schocker	shocker
 schockwelle	shockwave
-schokolade	chocolate chocolates
+schokolade	chocolate
 schopfkelle	ladle
 schote	pod
 schotl	podling
@@ -2314,7 +2314,7 @@ schrank	cabinet
 schranke	barrier
 schrapnell	shrapnel
 schraube	screw
-schrauben	bolts screws
+schrauben	bolt screw
 schraubenschlussel	spanner wrench
 schraubenzieher	screwdriver
 schrecken	dread scare terror
@@ -2330,27 +2330,27 @@ schreiend	screaming
 schreiter	strider
 schrift	script writing
 schriftrolle	scroll
-schriftrollen	scrolls
-schrott	junk scrap scraps
+schriftrollen	scroll
+schrott	junk scrap
 schublade	drawer
 schuh	shoe
-schuhe	shoes
+schuhe	shoe shoes
 schulter	shoulder
 schulterklappen	epaulets
-schultern	mantle shoulders
+schultern	mantle shoulder shoulders
 schulterplatte	pauldron
-schulterplatten	pauldrons spaulders
+schulterplatten	pauldron spaulders
 schulterpolster	pad shoulderpad shoulderpads
 schulterstuck	mantle pauldron
-schulterstucke	epaulets pauldrons shoulderpads
+schulterstucke	epaulets pauldron shoulderpad shoulderpads
 schuppe	scale
-schuppen	scales
+schuppen	scale
 schuppentier	pangolin
 schurke	rogue
 schurze	apron
 schuss	shot
 schussel	bowl dish
-schusseln	bowls
+schusseln	bowl
 schusswaffe	firearm gun
 schutt	rubble
 schutten	pouring
@@ -2376,7 +2376,7 @@ schweissen	welding
 schweizer	swiss
 schwer	heavy
 schwert	sword
-schwerter	swords
+schwerter	sword
 schwertgriff	hilt
 schwimmen	swim
 schwimmer	bobber float
@@ -2384,12 +2384,12 @@ schwindelig	dizzy
 schwung	swoosh
 sech	six
 sechseck	hexagon
-sechsecke	hexagons
+sechsecke	hexagon
 sechseckig	hexagonal
 seefahrt	nautical
 seegewebe	seaweave
 seele	soul
-seelen	souls
+seelen	soul
 seelenstarke	fortitude
 seelenstein	soulstone
 seepferdchen	seahorse
@@ -2398,7 +2398,7 @@ seestangel	seastalk
 seestern	starfish
 seetang	kelp seaweed
 seezunge	sole
-segel	sail sails
+segel	sail
 segen	blessing boon
 segmentiert	segmented
 segnung	blessing
@@ -2408,9 +2408,9 @@ sehne	sinew tendon
 seide	silk
 seidenkraut	silkweed
 seil	rope
-seile	ropes
+seile	rope
 seite	page
-seiten	pages
+seiten	page
 sekt	champagne
 sense	scythe
 set	kit medkit
@@ -2421,14 +2421,14 @@ sichel	crescent sickle
 sicht	sight vision
 sieben	seven
 siebzig	seventy
-siegel	seal sigil sigils
+siegel	seal sigil
 siegelr	signet
-sigille	sigils
+sigille	sigil
 signalfeuer	beacon
 signalhorn	bugle
 silber	silver
 silberblatt	silverleaf
-silhouetten	silhouettes
+silhouetten	silhouette
 silithide	silithid
 singen	singing
 sitz	seat
@@ -2465,12 +2465,12 @@ spaten	spade
 specht	woodpecker
 speck	bacon blubber
 speer	javelin spear
-speere	spears
+speere	spear
 speerspitze	spearhead
 spektral	spectral
 sperrfeuer	barrage
 sphare	orb sphere
-spharen	orbs
+spharen	orb
 spiegel	mirror
 spiegeln	reflect
 spiegelung	reflection
@@ -2481,7 +2481,7 @@ spielend	playing
 spielmarke	chip
 spielzeug	toy
 spiess	kebab skewer
-spiesse	skewers
+spiesse	skewer
 spindel	spindle
 spinnchen	spiderling
 spinndruse	spinneret
@@ -2489,12 +2489,12 @@ spinne	spider
 spinnennetz	spiderweb web
 spinnentier	arachnid
 spirale	helix spiral
-spiralen	spirals
+spiralen	spiral
 spitz	pointed
 spitze	lace peak point tip
 spitzhacke	pick pickaxe
-splitter	fragment fragments shard shards splinter splinters
-sporen	spores
+splitter	fragment shard splinter
+sporen	spore
 sporn	spur
 spotten	taunt
 sprengen	detonate
@@ -2519,7 +2519,7 @@ stabilisator	stabilizer
 stachel	spike stinger
 stacheleber	quillboar
 stachelig	barbed spiked spiky
-stacheln	quills spikes spines
+stacheln	quill spike spine
 stachelrochen	stingray
 stachelschwein	porcupine
 stadt	city
@@ -2531,7 +2531,7 @@ standarte	standard
 stander	stand
 standhaftigkeit	fortitude
 stange	pole
-stangel	stalk stalks
+stangel	stalk
 stangenwaffe	polearm
 stapel	pile stack
 starke	strength
@@ -2546,15 +2546,15 @@ staub	dust
 stechpalme	holly
 steckenpferd	hobby
 stehend	standing
-steigbugel	stirrup stirrups
+steigbugel	stirrup
 stein	rock stone
-steine	rocks stones
+steine	rock stone
 steinschlag	rockfall
 steinschloss	flintlock
 steinschlossgewehr	flintlock
 stern	star
 sternbild	constellation
-sterne	stars
+sterne	star stars
 sternenexplosion	starburst
 sternenhaft	astral
 sternenklar	starry
@@ -2565,7 +2565,7 @@ stiche	stitches
 stickerei	embroidery
 stiefel	boot boots treads
 stiel	stem
-stiele	stems
+stiele	stem
 stier	bull
 stift	pen
 stilett	stiletto
@@ -2575,7 +2575,7 @@ stirnband	headband
 stirnreif	circlet diadem
 stirnrunzeln	frown
 stock	stick
-stocke	sticks
+stocke	stick
 stoff	cloth fabric material
 stoffballen	bolt
 stoffprobe	swatch
@@ -2584,21 +2584,21 @@ stor	sturgeon
 stoss	lunge
 stossel	pestle
 stosszahn	tusk
-stosszahne	tusks
+stosszahne	tusk
 strahl	beam jet ray
-strahlen	beams radiance rays
+strahlen	beam radiance ray
 strahlend	radiant
 strahler	emitter
 strand	beach
 strang	strand
-strange	strands
+strange	strand
 streich	prank
 streichholzbrief	matchbook
 streichholzer	matches
 streichholzschachtel	matchbox
-streifen	streak streaks strip stripe stripes strips
+streifen	streak strip stripe
 streitaxt	battleaxe greataxe tomahawk
-streitkolben	mace maces
+streitkolben	mace
 streitross	charger warhorse
 streusel	sprinkles
 stroh	straw
@@ -2623,12 +2623,12 @@ suppe	chowder soup
 surfbrett	surfboard
 suss	cute sweet
 sussigkeit	candy
-sussigkeiten	sweets
-symbole	symbols
+sussigkeiten	sweet
+symbole	symbol
 tablett	platter tray
 tafel	chalkboard panel plaque tablet
 tafelberg	mesa
-tafeln	tablets
+tafeln	tablet
 tagebuch	journal
 tageslicht	daylight
 taille	waist
@@ -2641,17 +2641,17 @@ tarantel	tarantula
 tarnung	camouflage disguise stealth
 tarte	tart
 tasche	bag pocket satchel
-taschen	pockets
+taschen	pocket
 taschenmesser	pocketknife
 taschenuhr	pocketwatch
 tasse	cup
 tatar	tartare
 tatze	paw
-tatzen	paws
+tatzen	paw
 tatzenabdruck	pawprint
 tau	dew
 tauchen	dive diving
-tauchflaschen	tanks
+tauchflaschen	tank
 tausch	swap
 tautropfen	dewdrops
 taverne	inn
@@ -2663,15 +2663,15 @@ teeservice	teaset
 teich	pool
 teig	dough
 teigtasche	dumpling
-teigtaschen	dumplings
+teigtaschen	dumpling
 teil	part
 teilchen	particles
-teile	parts pieces
+teile	part pieces
 teleport	blink
 teleskop	telescope
 tempel	temple
 tempo	haste speed
-tentakel	tentacle tentacles
+tentakel	tentacle
 teppich	carpet rug
 teufel	devil fel fiend
 teufelchen	imp
@@ -2685,7 +2685,7 @@ thron	throne
 tiegel	jar
 tier	animal
 tierchen	critter
-tiere	animals
+tiere	animal
 tinktur	tincture
 tinte	ink
 tintenfass	inkwell
@@ -2699,7 +2699,7 @@ tomate	tomato
 ton	clay
 topa	topaz
 topf	pot
-topfe	pots
+topfe	pot
 topferware	pottery
 tor	gate gateway
 tortchen	tart
@@ -2707,14 +2707,14 @@ torte	cake
 tortollaner	tortollan
 toten	kill slay
 totenkopf	skull
-totenkopfe	skulls
+totenkopfe	skull
 totung	kill
 toxisch	toxic
 trager	carrier
 tran	blubber
 trane	teardrop
 trank	draught drink potion
-tranke	potions
+tranke	potion
 trauben	grapes
 traum	dream
 traurig	sad
@@ -2731,11 +2731,11 @@ trinken	drinking
 tritt	kick
 trockenfleisch	jerky
 trommel	drum
-trommeln	drums
+trommeln	drum
 trompete	trumpet
 tropenhelm	pith
-tropfchen	droplet droplets
-tropfen	drip drips drop drops teardrop
+tropfchen	droplet
+tropfen	drip drop teardrop
 tropfend	dripping
 trophae	trophy
 truhe	chest coffer lockbox
@@ -2747,9 +2747,9 @@ tunika	tunic
 tur	door
 turki	cyan teal turquoise
 turm	rook tower
-turme	towers
+turme	tower
 turmspitze	spire
-turmspitzen	spires
+turmspitzen	spire
 u	submarine
 uberfall	assault
 uberladen	overcharge
@@ -2759,14 +2759,14 @@ uhr	clock watch
 uhrwerk	clockwork
 umbra	umbral
 umhang	cape cloak drape shawl
-umhange	cloaks
+umhange	cloak
 umhangetasche	satchel
 umklammernd	grasping
 umklammerung	grasp
 umlaufbahn	orbit
 umriss	outline
 umschlag	envelope
-umschlage	envelopes
+umschlage	envelope
 umwickelt	wrapped
 unbekannt	unknown
 unbekleidet	unclothed
@@ -2796,7 +2796,7 @@ vampir	vampire
 vanille	vanilla
 venusfliegenfalle	flytrap venus
 verband	bandage dressing firstaid
-verbande	bandages
+verbande	bandage
 verbandskasten	firstaid medkit
 verblassend	fading
 verbogen	bent
@@ -2855,7 +2855,7 @@ violett	purple
 vipernfisch	viperfish
 visier	faceguard visor
 vitruvianisch	vitruvian
-vogel	bird birds fowl
+vogel	bird fowl
 vogelhau	birdhouse
 vogelkafig	birdcage
 vogelscheuche	scarecrow
@@ -2871,7 +2871,7 @@ vorrate	supplies
 vorrichtung	contraption
 vorschlaghammer	maul sledgehammer
 vulkan	volcano
-waage	balance scales
+waage	balance scale
 wabe	honeycomb
 wach	wax
 wache	guard
@@ -2879,7 +2879,7 @@ wachstum	growth
 wachter	guard guardian
 waffe	weapon
 waffel	waffle
-waffen	armament weapons
+waffen	armament weapon
 wagen	cart
 wahlscheibe	dial
 wahrung	currency
@@ -2917,7 +2917,7 @@ weiss	white
 weizen	wheat
 wel	catfish
 welle	ripple wave
-wellen	waves
+wellen	wave
 wellig	wavy
 welpe	pup puppy whelp
 welt	world
@@ -2925,15 +2925,15 @@ weltraum	space
 werfen	throw
 werfer	launcher
 werkzeug	tool
-werkzeuge	tools
+werkzeuge	tool tools
 werkzeugkasten	toolbox
 werwolf	werewolf
-wesen	creature creatures
+wesen	creature
 wespe	wasp
 weste	vest waistcoat
 wetzstein	whetstone
 wichtel	imp
-wickel	wrap wraps
+wickel	wrap
 widder	ram
 widerhaken	barbed
 wiederbeleben	resurrect revive rez
@@ -2954,32 +2954,32 @@ windrad	pinwheel
 windspiel	chime
 windstoss	gale gust
 windung	coil
-winkel	chevron chevrons
+winkel	chevron
 winterschlaf	hibernate
 wippe	seesaw
-wirbel	swirl swirls vertebrae vortex whirl
+wirbel	swirl vertebrae vortex whirl
 wirbelnd	swirling
 wirbelsaule	spine
 wirbelsturm	cyclone tornado
 wirbelwind	whirlwind
 witz	joke
 wolke	cloud
-wolken	clouds
+wolken	cloud
 wolle	wool
 wucherwurzeln	entangle
 wunde	wound
 wundverband	dressing
 wurf	throw throwing
 wurfarm	limbs
-wurfel	cube cubes dice die
+wurfel	cube dice die
 wurfspiess	javelin
 wurfstern	shuriken
 wurm	worm
-wurmer	worms
+wurmer	worm
 wurmloch	wormhole
 wurst	sausage
 wurzel	root
-wurzeln	roots
+wurzeln	root
 wuste	desert
 wut	fury rage
 wutanfall	enrage
@@ -2990,11 +2990,11 @@ zahl	number
 zahler	counter
 zahmer	tamer
 zahn	tooth
-zahne	teeth
+zahne	tooth
 zahnrad	cog cogwheel gear
-zahnrader	cogs gears
+zahnrader	cog gear
 zange	pincer pliers tongs
-zangen	pincers
+zangen	pincer
 zapfhahn	tap
 zauber	charm
 zauberbuch	grimoire spellbook
@@ -3005,7 +3005,7 @@ zauberunterbrechung	counterspell
 zaumzeug	bridle harness
 zecke	tick
 zeh	toe
-zehen	toes
+zehen	toe
 zehn	ten
 zeichen	mark sign
 zeigend	pointing
@@ -3068,7 +3068,7 @@ zusammenstoss	clash
 zwanzig	twenty
 zwei	two
 zweig	bough branch twig
-zweige	branches twigs
+zweige	branch twig
 zweihandaxt	greataxe
 zweihandig	handed twohanded
 zweihandschwert	greatsword
@@ -3076,7 +3076,7 @@ zweisitzer	loveseat
 zweispitz	bicorne
 zwerg	dwarf
 zwiebel	bulb onion
-zwiebeln	bulbs
+zwiebeln	bulb
 zwill	twin
 zwinge	clamp
 zyklon	cyclone
@@ -3117,7 +3117,6 @@ angelfish	kaiserfisch
 anglerfish	anglerfisch
 angry	wütend
 animal	tier
-animals	tiere
 ankh	anch
 anniversary	jubiläum
 antelope	antilope
@@ -3125,11 +3124,9 @@ antenna	antenne
 antennae	fühler
 antivenom	gegengift
 antler	geweih
-antlers	geweih
 anvil	amboss
 ape	affe
 apple	apfel
-apples	äpfel
 apron	schürze
 arachnid	spinnentier
 arc	bogen
@@ -3138,19 +3135,15 @@ arch	bogen
 arched	gewölbt
 archer	bogenschütze
 archery	bogenschießen
-arcs	bögen
 arctic	arktis
 armadillo	gürteltier
 armillary	armillarsphäre
 armor	rüstung
 armored	gepanzert
-arms	arme
 arrow	pfeil
 arrowhead	pfeilspitze
-arrows	pfeile
 artifact	artefakt
 ash	asche
-ashes	asche
 aspects	aspekte
 aspic	aspik
 assassin	assassine
@@ -3160,7 +3153,6 @@ autumn	herbst
 award	auszeichnung
 awning	markise
 axe	axt
-axes	äxte
 axle	achse
 azerite	azerit
 back	rücken
@@ -3174,15 +3166,10 @@ baked	gebacken
 balance	gleichgewicht
 bald	glatze
 balloon	ballon
-balls	bälle
 bamboo	bambus
 banana	banane
-bananas	bananen
 bandage	verband
-bandages	verbände
 bandolier	patronengurt
-bands	bänder
-banners	banner
 banquet	bankett
 bar	barren
 barbarian	barbar
@@ -3194,13 +3181,10 @@ barnacles	seepocken
 barracuda	barrakuda
 barrage	salve
 barrel	fass
-barrels	fässer
 barrier	barriere
-bars	gitterstäbe
 base	basis
 basil	basilikum
 basket	korb
-baskets	körbe
 bat	fledermaus
 batch	charge
 baton	stab
@@ -3215,14 +3199,11 @@ beacon	leuchtfeuer
 beads	perlen
 beak	schnabel
 beam	strahl
-beams	strahlen
 bean	bohne
 bear	bär
 beard	bart
 bearded	bärtig
-bears	bären
 beast	bestie
-beasts	bestien
 beaver	biber
 bed	bett
 bedroll	schlafsack
@@ -3232,24 +3213,18 @@ beetle	käfer
 beholder	betrachter
 bell	glocke
 bellows	blasebalg
-bells	glocken
 belt	gürtel
-belts	gürtel
 bent	gebogen
-berries	beeren
 berry	beere
 betta	kampffisch
 bicep	bizeps
-biceps	bizeps
 bicorne	zweispitz
 binoculars	fernglas
 bird	vogel
 birdcage	vogelkäfig
 birdhouse	vogelhaus
-birds	vögel
 birthday	geburtstag
 biscuit	keks
-biscuits	kekse
 bit	bohrer
 bite	biss
 black	schwarz
@@ -3259,7 +3234,6 @@ blacksmith	schmied
 blacksmithing	schmiedekunst
 blade	klinge
 bladed	klinge
-blades	klingen
 blank	leer
 blanket	decke
 blast	explosion
@@ -3268,8 +3242,6 @@ bleeding	blutung
 blimp	zeppelin
 blindfold	augenbinde
 blob	klecks
-blobs	kleckse
-blocks	blöcke
 blonde	blond
 blood	blut
 bloodshot	blutunterlaufen
@@ -3277,7 +3249,6 @@ bloodstone	blutstein
 bloody	blutig
 bloom	blüte
 blossom	blüte
-blossoms	blüten
 blowdart	blasrohr
 blubber	speck
 blue	blau
@@ -3291,44 +3262,33 @@ bobber	schwimmer
 bobbin	spule
 body	körper
 boil	geschwür
-boils	geschwüre
 bolt	blitz
-bolts	bolzen
 bomb	bombe
-bombs	bomben
 bone	knochen
-bones	knochen
 bonfire	lagerfeuer
 bonnet	haube
 book	buch
 boombox	ghettoblaster
 boomerang	bumerang
 boot	stiefel
-boots	stiefel
 border	rand
 borer	bohrer
 bottle	flasche
-bottles	flaschen
 bough	ast
 boulder	felsbrocken
-boulders	felsbrocken
 bound	gebunden
 bouquet	blumenstrauß
 bow	bogen
 bowl	schüssel
-bowls	schüsseln
 bowtie	fliege
 box	kiste
 bracelet	armband
 bracer	armschiene
-bracers	armschienen
 bracket	klammer
-brackets	klammern
 braided	geflochten
 brain	gehirn
 bramble	dornbusch
 branch	ast
-branches	äste
 brass	messing
 brawl	kneipenschlägerei
 brawn	muskelkraft
@@ -3358,25 +3318,18 @@ brown	braun
 brunette	brünett
 brush	pinsel
 bubble	blase
-bubbles	blasen
 bubbling	blubbernd
 bucket	eimer
 buckle	schnalle
 buckler	rundschild
-buckles	schnallen
 bud	knospe
-buds	knospen
 bug	käfer
 bugle	signalhorn
-bugs	käfer
 building	gebäude
-buildings	gebäude
 bulb	zwiebel
-bulbs	zwiebeln
 bulging	hervortretend
 bull	stier
 bullet	kugel
-bullets	kugeln
 bullseye	volltreffer
 bun	brötchen
 bunch	bündel
@@ -3389,17 +3342,14 @@ burning	brennend
 burst	explosion
 bust	büste
 butcher	metzger
-butterflies	schmetterlinge
 butterfly	schmetterling
 button	knopf
-buttons	knöpfe
 cabbage	kohl
 cabinet	schrank
 cache	versteck
 cactus	kaktus
 cage	käfig
 cake	kuchen
-cakes	kuchen
 calamari	tintenfisch
 calculate	berechnen
 calf	kalb
@@ -3412,31 +3362,26 @@ campfire	lagerfeuer
 can	gießkanne
 cancel	abbrechen
 candle	kerze
-candles	kerzen
 candy	süßigkeit
 cane	zuckerstange
 canister	kanister
 cannon	kanone
 cannonball	kanonenkugel
-cannons	kanonen
 canteen	feldflasche
 canvas	leinwand
 canyon	schlucht
 cap	mütze
 capacitor	kondensator
 cape	umhang
-caps	mützen
 captured	gefangen
 caramel	karamell
 carapace	panzer
 card	karte
-cards	karten
 cargo	fracht
 carp	karpfen
 carpet	teppich
 carrier	träger
 carrot	karotte
-carrots	karotten
 cart	karren
 carved	geschnitzt
 carving	schnitzerei
@@ -3462,7 +3407,6 @@ cerberus	zerberus
 certificate	urkunde
 chain	kette
 chainmail	kettenhemd
-chains	ketten
 chainsaw	kettensäge
 chair	stuhl
 chakrum	chakram
@@ -3476,33 +3420,26 @@ charm	zauber
 checkered	kariert
 cheese	käse
 chef	koch
-cherries	kirschen
 cherry	kirsche
 chess	schach
 chest	truhe
 chestplate	brustplatte
 chevron	winkel
-chevrons	winkel
 chick	küken
 chicken	huhn
-chickens	hühner
 child	kind
 chime	windspiel
 chimera	schimäre
-chips	pommes
 chisel	meißel
 chocolate	schokolade
-chocolates	schokolade
 chop	kotelett
 chopsticks	essstäbchen
 chowder	suppe
 christmas	weihnachten
 chunk	brocken
-chunks	brocken
 cinema	kino
 cinnamon	zimt
 circle	kreis
-circles	kreise
 circlet	stirnreif
 circuit	schaltkreis
 circular	kreisförmig
@@ -3511,12 +3448,10 @@ citrus	zitrus
 city	stadt
 clam	muschel
 clamp	klemme
-clams	muscheln
 clapper	klöppel
 clash	zusammenstoß
 clasp	schließe
 claw	klaue
-claws	klauen
 clay	ton
 cleaver	hackbeil
 clefthoof	spaltenhuf
@@ -3525,7 +3460,6 @@ climbing	klettern
 clipboard	klemmbrett
 cloak	umhang
 cloaked	verhüllt
-cloaks	umhänge
 clock	uhr
 clockwork	uhrwerk
 clones	klone
@@ -3534,9 +3468,7 @@ closed	geschlossen
 cloth	stoff
 clothing	kleidung
 cloud	wolke
-clouds	wolken
 clover	klee
-clovers	kleeblätter
 clownfish	clownfisch
 club	keule
 cluster	haufen
@@ -3550,13 +3482,11 @@ codex	kodex
 coffee	kaffee
 coffin	sarg
 cog	zahnrad
-cogs	zahnräder
 cogwheel	zahnrad
 coif	kettenhaube
 coil	spule
 coiled	aufgerollt
 coin	münze
-coins	münzen
 collar	halsband
 collection	sammlung
 collector	sammler
@@ -3564,7 +3494,6 @@ colorful	bunt
 column	säule
 comb	kamm
 comet	komet
-comets	kometen
 communicator	kommunikator
 companion	begleiter
 compass	kompass
@@ -3602,19 +3531,16 @@ cowl	kapuze
 crab	krabbe
 crack	riss
 cracked	gesprungen
-cracks	risse
 cradle	wiege
 crafting	handwerk
 cranberries	preiselbeeren
 crane	kranich
 crate	kiste
 crater	krater
-crates	kisten
 crawler	kriecher
 crayfish	flusskrebs
 cream	sahne
 creature	kreatur
-creatures	kreaturen
 creeper	kriecher
 crepe	crêpe
 crescent	halbmond
@@ -3631,14 +3557,12 @@ crossbar	querbalken
 crossbones	knochen
 crossbow	armbrust
 crossed	gekreuzt
-crosses	kreuze
 crossguard	parierstange
 crosshair	fadenkreuz
 crouching	kauernd
 crow	krähe
 crowd	menge
 crown	krone
-crows	krähen
 crumbles	krümel
 crumbs	krümel
 crumpled	zerknittert
@@ -3646,12 +3570,9 @@ crushing	zermalmend
 crust	kruste
 crustacean	krebstier
 crystal	kristall
-crystals	kristalle
 cub	junges
 cube	würfel
-cubes	würfel
 cuff	manschette
-cuffs	manschetten
 cuirass	kürass
 cup	becher
 cupped	hohl
@@ -3668,14 +3589,11 @@ cut	schliff
 cute	niedlich
 cutlass	entermesser
 cutlery	besteck
-cuts	schnitte
 cyan	türkis
 cycle	kreislauf
 cyclone	zyklon
 cylinder	zylinder
 dagger	dolch
-daggers	dolche
-daisies	gänseblümchen
 daisy	gänseblümchen
 dance	tanz
 dancer	tänzer
@@ -3695,7 +3613,6 @@ defense	verteidigung
 demon	dämon
 demoness	dämonin
 demonic	dämonisch
-demons	dämonen
 desert	wüste
 dessert	nachtisch
 detective	detektiv
@@ -3706,7 +3623,6 @@ dew	tau
 dewdrops	tautropfen
 dial	zifferblatt
 diamond	diamant
-diamonds	diamanten
 dice	würfel
 die	würfel
 digging	graben
@@ -3716,7 +3632,6 @@ direhorn	schreckenshorn
 dirt	erde
 disc	scheibe
 discoball	discokugel
-discs	scheiben
 disease	krankheit
 diseased	krank
 disguise	verkleidung
@@ -3742,7 +3657,6 @@ doughnut	donut
 dragon	drache
 dragonfly	libelle
 dragonhawk	drachenfalke
-dragons	drachen
 drain	entziehen
 drape	umhang
 drawer	schublade
@@ -3756,15 +3670,11 @@ drink	getränk
 drinking	trinken
 drip	tropfen
 dripping	tropfend
-drips	tropfen
 drone	drohne
 drop	tropfen
 droplet	tröpfchen
-droplets	tröpfchen
-drops	tropfen
 druid	druide
 drum	trommel
-drums	trommeln
 drumstick	hähnchenkeule
 dual	doppelt
 duck	ente
@@ -3772,7 +3682,6 @@ duckling	entenküken
 dueling	duell
 dumbbell	hantel
 dumpling	teigtasche
-dumplings	teigtaschen
 dungeon	verlies
 dust	staub
 dwarf	zwerg
@@ -3782,7 +3691,6 @@ eagle	adler
 ear	ohr
 earmuffs	ohrenschützer
 earring	ohrring
-ears	ohren
 earth	erde
 earthen	irden
 earthquake	erdbeben
@@ -3790,7 +3698,6 @@ easter	ostern
 eclipse	finsternis
 eel	aal
 egg	ei
-eggs	eier
 eight	acht
 eldritch	unheimlich
 electric	elektrisch
@@ -3801,10 +3708,7 @@ elephant	elefant
 elixir	elixier
 elk	elch
 elongated	länglich
-elves	elfen
 ember	glut
-embers	glut
-emblems	embleme
 embroidered	bestickt
 embroidery	stickerei
 emerald	smaragd
@@ -3819,7 +3723,6 @@ engraved	graviert
 entrails	eingeweide
 entwined	verschlungen
 envelope	umschlag
-envelopes	umschläge
 equals	gleich
 equations	gleichungen
 eruption	ausbruch
@@ -3832,13 +3735,10 @@ explorer	forscher
 explosive	explosiv
 eye	auge
 eyeball	augapfel
-eyeballs	augäpfel
 eyelid	augenlid
 eyepatch	augenklappe
-eyes	augen
 fabric	stoff
 face	gesicht
-faces	gesichter
 faceted	facettiert
 facets	facetten
 faction	fraktion
@@ -3848,14 +3748,11 @@ fairy	fee
 falling	fallend
 fan	fächer
 fang	fangzahn
-fangs	fangzähne
 farm	bauernhof
 fat	fett
 fawn	rehkitz
 feast	festmahl
 feather	feder
-feathers	federn
-feet	füße
 fel	teufel
 feline	katze
 felsaber	teufelssäbler
@@ -3875,25 +3772,19 @@ fifteen	fünfzehn
 fighters	kämpfer
 fighting	kämpfen
 figure	figur
-figures	figuren
 figurine	figur
 file	feile
 filigree	filigran
 fillet	filet
-fillets	filets
 filmstrip	filmstreifen
 fin	flosse
-fingers	finger
-fins	flossen
 fire	feuer
 firearm	schusswaffe
 fireball	feuerball
-fireballs	feuerbälle
 firecracker	knallkörper
 firefly	glühwürmchen
 fireplace	kamin
 firework	feuerwerk
-fireworks	feuerwerk
 firstaid	verbandskasten
 fish	fisch
 fishbone	fischgräte
@@ -3901,12 +3792,10 @@ fishcake	fischfrikadelle
 fishing	angeln
 fissure	spalte
 fist	faust
-fists	fäuste
 five	fünf
 flag	flagge
 flail	flegel
 flame	flamme
-flames	flammen
 flamethrower	flammenwerfer
 flaming	flammend
 flanged	geflanscht
@@ -3914,7 +3803,6 @@ flank	flanke
 flare	leuchtrakete
 flash	blitz
 flask	flasche
-flasks	flaschen
 flat	flach
 flatbread	fladenbrot
 flesh	fleisch
@@ -3930,7 +3818,6 @@ flock	herde
 flour	mehl
 flower	blume
 flowerpot	blumentopf
-flowers	blumen
 fluffy	flauschig
 fluid	flüssigkeit
 fluke	schwanzflosse
@@ -3944,13 +3831,11 @@ foam	schaum
 fold	falte
 folded	gefaltet
 folding	faltbar
-folds	falten
 foliage	laub
 food	essen
 foot	fuß
 football	fußball
 footprint	fußabdruck
-footprints	fußspuren
 forest	wald
 forge	schmiede
 fork	gabel
@@ -3962,9 +3847,7 @@ fountain	brunnen
 four	vier
 fowl	geflügel
 fox	fuchs
-fragments	fragmente
 frame	rahmen
-frames	rahmen
 frenzy	raserei
 fried	gebraten
 fries	pommes
@@ -4000,20 +3883,15 @@ gasping	keuchend
 gate	tor
 gauge	messgerät
 gauntlet	handschuh
-gauntlets	handschuhe
 gear	ausrüstung
-gears	zahnräder
 gem	edelstein
-gems	edelsteine
 gemstone	edelstein
 genetics	genetik
 geometric	geometrisch
 gesture	geste
 ghost	geist
 ghostly	geisterhaft
-ghosts	geister
 ghoul	ghul
-ghouls	ghule
 giant	riese
 gift	geschenk
 gilded	vergoldet
@@ -4023,7 +3901,6 @@ girl	mädchen
 gizmo	dingsbums
 glacier	gletscher
 glaive	gleve
-glaives	gleven
 gland	drüse
 glass	glas
 glasses	brille
@@ -4036,7 +3913,6 @@ glob	klecks
 globe	globus
 glove	handschuh
 gloved	behandschuht
-gloves	handschuhe
 glow	leuchten
 glowing	leuchtend
 glyph	glyphe
@@ -4096,14 +3972,10 @@ half	halb
 hall	halle
 halo	heiligenschein
 halter	halfter
-halves	hälften
 ham	schinken
-hammers	hämmer
 handed	einhändig
 handguard	handschutz
 handle	griff
-handles	griffe
-hands	hände
 hanging	hängend
 happy	glücklich
 harbor	hafen
@@ -4128,13 +4000,11 @@ haze	dunst
 head	kopf
 headband	stirnband
 headdress	kopfschmuck
-heads	köpfe
 healing	heilung
 health	gesundheit
 heap	haufen
 heart	herz
 hearthstone	ruhestein
-hearts	herzen
 heavy	schwer
 hedgehog	igel
 helicopter	hubschrauber
@@ -4145,16 +4015,13 @@ hen	henne
 heraldry	wappenkunde
 herb	kraut
 herbalism	kräuterkunde
-herbs	kräuter
 hermit	einsiedler
 heroes	helden
 hex	verhexen
 hexagon	sechseck
 hexagonal	sechseckig
-hexagons	sechsecke
 hide	haut
 hill	hügel
-hills	hügel
 hilt	heft
 hippo	nilpferd
 hippopotamus	nilpferd
@@ -4165,7 +4032,6 @@ hoe	hacke
 hold	halten
 holding	haltend
 hole	loch
-holes	löcher
 holly	stechpalme
 hologram	hologramm
 holy	heilig
@@ -4177,12 +4043,9 @@ hooded	kapuze
 hoof	huf
 hook	haken
 hoop	reif
-hoops	reifen
-hooves	hufe
 hops	hopfen
 horizon	horizont
 horned	gehörnt
-horns	hörner
 hornswog	hornfrosch
 horse	pferd
 horseshoe	hufeisen
@@ -4222,10 +4085,8 @@ ink	tinte
 inkwell	tintenfass
 inscription	inschrift
 insect	insekt
-insects	insekten
 intercession	fürsprache
 intestine	darm
-intestines	därme
 iron	eisen
 island	insel
 isopod	assel
@@ -4235,10 +4096,8 @@ jackolantern	kürbislaterne
 jagged	gezackt
 jalapeno	jalapeño
 jar	glas
-jars	gläser
 jasmine	jasmin
 jaw	kiefer
-jaws	kiefer
 jellyfish	qualle
 jerky	trockenfleisch
 jester	narr
@@ -4247,7 +4106,6 @@ jewel	juwel
 jewelcrafting	juwelenschleifen
 jeweled	juwelenbesetzt
 jewelry	schmuck
-jewels	juwelen
 joint	gelenk
 jug	krug
 juggernaut	koloss
@@ -4257,7 +4115,6 @@ kale	grünkohl
 keg	fass
 kelp	seetang
 kernel	kern
-kernels	kerne
 kettle	kessel
 key	schlüssel
 keychain	schlüsselanhänger
@@ -4275,14 +4132,12 @@ knee	knie
 kneeling	kniend
 knife	messer
 knight	ritter
-knives	messer
 knot	knoten
 knuckles	fingerknöchel
 komodo	komodowaran
 label	etikett
 laboratory	labor
 lace	spitze
-laces	schnürsenkel
 ladder	leiter
 ladle	schöpfkelle
 ladybug	marienkäfer
@@ -4291,7 +4146,6 @@ lance	lanze
 landscape	landschaft
 landshark	landhai
 lantern	laterne
-lanterns	laternen
 lapel	revers
 large	groß
 larva	larve
@@ -4308,19 +4162,15 @@ leaping	springend
 leash	leine
 leather	leder
 leatherworking	lederverarbeitung
-leaves	blätter
 leek	lauch
 leg	bein
 leggings	beinkleider
 legguards	beinschützer
 legplates	beinplatten
-legs	beine
 legwear	beinkleidung
 lemon	zitrone
 lens	linse
-lenses	linsen
 letter	brief
-letters	briefe
 level	stufe
 lichen	flechte
 lid	deckel
@@ -4329,12 +4179,10 @@ light	licht
 lightbulb	glühbirne
 lighthouse	leuchtturm
 lightning	blitz
-lights	lichter
 lily	lilie
 limbs	wurfarm
 line	schnur
 linen	leinen
-lines	linien
 links	glieder
 lion	löwe
 lionfish	rotfeuerfisch
@@ -4352,12 +4200,10 @@ locked	verschlossen
 lockpick	dietrich
 locomotive	lokomotive
 log	baumstamm
-logs	holzscheite
 lollipop	lutscher
 long	lang
 looking	schauend
 loop	schleife
-loops	schleifen
 louse	laus
 love	liebe
 loveseat	zweisitzer
@@ -4369,12 +4215,10 @@ lunchbox	brotdose
 lung	lunge
 lunge	ausfall
 lure	köder
-lures	köder
 lynx	luchs
 lyre	leier
 macaw	ara
 mace	streitkolben
-maces	streitkolben
 machine	maschine
 machinery	maschinerie
 mackerel	makrele
@@ -4402,7 +4246,6 @@ mark	mal
 marmoset	krallenaffe
 maroon	kastanienbraun
 mask	maske
-masks	masken
 masquerade	maskerade
 matchbook	streichholzbrief
 matchbox	streichholzschachtel
@@ -4423,13 +4266,11 @@ melon	melone
 melted	geschmolzen
 melting	schmelzend
 membrane	membran
-men	männer
 mermaid	meerjungfrau
 mesa	tafelberg
 mesh	netz
 message	nachricht
 metal	metall
-meteors	meteore
 milk	milch
 milkshake	milchshake
 minced	gehackt
@@ -4439,7 +4280,6 @@ mining	bergbau
 minotaur	minotaurus
 mirror	spiegel
 missile	rakete
-missiles	raketen
 mist	nebel
 miter	mitra
 mittens	fäustlinge
@@ -4469,18 +4309,14 @@ mottled	gesprenkelt
 mound	hügel
 mount	reittier
 mountain	berg
-mountains	berge
 mouse	maus
 mouth	mund
 mouthpiece	mundstück
 mug	krug
-mugs	krüge
 mummy	mumie
 muscle	muskel
-muscles	muskeln
 muscular	muskulös
 mushroom	pilz
-mushrooms	pilze
 music	musik
 musician	musiker
 musket	muskete
@@ -4497,7 +4333,6 @@ neckerchief	halstuch
 necklace	halskette
 necrotic	nekrotisch
 needle	nadel
-needles	nadeln
 nerubian	nerubisch
 nerves	nerven
 net	netz
@@ -4514,13 +4349,10 @@ noose	schlinge
 north	norden
 nose	nase
 note	notiz
-notes	notizen
 nuclear	nuklear
 nugget	klumpen
-nuggets	klumpen
 number	zahl
 nut	nuss
-nuts	nüsse
 ocean	ozean
 octagon	achteck
 octopus	oktopus
@@ -4528,7 +4360,6 @@ offhand	nebenhand
 ogre	oger
 oil	öl
 oilcan	ölkanne
-olives	oliven
 one	eins
 onion	zwiebel
 ooze	schleim
@@ -4536,11 +4367,9 @@ open	offen
 opener	brieföffner
 orb	kugel
 orbit	umlaufbahn
-orbs	kugeln
 orchid	orchidee
 ore	erz
 organic	organisch
-organs	organe
 ornament	verzierung
 ornate	verziert
 outline	umriss
@@ -4557,7 +4386,6 @@ pad	polster
 padded	gepolstert
 padlock	vorhängeschloss
 page	seite
-pages	seiten
 pagoda	pagode
 pail	eimer
 paint	farbe
@@ -4569,10 +4397,8 @@ pan	pfanne
 pancake	pfannkuchen
 panel	tafel
 pangolin	schuppentier
-pans	pfannen
 pants	hose
 paper	papier
-papers	papiere
 paragon	vorbild
 paralysis	lähmung
 parasol	sonnenschirm
@@ -4583,27 +4409,21 @@ parsnip	pastinake
 part	teil
 particles	partikel
 partition	trennwand
-parts	teile
 pasta	nudeln
 pastry	gebäck
 patch	flicken
 patched	geflickt
-patches	flicken
 path	pfad
 pattern	muster
 patterned	gemustert
-patterns	muster
 patty	frikadelle
 pauldron	schulterstück
-pauldrons	schulterstücke
 paw	pfote
 pawprint	pfotenabdruck
-paws	pfoten
 peach	pfirsich
 peacock	pfau
 peak	gipfel
 pearl	perle
-pearls	perlen
 peasant	bauer
 pebble	kiesel
 pedestal	sockel
@@ -4625,8 +4445,6 @@ perfume	parfüm
 pestle	stößel
 pet	begleiter
 petal	blütenblatt
-petals	blütenblätter
-pets	begleiter
 phoenix	phönix
 pick	spitzhacke
 pickaxe	spitzhacke
@@ -4640,23 +4458,19 @@ piglet	ferkel
 pile	haufen
 pilgrim	pilger
 pillar	säule
-pillars	säulen
 pillow	kissen
 pin	nadel
 pinata	piñata
 pincer	zange
-pincers	zangen
 pinch	prise
 pincushion	nadelkissen
 pine	kiefer
 pineapple	ananas
 pinecone	tannenzapfen
 pink	rosa
-pins	nadeln
 pinstripe	nadelstreifen
 pinwheel	windrad
 pipe	pfeife
-pipes	pfeifen
 pirate	pirat
 pistol	pistole
 pistons	kolben
@@ -4669,11 +4483,9 @@ plague	seuche
 plain	schlicht
 planks	bretter
 plant	pflanze
-plants	pflanzen
 plaque	plakette
 plate	plattenrüstung
 plated	gepanzert
-plates	platten
 platform	plattform
 platinum	platin
 platter	platte
@@ -4681,12 +4493,10 @@ playing	spielend
 pliers	zange
 plum	pflaume
 plume	feder
-plumes	federn
 plush	plüsch
 plushie	plüschtier
 pocket	tasche
 pocketknife	taschenmesser
-pockets	taschen
 pocketwatch	taschenuhr
 pod	schote
 podling	schötling
@@ -4708,18 +4518,13 @@ porcelain	porzellan
 porcupine	stachelschwein
 porthole	bullauge
 portrait	porträt
-portraits	porträts
 possessed	besessen
 post	pfosten
 pot	topf
 potato	kartoffel
-potatoes	kartoffeln
 potion	trank
-potions	tränke
-pots	töpfe
 pottery	töpferware
 pouch	beutel
-pouches	beutel
 poultry	geflügel
 pouring	gießen
 powder	pulver
@@ -4766,7 +4571,6 @@ question	frage
 quicksand	treibsand
 quill	feder
 quillboar	stacheleber
-quills	stacheln
 quilted	gesteppt
 quiver	köcher
 rabbit	kaninchen
@@ -4793,7 +4597,6 @@ ravager	verwüster
 raven	rabe
 raw	roh
 ray	rochen
-rays	strahlen
 razor	rasiermesser
 reaching	greifend
 reading	lesen
@@ -4815,22 +4618,18 @@ rewind	zurückspulen
 rhino	nashorn
 ribbed	gerippt
 ribbon	band
-ribbons	bänder
 ribcage	brustkorb
 ribs	rippen
 rice	reis
 rider	reiter
-riders	reiter
 ridged	gerillt
 ridges	grate
 rifle	gewehr
 rift	riss
 rim	rand
-rings	ringe
 ripple	welle
 river	fluss
 rivet	niete
-rivets	nieten
 roach	kakerlake
 roar	brüllen
 roaring	brüllend
@@ -4841,9 +4640,7 @@ robot	roboter
 roc	roch
 rock	fels
 rocket	rakete
-rockets	raketen
 rockfall	steinschlag
-rocks	felsen
 rod	stab
 rodent	nagetier
 roe	rogen
@@ -4852,17 +4649,13 @@ roll	rolle
 rolled	gerollt
 roller	walze
 rolling	rollend
-rolls	rollen
 roly	rollig
 roof	dach
 rook	turm
 room	raum
 rooster	hahn
 root	wurzel
-roots	wurzeln
 rope	seil
-ropes	seile
-roses	rosen
 rotten	faul
 rough	rau
 round	rund
@@ -4871,17 +4664,14 @@ royal	königlich
 royalty	königtum
 rubber	gummi
 rubble	schutt
-rubies	rubine
 ruby	rubin
 ruffle	rüsche
-ruffles	rüschen
 rug	teppich
 ruined	zerstört
 ruins	ruinen
 ruler	lineal
 runeblade	runenklinge
 runed	runenbesetzt
-runes	runen
 runners	läufer
 running	laufen
 runway	startbahn
@@ -4896,13 +4686,11 @@ sad	traurig
 saddle	sattel
 sage	salbei
 sail	segel
-sails	segel
 salad	salat
 salmon	lachs
 salt	salz
 salve	salbe
 sandal	sandale
-sandals	sandalen
 sandcrab	sandkrabbe
 sandstorm	sandsturm
 santa	weihnachtsmann
@@ -4915,9 +4703,7 @@ sausage	wurst
 saw	säge
 sawblade	sägeblatt
 scale	schuppe
-scales	schuppen
 scallion	frühlingszwiebel
-scallions	frühlingszwiebeln
 scallop	jakobsmuschel
 scarab	skarabäus
 scarecrow	vogelscheuche
@@ -4933,18 +4719,14 @@ scored	eingekerbt
 scorpion	skorpion
 scourge	geißel
 scrap	schrott
-scraps	reste
 scratch	kratzer
-scratches	kratzer
 scream	schrei
 screaming	schreiend
 screen	bildschirm
 screw	schraube
 screwdriver	schraubenzieher
-screws	schrauben
 script	schrift
 scroll	schriftrolle
-scrolls	schriftrollen
 scrollwork	schnörkel
 scythe	sense
 sea	meer
@@ -4954,7 +4736,6 @@ seal	siegel
 seams	nähte
 searchlight	suchscheinwerfer
 seashell	muschel
-seashells	muscheln
 seastalk	seestängel
 seat	sitz
 seated	sitzend
@@ -4962,12 +4743,10 @@ seaweave	seegewebe
 seaweed	seetang
 seed	samen
 seedling	setzling
-seeds	samen
 seeing	sehen
 seesaw	wippe
 segmented	segmentiert
 serpent	schlange
-serpents	schlangen
 serrated	gezackt
 setting	fassung
 seven	sieben
@@ -4975,17 +4754,14 @@ seventy	siebzig
 severed	abgetrennt
 sewing	nähen
 shackle	fessel
-shackles	fesseln
 shadow	schatten
 shadowflame	schattenflamme
-shadows	schatten
 shaft	schaft
 shale	schiefer
 shaman	schamane
 shamrock	kleeblatt
 shank	haxe
 shard	scherbe
-shards	scherben
 shark	hai
 sharp	scharf
 sharpening	schärfen
@@ -4996,9 +4772,7 @@ sheep	schaf
 shelf	regal
 shell	muschel
 shellfish	schalentier
-shells	muscheln
 shield	schild
-shields	schilde
 shimmering	schimmernd
 shine	glanz
 shiny	glänzend
@@ -5008,7 +4782,6 @@ shock	schock
 shocker	schocker
 shockwave	schockwelle
 shoe	schuh
-shoes	schuhe
 shoot	spross
 shooting	schießen
 shoots	triebe
@@ -5017,8 +4790,6 @@ shortsword	kurzschwert
 shot	schuss
 shoulder	schulter
 shoulderpad	schulterpolster
-shoulderpads	schulterpolster
-shoulders	schultern
 shouting	schreien
 shovel	schaufel
 shrapnel	schrapnell
@@ -5031,10 +4802,8 @@ sickness	krankheit
 siege	belagerung
 sight	sicht
 sigil	siegel
-sigils	siegel
 sign	schild
 signet	siegelring
-silhouettes	silhouetten
 silithid	silithide
 silk	seide
 silkweed	seidenkraut
@@ -5049,20 +4818,17 @@ skating	eislaufen
 skeletal	skelettiert
 skeleton	skelett
 skewer	spieß
-skewers	spieße
 skimmer	gleiter
 skin	haut
 skinning	kürschnerei
 skirt	rock
 skulker	schleicher
 skull	totenkopf
-skulls	totenköpfe
 skunk	stinktier
 sky	himmel
 slab	platte
 slam	schlag
 slash	hieb
-slashes	hiebe
 slate	schiefer
 sled	schlitten
 sledgehammer	vorschlaghammer
@@ -5073,12 +4839,10 @@ sleeves	ärmel
 sleigh	schlitten
 slice	scheibe
 sliced	geschnitten
-slices	scheiben
 slime	schleim
 slimy	schleimig
 slingshot	schleuder
 slipper	hausschuh
-slippers	hausschuhe
 slit	schlitz
 sloth	faultier
 slow	langsam
@@ -5091,7 +4855,6 @@ smoking	rauchend
 smooth	glatt
 snail	schnecke
 snake	schlange
-snakes	schlangen
 snapper	schnapper
 snarling	knurrend
 sneering	höhnisch
@@ -5100,7 +4863,6 @@ snout	schnauze
 snow	schnee
 snowball	schneeball
 snowflake	schneeflocke
-snowflakes	schneeflocken
 snowman	schneemann
 snowshoe	schneeschuh
 soccer	fußball
@@ -5111,7 +4873,6 @@ solitaire	solitär
 somersault	salto
 souffle	soufflé
 soul	seele
-souls	seelen
 sound	klang
 soundwaves	schallwellen
 soup	suppe
@@ -5122,14 +4883,10 @@ spade	spaten
 spanner	schraubenschlüssel
 spark	funke
 sparkle	funkeln
-sparkles	funkeln
-sparks	funken
 spaulders	schulterplatten
 speaker	lautsprecher
-speakers	lautsprecher
 spear	speer
 spearhead	speerspitze
-spears	speere
 specimen	exemplar
 speckled	gesprenkelt
 spectacles	brille
@@ -5137,39 +4894,30 @@ spectral	spektral
 speed	geschwindigkeit
 spellbook	zauberbuch
 sphere	kugel
-spheres	kugeln
 spice	gewürz
-spices	gewürze
 spider	spinne
 spiderling	spinnchen
 spiderweb	spinnennetz
 spike	stachel
 spiked	stachelig
-spikes	stacheln
 spiky	stachelig
 spill	verschütten
 spindle	spindel
 spine	wirbelsäule
-spines	stacheln
 spinneret	spinndrüse
 spinning	drehend
 spiral	spirale
-spirals	spiralen
 spire	turmspitze
-spires	turmspitzen
 spirit	geist
-spirits	geister
 spit	bratspieß
 splash	spritzer
 splatter	spritzer
 splint	schiene
 splinter	splitter
-splinters	splitter
 split	gespalten
 splitting	spaltend
 spool	spule
 spoon	löffel
-spores	sporen
 spotlight	scheinwerfer
 spots	flecken
 spotted	gefleckt
@@ -5177,13 +4925,11 @@ spout	tülle
 sprayer	sprüher
 spring	frühling
 springrolls	frühlingsrollen
-springs	federn
 sprinkles	streusel
 sprout	spross
 spur	sporn
 spyglass	fernrohr
 square	quadrat
-squares	quadrate
 squash	kürbis
 squid	tintenfisch
 squire	knappe
@@ -5196,7 +4942,6 @@ stag	hirsch
 stalactite	stalaktit
 stalk	stängel
 stalker	pirscher
-stalks	stängel
 stall	marktstand
 stand	ständer
 standard	standarte
@@ -5205,7 +4950,6 @@ star	stern
 starburst	sternenexplosion
 starfish	seestern
 starry	sternenklar
-stars	sterne
 stealth	tarnung
 steam	dampf
 steamer	dampfgarer
@@ -5213,52 +4957,41 @@ steed	ross
 steel	stahl
 stein	humpen
 stem	stiel
-stems	stiele
 stew	eintopf
 stick	stock
-sticks	stöcke
 sticky	klebrig
 stinger	stachel
 stingray	stachelrochen
 stirfry	pfannengericht
 stirrup	steigbügel
-stirrups	steigbügel
 stitched	genäht
 stitches	stiche
 stitching	naht
 stomach	magen
 stomp	stampfen
 stone	stein
-stones	steine
 stopwatch	stoppuhr
 storm	sturm
 stormray	sturmrochen
 straight	gerade
 strand	strang
-strands	stränge
 strap	riemen
 strapped	festgeschnallt
-straps	riemen
 straw	stroh
 strawberry	erdbeere
 streak	streifen
-streaks	streifen
 stream	strom
 streamer	luftschlange
 strength	stärke
 strider	schreiter
 strike	schlag
 string	schnur
-strings	saiten
 strip	streifen
 stripe	streifen
 striped	gestreift
-stripes	streifen
-strips	streifen
 stub	stummel
 stud	niete
 studded	genietet
-studs	nieten
 stuffed	gefüllt
 stuffing	füllung
 stump	baumstumpf
@@ -5291,41 +5024,33 @@ sweatpants	jogginghose
 sweep	fegen
 sweeping	fegend
 sweet	süß
-sweets	süßigkeiten
 swim	schwimmen
 swipe	hieb
 swirl	wirbel
 swirling	wirbelnd
-swirls	wirbel
 swiss	schweizer
 switch	schalter
 swoop	sturzflug
 swoosh	schwung
 sword	schwert
-swords	schwerter
-symbols	symbole
 syringe	spritze
 tabard	wappenrock
 tabby	getigert
 table	tisch
 tablet	tafel
-tablets	tafeln
 tadpole	kaulquappe
 tag	etikett
-tags	etiketten
 tail	schwanz
 tailoring	schneiderei
 tall	hoch
 tallstrider	hochschreiter
 talon	kralle
-talons	krallen
 tamer	zähmer
 tan	hellbraun
 tang	doktorfisch
 tangle	gewirr
 tank	panzer
 tankard	bierkrug
-tanks	tauchflaschen
 tap	zapfhahn
 tapestry	wandteppich
 tar	teer
@@ -5334,7 +5059,6 @@ target	ziel
 tart	törtchen
 tartare	tatar
 tassel	quaste
-tassels	quasten
 tassets	beintaschen
 tattered	zerfetzt
 tea	tee
@@ -5343,26 +5067,21 @@ teapot	teekanne
 teardrop	träne
 teaset	teeservice
 tech	technik
-teeth	zähne
 telescope	teleskop
 temple	tempel
 ten	zehn
 tenders	hähnchenstreifen
 tendon	sehne
 tendril	ranke
-tendrils	ranken
 tent	zelt
 tentacle	tentakel
-tentacles	tentakel
 terrorguard	schreckenswache
 texture	textur
 thin	dünn
 thirty	dreißig
 thistle	distel
 thorn	dorn
-thorns	dornen
 thread	faden
-threads	fäden
 three	drei
 throne	thron
 throw	werfen
@@ -5376,7 +5095,6 @@ tide	gezeiten
 tie	krawatte
 tied	gebunden
 tile	fliese
-tiles	fliesen
 time	zeit
 tin	zinn
 tinderbox	zunderbüchse
@@ -5387,7 +5105,6 @@ titanium	titan
 toad	kröte
 toadstool	giftpilz
 toe	zeh
-toes	zehen
 tomato	tomate
 tombstone	grabstein
 tome	foliant
@@ -5395,13 +5112,11 @@ tongs	zange
 tongue	zunge
 tool	werkzeug
 toolbox	werkzeugkasten
-tools	werkzeuge
 tooth	zahn
 top	oberteil
 topaz	topas
 tophat	zylinder
 torch	fackel
-torches	fackeln
 torn	zerrissen
 torso	oberkörper
 tortoise	schildkröte
@@ -5409,7 +5124,6 @@ tortollan	tortollaner
 toucan	tukan
 touch	berührung
 tower	turm
-towers	türme
 toy	spielzeug
 tracking	spurensuche
 tracks	spuren
@@ -5421,10 +5135,8 @@ tread	lauffläche
 treant	baumhirte
 treasure	schatz
 tree	baum
-trees	bäume
 trench	trenchcoat
 triangle	dreieck
-triangles	dreiecke
 tricorn	dreispitz
 trident	dreizack
 trigger	abzug
@@ -5440,8 +5152,6 @@ trowel	kelle
 trumpet	trompete
 tube	röhre
 tuber	knolle
-tubers	knollen
-tubes	röhren
 tuft	büschel
 tumbler	becher
 tunic	tunika
@@ -5451,10 +5161,8 @@ turquoise	türkis
 turret	geschützturm
 turtle	schildkröte
 tusk	stoßzahn
-tusks	stoßzähne
 twenty	zwanzig
 twig	zweig
-twigs	zweige
 twin	zwilling
 twist	drehung
 twisted	verdreht
@@ -5472,17 +5180,14 @@ urn	urne
 valkyr	walküre
 valkyrie	walküre
 vambrace	armschiene
-vambraces	armschienen
 vampire	vampir
 vanilla	vanille
 vapor	dampf
 variety	vielfalt
 vegetable	gemüse
-vegetables	gemüse
 vehicle	fahrzeug
 vein	ader
 veined	geädert
-veins	adern
 vellum	pergament
 vending	automat
 venison	wildbret
@@ -5493,7 +5198,6 @@ vest	weste
 vial	phiole
 viking	wikinger
 vine	ranke
-vines	ranken
 viperfish	vipernfisch
 visor	visier
 vitruvian	vitruvianisch
@@ -5518,7 +5222,6 @@ warlock	hexenmeister
 warp	verzerrung
 warpaint	kriegsbemalung
 warrior	krieger
-warriors	krieger
 warts	warzen
 wasp	wespe
 watch	uhr
@@ -5527,11 +5230,9 @@ watering	gießen
 watermelon	wassermelone
 waterskin	wasserschlauch
 wave	welle
-waves	wellen
 wavy	wellig
 wax	wachs
 weapon	waffe
-weapons	waffen
 weasel	wiesel
 weathered	verwittert
 weaving	weben
@@ -5539,14 +5240,12 @@ web	netz
 webbing	gurtband
 wedge	keil
 weight	gewicht
-weights	gewichte
 weightstone	gewichtsstein
 welding	schweißen
 werewolf	werwolf
 whale	wal
 wheat	weizen
 wheel	rad
-wheels	räder
 whelp	welpe
 whetstone	wetzstein
 whip	peitsche
@@ -5563,22 +5262,18 @@ windmill	windmühle
 wine	wein
 wing	flügel
 winged	geflügelt
-wings	flügel
 wire	draht
 wisdom	weisheit
 wisp	irrlicht
-wisps	irrlichter
 witch	hexe
 wizard	magier
 woman	frau
-women	frauen
 wood	holz
 wooden	hölzern
 woodpecker	specht
 wool	wolle
 world	welt
 worm	wurm
-worms	würmer
 worn	abgenutzt
 wound	wunde
 woven	gewebt
@@ -5587,7 +5282,6 @@ wrap	wickel
 wrapped	umwickelt
 wrapper	verpackung
 wrapping	verpackung
-wraps	wickel
 wreath	kranz
 wrench	schraubenschlüssel
 wrinkled	faltig

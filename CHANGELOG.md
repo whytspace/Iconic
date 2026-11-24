@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **[Change]** Picture tags use the singular only ("gem" instead of both "gem" and "gems").
+
 ## v3 - 2026-11-24
 
 - **[Change]** Texts use American spelling ("color", "gray").

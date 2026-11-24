@@ -103,7 +103,7 @@ The prompt is `scripts/tag_prompt.md`. A chunk costs about 80k tokens and takes 
 devc python3 scripts/tag_icons.py merge
 ```
 
-`merge` splits two-word names into single words and lists entries it rejects; rerun `prompt` for those chunks or fix them by hand. Before changing the prompt, tag a few chunks with both versions and compare them by eye. The prompt makes the agent tag what the picture shows, use the file name as a hint, and add other readings of the same picture. Without the file name, agents mistake small belts for gloves. Told to trust it, they call a withered rose a "talisman". Told to avoid its words, they call a net "scales".
+`merge` splits two-word names into single words, turns a plural tag into its singular when that is a tag too (exceptions in `NOT_PLURALS`), and lists entries it rejects; rerun `prompt` for those chunks or fix them by hand. Before changing the prompt, tag a few chunks with both versions and compare them by eye. The prompt makes the agent tag what the picture shows, use the file name as a hint, and add other readings of the same picture. Without the file name, agents mistake small belts for gloves. Told to trust it, they call a withered rose a "talisman". Told to avoid its words, they call a net "scales".
 
 ## Translations
 
