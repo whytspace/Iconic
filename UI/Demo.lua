@@ -3,7 +3,7 @@ local ADDON_NAME, ns = ...
 -- Maintainer tool behind /iconic shot demo: opens a new equipment set's icon picker, plays the README animation's
 -- steps and captures every step with /iconic shot's black and white backdrops. For scripts/make-demo.sh it stores
 -- each frame's display time (IconicDB.demoFrames) and mouse pointer spot (demoPointerX, demoPointerY), and the screen
--- area of the set's picker and the colour picker (demoBox); the game writes them on /reload. It never saves the set.
+-- area of the set's picker and the color picker (demoBox); the game writes them on /reload. It never saves the set.
 local Demo = {}
 ns.Demo = Demo
 
@@ -13,9 +13,9 @@ local SETTLE = 0.5
 local HOLD_LETTER, HOLD_WORD, HOLD_PAUSE, HOLD_MOTION, HOLD_END = 0.12, 0.6, 0.8, 0.08, 2.5
 -- The new equipment set's name, typed first, NAME_CHUNK letters per frame to keep the capture short.
 local SET_NAME, NAME_CHUNK = "Avenger Tank", 3
--- The first colour, typed; the second is picked in the colour picker and weighted down to SECOND_WEIGHT.
+-- The first color, typed; the second is picked in the color picker and weighted down to SECOND_WEIGHT.
 local FIRST_COLOR, SECOND_WEIGHT = "purple", 25
--- The colour picker's start colour (white) and gold, walked between in COLOR_STEPS steps.
+-- The color picker's start color (white) and gold, walked between in COLOR_STEPS steps.
 local COLOR_FROM, COLOR_TO, COLOR_STEPS = { 1, 1, 1 }, { 0.83, 0.65, 0.17 }, 12
 -- How far down the results scroll, in SCROLL_STEPS steps.
 local SCROLL_TO, SCROLL_STEPS = 0.12, 8
@@ -82,7 +82,7 @@ local function screenScale()
   return height / (UIParent:GetHeight() * UIParent:GetEffectiveScale()), width, height
 end
 
--- Centre of a frame or texture in screen pixels from the top left, or nil when it isn't shown.
+-- Center of a frame or texture in screen pixels from the top left, or nil when it isn't shown.
 local function screenCenter(region)
   if not (region and region:IsVisible() and region:GetCenter()) then
     return nil
@@ -94,7 +94,7 @@ local function screenCenter(region)
 end
 
 -- Grows `box` (screen pixels from the top left) around the shown frames: the set's icon picker, its search
--- suggestions, and the colour picker with its weight panel.
+-- suggestions, and the color picker with its weight panel.
 local function growBox(box, view)
   local toPixels, width, height = screenScale()
   local slider = view:WeightSlider()
@@ -244,7 +244,7 @@ function Demo:Run()
     return chat("could not open a new equipment set.")
   end
   self.running, self.stopping = true, false
-  -- Grouping pauses while colour chips are set, but not before the first one: start ungrouped.
+  -- Grouping pauses while color chips are set, but not before the first one: start ungrouped.
   local groupBy = ns.db.groupBy
   ns.db.groupBy = "none"
   view:UpdateGroupText()

@@ -17,7 +17,7 @@ local QUALITY_EXACT, QUALITY_PREFIX, QUALITY_SYNONYM, QUALITY_FUZZY = 1, 0.7, 0.
 -- (token -> word); no token has "#".
 local TRANSLATED, READABLE = "#translated", "#readable"
 local BONUS_PHRASE, BONUS_USABLE, BONUS_PLAYER, SCORE_ID = 5, 2, 2, 1000
--- With words and colour chips, the share of the word match in the order; colour closeness has the rest. Both are
+-- With words and color chips, the share of the word match in the order; color closeness has the rest. Both are
 -- taken relative to the best result.
 local TEXT_SHARE = 0.5
 
@@ -363,11 +363,11 @@ local function variantsFor(token, synonyms, vocabulary)
   return variants, from
 end
 
--- Minimum share (0-100) of an icon in a chip's colour band for the chip to match.
+-- Minimum share (0-100) of an icon in a chip's color band for the chip to match.
 local COLOR_MIN = 10
 Search.COLOR_MIN = COLOR_MIN
 
--- Colour names in display order (keys as in scripts/build_colors.py), with a hex shade for group swatches.
+-- Color names in display order (keys as in scripts/build_colors.py), with a hex shade for group swatches.
 Search.COLORS = {
   { key = "red", label = "Red", hex = "dd3333" },
   { key = "orange", label = "Orange", hex = "e67d1e" },
@@ -380,10 +380,10 @@ Search.COLORS = {
   { key = "brown", label = "Brown", hex = "a87848" },
   { key = "black", label = "Black", hex = "707070" },
   { key = "white", label = "White", hex = "ffffff" },
-  { key = "grey", label = "Grey", hex = "a0a0a0" },
+  { key = "gray", label = "Gray", hex = "a0a0a0" },
 }
 
--- Colour words that suggest a chip: each is one shade (hex), with other words that suggest it.
+-- Color words that suggest a chip: each is one shade (hex), with other words that suggest it.
 Search.COLOR_PRESETS = {
   { key = "red", label = "Red", hex = "dd3333", hints = { "blood", "scarlet" } },
   { key = "darkred", label = "Dark red", hex = "8b1e1e" },
@@ -421,12 +421,12 @@ Search.COLOR_PRESETS = {
   { key = "bronze", label = "Bronze", hex = "a8743a" },
   { key = "leather", label = "Leather", hex = "8b5a33" },
   { key = "black", label = "Black", hex = "262626", hints = { "obsidian", "onyx", "ebon" } },
-  { key = "grey", label = "Grey", hex = "a0a0a0", hints = { "gray", "steel", "stone" } },
+  { key = "gray", label = "Gray", hex = "a0a0a0", hints = { "grey", "steel", "stone" } },
   { key = "silver", label = "Silver", hex = "c0c0c8" },
   { key = "white", label = "White", hex = "ffffff", hints = { "pale", "ivory", "snow" } },
 }
 
--- The client language's extra colour words (Locales/*.lua), by preset key.
+-- The client language's extra color words (Locales/*.lua), by preset key.
 for _, preset in ipairs(Search.COLOR_PRESETS) do
   local extra = ns.LocaleColorHints and ns.LocaleColorHints[ns.locale]
   for _, hint in ipairs(extra and extra[preset.key] or {}) do
@@ -435,13 +435,13 @@ for _, preset in ipairs(Search.COLOR_PRESETS) do
   end
 end
 
--- A chip's colour band, in OKLab x100 as the data stores it: colours within HUE_WIDTH degrees of its hue, or, for a
--- chip under ACHROMATIC chroma (grey, black, white), colourless ones within LIGHT_WIDTH of its lightness.
+-- A chip's color band, in OKLab x100 as the data stores it: colors within HUE_WIDTH degrees of its hue, or, for a
+-- chip under ACHROMATIC chroma (gray, black, white), colorless ones within LIGHT_WIDTH of its lightness.
 local HUE_WIDTH, ACHROMATIC, LIGHT_WIDTH = 30, 5, 20
--- Inside the band, a colour counts fully at the chip's shade and down to CLOSE_FLOOR of its weight far from it.
+-- Inside the band, a color counts fully at the chip's shade and down to CLOSE_FLOOR of its weight far from it.
 local CLOSE_RADIUS, CLOSE_FLOOR = 12, 0.3
 
--- OKLab of an sRGB colour with channels from 0 to 1.
+-- OKLab of an sRGB color with channels from 0 to 1.
 local function oklab(r, g, b)
   local function linear(c)
     return c <= 0.04045 and c / 12.92 or ((c + 0.055) / 1.055) ^ 2.4
@@ -458,7 +458,7 @@ local function oklab(r, g, b)
     0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
 end
 
--- Reference shades (sRGB 0-255) per colour name; a dominant colour takes the name of the nearest one.
+-- Reference shades (sRGB 0-255) per color name; a dominant color takes the name of the nearest one.
 -- Must match COLORS in scripts/build_colors.py.
 local COLOR_REFS = {
   red = { { 205, 40, 40 }, { 120, 20, 25 } },
@@ -472,7 +472,7 @@ local COLOR_REFS = {
   brown = { { 115, 72, 40 }, { 150, 105, 65 } },
   black = { { 18, 18, 20 } },
   white = { { 235, 235, 230 } },
-  grey = { { 176, 176, 176 }, { 125, 125, 125 }, { 75, 75, 78 } },
+  gray = { { 176, 176, 176 }, { 125, 125, 125 }, { 75, 75, 78 } },
 }
 local refNames, refL, refA, refB = {}, {}, {}, {}
 for _, color in ipairs(Search.COLORS) do
@@ -484,7 +484,7 @@ for _, color in ipairs(Search.COLORS) do
 end
 local nameCache = {}
 
--- Colour name of an OKLab colour scaled like the data (x100): the name of the nearest reference shade.
+-- Color name of an OKLab color scaled like the data (x100): the name of the nearest reference shade.
 function Search.ColorName(L, a, b)
   local key = (L * 512 + a + 256) * 512 + b + 256
   local name = nameCache[key]
@@ -503,7 +503,7 @@ function Search.ColorName(L, a, b)
   return refNames[best]
 end
 
--- A picked sRGB colour (channels 0-1) as an OKLab target scaled like the data, for a colour chip.
+-- A picked sRGB color (channels 0-1) as an OKLab target scaled like the data, for a color chip.
 function Search.PickTarget(r, g, b)
   local L, a, bb = oklab(r, g, b)
   return { L * 100, a * 100, bb * 100 }
@@ -523,7 +523,7 @@ for _, preset in ipairs(Search.COLOR_PRESETS) do
   presetByKey[preset.key] = preset
   local c = Search.HexColor(preset.hex)
   local L, a, b = oklab(c.r, c.g, c.b)
-  -- The colour name its shade falls under, for icon counts.
+  -- The color name its shade falls under, for icon counts.
   preset.name = Search.ColorName(L * 100, a * 100, b * 100)
 end
 
@@ -542,7 +542,7 @@ local function chipBand(chip)
 end
 
 -- A chip's part of an icon: nil when under COLOR_MIN of the icon lies in its band, else the band's weight, each
--- colour counted less the farther it lies from the chip's shade.
+-- color counted less the farther it lies from the chip's shade.
 local function chipValue(index, row, band)
   local share, value, slots = 0, 0, index.colorSlots
   for k = 1, #slots do
@@ -568,7 +568,7 @@ local function chipValue(index, row, band)
   return share >= COLOR_MIN and value or nil, share
 end
 
--- Share (0-100) of a named colour in an index row: the weight of its dominant colours with that name.
+-- Share (0-100) of a named color in an index row: the weight of its dominant colors with that name.
 function Search.ColorShare(index, row, color)
   local share = 0
   for _, slot in ipairs(index.colorSlots) do
@@ -579,7 +579,7 @@ function Search.ColorShare(index, row, color)
   return share
 end
 
--- Colour part of a score, or nil when a chip misses: the chips' values averaged by their weights (default 1).
+-- Color part of a score, or nil when a chip misses: the chips' values averaged by their weights (default 1).
 -- `bands` are the chips' chipBand.
 local function chipScore(index, row, chips, bands)
   local total, weights = 0, 0
@@ -646,7 +646,7 @@ local function run(index, rows, query, opts, loose)
     elseif idQuery and ids[row] == idQuery then
       score = SCORE_ID
     elseif #tokens == 0 then
-      -- Colour chips alone keep every icon that has their colours.
+      -- Color chips alone keep every icon that has their colors.
       score = chips and 1 or 0
     else
       local text = texts[row]
@@ -693,7 +693,7 @@ local function run(index, rows, query, opts, loose)
   for i, row in ipairs(rows) do
     position[row] = i
   end
-  -- Order by colour alone without words; with words, by a blend of word match and colour.
+  -- Order by color alone without words; with words, by a blend of word match and color.
   local order = chips and closeness
   if chips and #tokens > 0 then
     local bestScore, bestClose = 0, 0
@@ -720,7 +720,7 @@ end
 -- Ranked rows matching every query token; when none do, a looser pass (any token, typos) and
 -- `isLoose = true`. Returns rows, isLoose, scores (row -> score).
 -- opts: synonyms (from BuildSynonyms), usable (key -> true), vocabulary (function returning a token list),
--- chips (colour chips, see chipScore: keeps icons with every chip's colour and ranks them by the weakest first).
+-- chips (color chips, see chipScore: keeps icons with every chip's color and ranks them by the weakest first).
 function Search.Find(index, rows, query, opts)
   opts = opts or {}
   local results, scores = run(index, rows, query, opts, false)
@@ -731,7 +731,7 @@ function Search.Find(index, rows, query, opts)
   return results, true, scores
 end
 
--- Colour for the words of a name that a search word finds (the game's gold).
+-- Color for the words of a name that a search word finds (the game's gold).
 local HIGHLIGHT = "|cffffd100"
 
 -- Each query token with the word typed for it and its variants (itself, synonyms).
@@ -753,7 +753,7 @@ end
 
 -- Why a row matches a query: per search word { word, via = the words it matched through, such as { "sword", "claymore" },
 -- if any, where = "name" | "tag" | "description" |
--- "category" }, then per colour chip { color = name, share = 0-100 }. Words that don't match are left out.
+-- "category" }, then per color chip { color = name, share = 0-100 }. Words that don't match are left out.
 -- opts: synonyms, chips (as for Search.Find).
 function Search.Explain(index, row, query, opts)
   opts = opts or {}
@@ -813,7 +813,7 @@ function Search.Explain(index, row, query, opts)
   return found
 end
 
--- `text` with the words a query's words find coloured, by the same stemming, prefix and synonym rules as Find.
+-- `text` with the words a query's words find colored, by the same stemming, prefix and synonym rules as Find.
 -- opts: synonyms.
 function Search.Highlight(text, query, opts)
   local terms = queryTerms(query, opts and opts.synonyms)
@@ -851,7 +851,7 @@ function Search.Highlight(text, query, opts)
         if stem == variant or normal == variant then
           return HIGHLIGHT .. word .. "|r"
         elseif startsWith(normal, variant, quality) or startsWith(stem, variant, quality) then
-          -- A prefix match colours only the typed part, where it lines up with the word's letters.
+          -- A prefix match colors only the typed part, where it lines up with the word's letters.
           for k = #variant, #word do
             if Search.Normalize(sub(word, 1, k)) == variant then
               return HIGHLIGHT .. sub(word, 1, k) .. "|r" .. sub(word, k + 1)

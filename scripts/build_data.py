@@ -458,13 +458,13 @@ def load_tags():
 
 def write(flavor, build_version, branch, icons, classes, item_classes, professions):
     color_columns, colors = load_colors()
-    # Colour names are derived in the game from l, a, b (Search.ColorName); only the numbers ship.
+    # Color names are derived in the game from l, a, b (Search.ColorName); only the numbers ship.
     keep = [k for k, name in enumerate(color_columns) if not name.startswith("name")]
     color_columns = [color_columns[k] for k in keep]
     colors = {file_id: [values[k] if k < len(values) else "" for k in keep] for file_id, values in colors.items()}
     ids = sorted(icons)
     columns = {name: [] for name in ("id", "refs", "text", "tags", "src", "cls", "cats", "profs", "spells")}
-    # Dominant colours: l, a, b (OKLab * 100) and w (weight, 0 for no colour).
+    # Dominant colors: l, a, b (OKLab * 100) and w (weight, 0 for no color).
     shares = {name: [] for name in color_columns}
     for file_id in ids:
         t = icons[file_id]

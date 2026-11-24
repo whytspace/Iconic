@@ -5,7 +5,7 @@
 # Difference matte. The plates aren't pure black/white — WoW renders the page
 # over a near-black backdrop — so sample each plate's corner for its true backdrop
 # (b0, b1) and use the general matte: alpha = 1 - (white - black)/(b1 - b0),
-# colour = (black - (1 - alpha)*b0) / alpha (un-premultiplied). Full screen size; callers crop.
+# color = (black - (1 - alpha)*b0) / alpha (un-premultiplied). Full screen size; callers crop.
 # Assuming pure black here leaves a ~9% white haze where there should be none.
 matte() { # black white out
   local b0 b1 low

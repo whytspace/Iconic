@@ -8,7 +8,7 @@
 # to the content, and writes one named PNG per view, in the order given.
 #
 # Usage:
-#   scripts/process-shots.sh                 # picker, colours, browser
+#   scripts/process-shots.sh                 # picker, colors, browser
 #   scripts/process-shots.sh browser         # just the newest pair
 #   SHOTS_DIR=/path scripts/process-shots.sh
 #
@@ -25,7 +25,7 @@ OUT_DIR="$REPO_ROOT/docs/images"
 if [ "$#" -gt 0 ]; then
   views=("$@")
 else
-  views=(picker colours browser)
+  views=(picker colors browser)
 fi
 
 command -v magick >/dev/null 2>&1 || {

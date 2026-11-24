@@ -22,7 +22,7 @@ local function after(delay, fn)
   end)
 end
 
--- Search, filters, grouping and colour chips for one view.
+-- Search, filters, grouping and color chips for one view.
 local function stage(view, query, filters, groupBy, chips)
   ns.db.groupBy = groupBy
   view.filters = filters
@@ -100,7 +100,7 @@ local VIEWS = {
     end,
   },
   {
-    name = "colours",
+    name = "colors",
     run = function(capture)
       ns.Browser:Open()
       local view = ns.Browser.view

@@ -85,7 +85,7 @@ local function category(key)
   return tonumber(class) * 256 + tonumber(subclass)
 end
 
--- OKLab (x100) of each colour's first reference shade in scripts/build_colors.py, for fake dominant colours.
+-- OKLab (x100) of each color's first reference shade in scripts/build_colors.py, for fake dominant colors.
 local COLOR_LAB = {
   red = { 55, 18, 9 },
   orange = { 69, 9, 13 },
@@ -98,13 +98,13 @@ local COLOR_LAB = {
   brown = { 44, 4, 6 },
   black = { 18, 0, 0 },
   white = { 94, 0, 1 },
-  grey = { 76, 0, 0 },
+  gray = { 76, 0, 0 },
 }
 M.COLOR_LAB = COLOR_LAB
 
 -- Builds a tiny IconicData table in the column format of scripts/build_data.py. Rows: { id, file,
 -- names = {...}, desc, tags = "wolf beast", src = "IS", cls = "4", cats = "2:7 4:1", profs = "185", spells = "1130",
--- colors = "green:62 red:18 35/-9/7:20" }; each colour becomes a dominant colour with that weight, at a named
+-- colors = "green:62 red:18 35/-9/7:20" }; each color becomes a dominant color with that weight, at a named
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
   fileIds = {}

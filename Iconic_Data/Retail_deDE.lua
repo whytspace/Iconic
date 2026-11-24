@@ -4067,7 +4067,6 @@ greatsword	zweihandschwert
 greaves	beinschienen
 green	grün
 grenade	granate
-grey	grau
 griffin	greif
 griffon	greif
 grilled	gegrillt

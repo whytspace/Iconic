@@ -56,7 +56,7 @@ function ns.CreateAboutPanel()
   local pitch = label(
     frame,
     "GameFontHighlightSmall",
-    L["Iconic replaces the icon grid wherever the game lets you choose an icon. Search by name, description or colour, filter by source and class, and find the icon you mean in seconds."],
+    L["Iconic replaces the icon grid wherever the game lets you choose an icon. Search by name, description or color, filter by source and class, and find the icon you mean in seconds."],
     meta,
     -22
   )

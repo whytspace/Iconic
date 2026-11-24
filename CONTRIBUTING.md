@@ -43,13 +43,13 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
-Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`, plus the picture tags from `tags`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`, plus the picture tags from `tags`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colors are four dominant-color slots, each an `l`, `a`, `b`, `w` and `name` column.
 
 `build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together.
 
-## Icon colours
+## Icon colors
 
-Colour data needs the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
+Color data needs the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
 
 - Default source: `/Applications/Games/World of Warcraft`. Elsewhere, set `WOW_DIR` to the install folder before `devc up`.
 - Docker Desktop must share that folder: Settings → Resources → File sharing.
@@ -59,23 +59,23 @@ Colour data needs the icon images. `scripts/extract_icons.py` reads them straigh
 devc python3 -I scripts/extract_icons.py
 ```
 
-`scripts/build_colors.py` then finds every icon's dominant colours into `.cache/icon_colors.csv`, and `build_data.py` merges that into the data files. `build_data.py` stops when that file is missing:
+`scripts/build_colors.py` then finds every icon's dominant colors into `.cache/icon_colors.csv`, and `build_data.py` merges that into the data files. `build_data.py` stops when that file is missing:
 
 ```sh
 devc python3 -I scripts/build_colors.py --sheets
 devc python3 scripts/build_data.py
 ```
 
-Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colours, each with its weight, the part of the icon it covers; pixels near the centre and saturated pixels weigh more. The data ships only their OKLab values and weights. `--sheets` writes `.cache/colors/<colour>.png` with the icons that have the most of each named colour, for checking the result by eye.
+Pixels are converted to OKLab and clustered (weighted k-means) into up to `MAX_COLORS` dominant colors, each with its weight, the part of the icon it covers; pixels near the center and saturated pixels weigh more. The data ships only their OKLab values and weights. `--sheets` writes `.cache/colors/<color>.png` with the icons that have the most of each named color, for checking the result by eye.
 
-In search, a colour chip is one shade with a weight (`chipScore` in `Search.lua`):
+In search, a color chip is one shade with a weight (`chipScore` in `Search.lua`):
 
-- An icon matches a chip when at least `COLOR_MIN` of it lies in the chip's band: within `HUE_WIDTH` degrees of its hue, or, for a colourless chip (black, white, grey), within `LIGHT_WIDTH` of its lightness.
-- Inside the band, colours count less the farther they lie from the chip's shade (`CLOSE_RADIUS`, down to `CLOSE_FLOOR`).
-- Icons rank by the chips' values averaged by their weights (the slider under the colour picker).
-- Colour words are presets: one shade each (`Search.COLOR_PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
+- An icon matches a chip when at least `COLOR_MIN` of it lies in the chip's band: within `HUE_WIDTH` degrees of its hue, or, for a colorless chip (black, white, gray), within `LIGHT_WIDTH` of its lightness.
+- Inside the band, colors count less the farther they lie from the chip's shade (`CLOSE_RADIUS`, down to `CLOSE_FLOOR`).
+- Icons rank by the chips' values averaged by their weights (the slider under the color picker).
+- Color words are presets: one shade each (`Search.COLOR_PRESETS`, with extra words in `hints` and `ns.LocaleColorHints`). Two-word names such as "dark green" are suggested when both words are typed.
 
-Grouping by colour names each dominant colour after the nearest reference shade (`COLOR_REFS` in `Search.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid colour covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest colour (`colorGroup` in `Catalog.lua`).
+Grouping by color names each dominant color after the nearest reference shade (`COLOR_REFS` in `Search.lua`, mirrored in `build_colors.py` for the sheets), then puts each icon under its strongest vivid color covering `GROUP_MIN_WEIGHT`, else such a brown, else its strongest color (`colorGroup` in `Catalog.lua`).
 
 ## Icon tags
 
@@ -108,7 +108,7 @@ devc python3 scripts/tag_icons.py merge
 
 German (`deDE`) is the first translation; others follow the same steps:
 
-- Interface texts: `Locales/<locale>.lua`, loaded from `Iconic.toc`. `spec/locale_spec.lua` fails while a text the code uses has no translation. Extra colour words go into `ns.LocaleColorHints`.
+- Interface texts: `Locales/<locale>.lua`, loaded from `Iconic.toc`. `spec/locale_spec.lua` fails while a text the code uses has no translation. Extra color words go into `ns.LocaleColorHints`.
 - Icon data: add the locale to `LOCALES` in `scripts/build_data.py` and its two files to `Iconic_Data/Iconic_Data.toc` with `[AllowLoadTextLocale <locale>]`, so only that client loads them.
 - Search words: `scripts/search_words_<locale>.json` gives each picture tag and synonym word one or more single-word translations. Add the locale to the list in `spec/locale_spec.lua`, which fails while a tag or synonym has none, so new ones need translating before the checks pass.
 
@@ -132,7 +132,7 @@ Add a group only when a player would plausibly search one word to find the other
 
 ## Assets
 
-`Assets/swatch.tga`, the shaded sphere behind colour swatches, and `Assets/colorwheel.tga`, the colour picker button, are generated: `devc python3 -I scripts/build_swatch.py`.
+`Assets/swatch.tga`, the shaded sphere behind color swatches, and `Assets/colorwheel.tga`, the color picker button, are generated: `devc python3 -I scripts/build_swatch.py`.
 
 The add-on icon is `Assets/logo.svg`. WoW loads only uncompressed, power-of-two, 32-bit RGBA TGA files, referenced without the extension. The SVG uses filters, so render it to `Assets/logo.png` in a browser (e.g. headless Chrome) and convert that with ImageMagick:
 
@@ -157,7 +157,7 @@ The script runs on the host and reads the retail Screenshots folder; set `SHOTS_
 
 ### Demo animation
 
-`docs/images/demo.webp` comes from `/iconic shot demo`. It opens the character window's equipment sets, starts a new set (never saved), and plays the animation's steps letter by letter (steps and display times in `UI/Demo.lua`). After every step it captures a black+white pair like `/iconic shot tour`, keeping the colour picker in the shot, and stores each frame's display time in `IconicDB.demoFrames`. That takes a few minutes; keep the mouse off the windows. `/iconic shot stop` ends it early. Then `/reload`, so the game writes the saved variables, and:
+`docs/images/demo.webp` comes from `/iconic shot demo`. It opens the character window's equipment sets, starts a new set (never saved), and plays the animation's steps letter by letter (steps and display times in `UI/Demo.lua`). After every step it captures a black+white pair like `/iconic shot tour`, keeping the color picker in the shot, and stores each frame's display time in `IconicDB.demoFrames`. That takes a few minutes; keep the mouse off the windows. `/iconic shot stop` ends it early. Then `/reload`, so the game writes the saved variables, and:
 
 ```sh
 scripts/make-demo.sh
@@ -189,7 +189,7 @@ After a patch to WoW Forever or retail:
 
    An upcoming patch's number that isn't installed yet is listed on [wago.tools/builds](https://wago.tools/builds).
 2. Let the launcher finish patching, then extract the icons: `devc python3 -I scripts/extract_icons.py`.
-3. Rebuild the colours: `devc python3 -I scripts/build_colors.py --sheets`.
+3. Rebuild the colors: `devc python3 -I scripts/build_colors.py --sheets`.
 4. Rebuild the data with fresh tables: `devc python3 scripts/build_data.py --refresh`.
 5. Run the checks, `/reload` in both clients and open an icon picker.
 6. Commit and cut a release (see Releases).

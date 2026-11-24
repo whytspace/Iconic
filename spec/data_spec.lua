@@ -112,7 +112,7 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
     end)
 
-    it("ranks icons with much of a chip's colour first", function()
+    it("ranks icons with much of a chip's color first", function()
       local green = ns.Search.PickTarget(0x4c / 255, 0xbb / 255, 0x44 / 255)
       local results = ns.Search.Find(data.index, rows, "", { chips = { { target = green } } })
       assert.is_true(#results > 100)

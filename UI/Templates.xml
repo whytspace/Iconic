@@ -12,7 +12,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="OVERLAY">
-				<!-- Centred in a 19px slot at the left, so smaller swatches keep the text aligned. -->
+				<!-- Centered in a 19px slot at the left, so smaller swatches keep the text aligned. -->
 				<Texture parentKey="Icon">
 					<Size x="19" y="19"/>
 					<Anchors>

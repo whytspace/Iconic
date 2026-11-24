@@ -156,30 +156,30 @@ describe("Catalog", function()
     assert.are.equal(1, counts.profession[185])
   end)
 
-  describe("colours", function()
+  describe("colors", function()
     before_each(function()
       data = Catalog.Parse(addon.fakeData(ns, {
         { "1", "a", colors = "green:40 red:22" },
         { "2", "b", colors = "green:70" },
         { "3", "c", colors = "red:65" },
-        { "4", "d", colors = "grey:15" },
+        { "4", "d", colors = "gray:15" },
       }))
       rows = Catalog.Rows(data, { 1, 2, 3, 4 })
     end)
 
-    it("groups each icon under its strongest vivid colour, most of it first", function()
+    it("groups each icon under its strongest vivid color, most of it first", function()
       local titles = {}
       for i, section in ipairs(Catalog.Sections(data, rows, "color")) do
         titles[i] = section.title .. ":" .. table.concat(keys(section.rows), ",")
       end
-      assert.are.same({ "Red:3", "Green:2,1", "Grey:4" }, titles)
+      assert.are.same({ "Red:3", "Green:2,1", "Gray:4" }, titles)
     end)
 
-    it("ignores colour filters", function()
+    it("ignores color filters", function()
       assert.are.same({ 1, 2, 3, 4 }, keys(Catalog.Filter(data.index, rows, { color = { red = true } })))
     end)
 
-    it("suggests a colour for its name and aliases", function()
+    it("suggests a color for its name and aliases", function()
       for word, preset in pairs({ blood = "red", crimson = "crimson" }) do
         local suggestion = Catalog.Suggest(data, word, Catalog.Counts(data.index, rows))[1]
         assert.are.equal("color", suggestion.dim)
@@ -188,17 +188,17 @@ describe("Catalog", function()
       end
     end)
 
-    it("suggests a two-word colour for both words", function()
+    it("suggests a two-word color for both words", function()
       local suggestion = Catalog.Suggest(data, "sword dark green", Catalog.Counts(data.index, rows))[1]
       assert.are.equal("darkgreen", suggestion.value)
       assert.are.same({ "dark", "green" }, suggestion.words)
     end)
 
-    it("counts icons per colour", function()
+    it("counts icons per color", function()
       local counts = Catalog.Counts(data.index, rows)
       assert.are.equal(2, counts.color.green)
       assert.are.equal(2, counts.color.red)
-      assert.are.equal(1, counts.color.grey)
+      assert.are.equal(1, counts.color.gray)
     end)
   end)
 

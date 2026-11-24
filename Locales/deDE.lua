@@ -40,16 +40,16 @@ ns.Locales.deDE = {
   ["+%d more names"] = "+%d weitere Namen",
   ["Gold"] = "Gold",
   ["Green"] = "Grün",
-  ["Grey"] = "Grau",
+  ["Gray"] = "Grau",
   ["Group by: %s"] = "Gruppieren: %s",
-  ["How much this colour counts in the colour search."] = "Wie stark diese Farbe in der Farbsuche zählt.",
+  ["How much this color counts in the color search."] = "Wie stark diese Farbe in der Farbsuche zählt.",
   ["Icon ID"] = "Symbol-ID",
   ["Icon ID in game tooltips"] = "Symbol-ID in Tooltips im Spiel",
   ["Icon ID in the icon picker"] = "Symbol-ID in der Symbolauswahl",
   ["All names in the icon picker"] = "Alle Namen in der Auswahl",
   ["Icon ID: %d"] = "Symbol-ID: %d",
   ["Iconic"] = "Iconic",
-  ["Iconic replaces the icon grid wherever the game lets you choose an icon. Search by name, description or colour, filter by source and class, and find the icon you mean in seconds."] = "Iconic ersetzt die Symbol-Liste überall, wo du im Spiel ein Symbol auswählst. Suche nach Name, Beschreibung oder Farbe, filtere nach Herkunft und Klasse und finde das gesuchte Symbol in Sekunden.",
+  ["Iconic replaces the icon grid wherever the game lets you choose an icon. Search by name, description or color, filter by source and class, and find the icon you mean in seconds."] = "Iconic ersetzt die Symbol-Liste überall, wo du im Spiel ein Symbol auswählst. Suche nach Name, Beschreibung oder Farbe, filtere nach Herkunft und Klasse und finde das gesuchte Symbol in Sekunden.",
   ["Icons that fit what you're editing, such as the items of an equipment set, appear first."] = "Symbole, die zu dem passen, was du bearbeitest, etwa die Gegenstände eines Ausrüstungssets, erscheinen zuerst.",
   ["Icons you picked recently appear first."] = "Kürzlich gewählte Symbole erscheinen zuerst.",
   ["Item category"] = "Gegenstandskategorie",
@@ -64,7 +64,7 @@ ns.Locales.deDE = {
   ["Magenta"] = "Magenta",
   ["Mounts"] = "Reittiere",
   ["Never"] = "Nie",
-  ["No icons have these colours."] = "Keine Symbole haben diese Farben.",
+  ["No icons have these colors."] = "Keine Symbole haben diese Farben.",
   ['No icons match "%s".'] = 'Keine Symbole passen zu "%s".',
   ["No icons match these filters."] = "Keine Symbole passen zu diesen Filtern.",
   ["None"] = "Keine",
@@ -85,7 +85,7 @@ ns.Locales.deDE = {
   ["Rust"] = "Rost",
   ["Sapphire"] = "Saphir",
   ["Screenshot failed: %s"] = "Screenshot fehlgeschlagen: %s",
-  ["Search by colour"] = "Nach Farbe suchen",
+  ["Search by color"] = "Nach Farbe suchen",
   ["Search…"] = "Suchen…",
   ["Settings"] = "Einstellungen",
   ["Show recently used icons"] = "Zuletzt verwendet anzeigen",
@@ -110,7 +110,7 @@ ns.Locales.deDE = {
   ["Yellow"] = "Gelb",
 }
 
--- Extra words that suggest a colour chip, by preset key (Search.COLOR_PRESETS).
+-- Extra words that suggest a color chip, by preset key (Search.COLOR_PRESETS).
 ns.LocaleColorHints = ns.LocaleColorHints or {}
 ns.LocaleColorHints.deDE = {
   red = { "blut", "scharlach" },
@@ -121,6 +121,6 @@ ns.LocaleColorHints.deDE = {
   darkpurple = { "leere" },
   brown = { "holz" },
   black = { "obsidian", "onyx" },
-  grey = { "stahl", "stein" },
+  gray = { "stahl", "stein" },
   white = { "blass", "elfenbein", "schnee" },
 }

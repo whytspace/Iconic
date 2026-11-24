@@ -7,7 +7,7 @@ Tag what the picture depicts. Icons are reused for many meanings, so what it loo
 For each icon give a list of 2-7 lowercase single English words a player might type to find it:
 - first the subject (what it is: "sword", "anchor", "belt", "jellyfish"), then other visible things: further objects, creature type, material, element, notable style ("glowing", "frost", "leather", "chains").
 - Words from the file name are fine when they describe what is visible.
-- Leave out: synonyms or near-synonyms of words already in the list ("feather" → no "plume", "quill"; a separate synonym table handles those); category or filler words that say nothing about the look ("trinket", "talisman", "relic", "jewelry", "offhand", "misc", "token", "quest", "ability", "spell", "icon", "inv"); expansion, zone, faction or lore names you can't see; colour words (colours are handled separately).
+- Leave out: synonyms or near-synonyms of words already in the list ("feather" → no "plume", "quill"; a separate synonym table handles those); category or filler words that say nothing about the look ("trinket", "talisman", "relic", "jewelry", "offhand", "misc", "token", "quest", "ability", "spell", "icon", "inv"); expansion, zone, faction or lore names you can't see; color words (colors are handled separately).
 - Fewer, distinct words are better than many overlapping ones.
 Single words only, no phrases.
 

@@ -50,7 +50,7 @@ describe("Search", function()
     assert.are.equal("hunters mark", Search.Normalize("Hunter's  MARK!"))
   end)
 
-  it("uses the client language's texts and colour words", function()
+  it("uses the client language's texts and color words", function()
     local german = addon.load({
       GetLocale = function()
         return "deDE"
@@ -175,7 +175,7 @@ describe("Search", function()
     end)
   end)
 
-  describe("colours", function()
+  describe("colors", function()
     local function chip(name, weight)
       return { target = addon.COLOR_LAB[name], weight = weight }
     end
@@ -190,7 +190,7 @@ describe("Search", function()
         { "2", "inv_misc_herb_01", names = { "Dark Herb" }, colors = "35/-9/7:60" },
         { "3", "inv_misc_herb_02", names = { "Light Herb" }, colors = "85/-14/12:50" },
         { "4", "inv_misc_gem_ruby_01", names = { "Ruby" }, colors = "red:65" },
-        { "5", "inv_misc_gem_green_01", names = { "Green Gem" }, colors = "grey:60" },
+        { "5", "inv_misc_gem_green_01", names = { "Green Gem" }, colors = "gray:60" },
         { "6", "inv_misc_flower_01", names = { "Fireflower" }, colors = "red:60 green:12" },
         { "7", "inv_misc_flower_02", names = { "Peacebloom" }, colors = "red:20 green:60" },
         { "8", "inv_misc_leaf_01", names = { "Leaf" }, colors = "green:8 brown:80" },
@@ -199,9 +199,9 @@ describe("Search", function()
       rows = Catalog.Rows(data, { 1, 2, 3, 4, 5, 6, 7, 8, 9 })
     end)
 
-    it("names colours by the nearest reference shade", function()
+    it("names colors by the nearest reference shade", function()
       assert.are.equal("green", Search.ColorName(65, -15, 11))
-      assert.are.equal("grey", Search.ColorName(76, 0, 0))
+      assert.are.equal("gray", Search.ColorName(76, 0, 0))
       assert.are.equal("green", data.index.colorSlots[1].name[data.index.byKey[2]])
     end)
 
@@ -209,7 +209,7 @@ describe("Search", function()
       assert.are.same({ 1, 7, 3, 2, 6 }, keys((find("", chips(chip("green"))))))
     end)
 
-    it("matches colourless chips by lightness", function()
+    it("matches colorless chips by lightness", function()
       assert.are.same({ 9 }, keys((find("", chips(chip("black"))))))
     end)
 
@@ -218,7 +218,7 @@ describe("Search", function()
       assert.are.same({ 6, 7 }, keys((find("", chips(chip("red"), chip("green", 0.3))))))
     end)
 
-    it("weighs word matches against colour", function()
+    it("weighs word matches against color", function()
       data = Catalog.Parse(addon.fakeData(ns, {
         { "1", "inv_shield_01", names = { "Emerald Shield" }, colors = "green:40" },
         { "2", "inv_chest_01", names = { "Guardian Plate" }, desc = "sturdy as a shield", colors = "green:70" },
@@ -228,7 +228,7 @@ describe("Search", function()
       assert.are.same({ 2, 1 }, keys((find("", chips(chip("green"))))))
     end)
 
-    it("treats a typed colour word as text", function()
+    it("treats a typed color word as text", function()
       assert.are.same({ 5 }, keys((find("green"))))
     end)
 
@@ -238,7 +238,7 @@ describe("Search", function()
       assert.are.same({}, keys((find("coal", chips(chip("green"))))))
     end)
 
-    it("converts a picked colour to OKLab scaled like the data", function()
+    it("converts a picked color to OKLab scaled like the data", function()
       local red = Search.PickTarget(205 / 255, 40 / 255, 40 / 255)
       for i = 1, 3 do
         assert.is_true(math.abs(red[i] - addon.COLOR_LAB.red[i]) < 0.5)
@@ -299,12 +299,12 @@ describe("Search", function()
       assert.are.equal("iris", Search.Readable(Search.BuildSynonyms({}, { schwertlilie = "iris" }), "iri"))
     end)
 
-    it("gives a colour chip's share of the icon", function()
+    it("gives a color chip's share of the icon", function()
       local chip = { target = addon.COLOR_LAB.purple, preset = "purple" }
       assert.are.same({ { color = "purple", share = 34 } }, Search.Explain(index, 1, "", { chips = { chip } }))
     end)
 
-    it("colours the words of a name that a search word finds", function()
+    it("colors the words of a name that a search word finds", function()
       local gold = "|cffffd100"
       assert.are.equal("Kite " .. gold .. "Shield|r", Search.Highlight("Kite Shield", "shields"))
       assert.are.equal(gold .. "Shield|rwall", Search.Highlight("Shieldwall", "shield"))
@@ -314,7 +314,7 @@ describe("Search", function()
       assert.are.equal("Blessing of " .. gold .. "Prot|rection", Search.Highlight("Blessing of Protection", "prot"))
     end)
 
-    it("colours a translated name word whose English word a search word finds", function()
+    it("colors a translated name word whose English word a search word finds", function()
       local translated = Search.BuildSynonyms(ns.SYNONYMS, { schwert = "sword", klinge = "blade" })
       assert.are.equal(
         "Fanatische |cffffd100Klinge|r",

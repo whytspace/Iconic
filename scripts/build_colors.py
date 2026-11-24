@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Find every icon's dominant colours into .cache/icon_colors.csv, read by build_data.py.
+"""Find every icon's dominant colors into .cache/icon_colors.csv, read by build_data.py.
 
-Each icon gets up to MAX_COLORS colours in OKLab with their weight (the part of the icon they cover) and the
-name of the nearest reference colour. Pixels near the centre and saturated pixels weigh more.
+Each icon gets up to MAX_COLORS colors in OKLab with their weight (the part of the icon they cover) and the
+name of the nearest reference color. Pixels near the center and saturated pixels weigh more.
 
 Usage:
-  python3 scripts/build_colors.py             analyse the icons in .cache/icons (from extract_icons.py)
-  python3 scripts/build_colors.py --sheets    also write .cache/colors/<colour>.png contact sheets
+  python3 scripts/build_colors.py             analyze the icons in .cache/icons (from extract_icons.py)
+  python3 scripts/build_colors.py --sheets    also write .cache/colors/<color>.png contact sheets
 """
 
 import argparse
@@ -27,14 +27,14 @@ SHEET_DIR = os.path.join(ROOT, ".cache", "colors")
 OUT = os.path.join(ROOT, ".cache", "icon_colors.csv")
 
 BRANCHES = ["wowf", "wow"]
-SAMPLE = 28  # icons are analysed at this size, after cropping the frame
+SAMPLE = 28  # icons are analyzed at this size, after cropping the frame
 CROP = 4  # pixels of the 64px icon frame to ignore on each side
 MAX_COLORS = 4
 ITERATIONS = 10  # k-means rounds
-MERGE = 0.05  # OKLab distance under which two found colours become one
-MIN_WEIGHT = 0.05  # smaller colours are dropped
+MERGE = 0.05  # OKLab distance under which two found colors become one
+MIN_WEIGHT = 0.05  # smaller colors are dropped
 
-# Reference colours per name, in sRGB, for the contact sheets; must match COLOR_REFS in Search.lua.
+# Reference colors per name, in sRGB, for the contact sheets; must match COLOR_REFS in Search.lua.
 COLORS = {
     "red": [(205, 40, 40), (120, 20, 25)],
     "orange": [(230, 125, 30), (170, 85, 25)],
@@ -47,7 +47,7 @@ COLORS = {
     "brown": [(115, 72, 40), (150, 105, 65)],
     "black": [(18, 18, 20)],
     "white": [(235, 235, 230)],
-    "grey": [(176, 176, 176), (125, 125, 125), (75, 75, 78)],
+    "gray": [(176, 176, 176), (125, 125, 125), (75, 75, 78)],
 }
 
 
@@ -75,7 +75,7 @@ def srgb_to_oklab(r, g, b):
 PROTOTYPES = [(name, srgb_to_oklab(*rgb)) for name, shades in COLORS.items() for rgb in shades]
 
 
-def _centre_weights():
+def _center_weights():
     half = (SAMPLE - 1) / 2
     weights = []
     for y in range(SAMPLE):
@@ -85,13 +85,13 @@ def _centre_weights():
     return weights
 
 
-# Gaussian falloff from the centre, in image.getdata() order.
-CENTRE_WEIGHTS = _centre_weights()
+# Gaussian falloff from the center, in image.getdata() order.
+CENTER_WEIGHTS = _center_weights()
 
 
 @functools.lru_cache(maxsize=None)
 def pixel_lab(r5, g5, b5):
-    """OKLab of a 5-bit-per-channel colour (cached: there are only 32768)."""
+    """OKLab of a 5-bit-per-channel color (cached: there are only 32768)."""
     return srgb_to_oklab(r5 * 8 + 4, g5 * 8 + 4, b5 * 8 + 4)
 
 
@@ -135,8 +135,8 @@ def distance2(p, q):
     return (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2
 
 
-def nearest(point, centres):
-    return min(range(len(centres)), key=lambda k: distance2(point, centres[k]))
+def nearest(point, centers):
+    return min(range(len(centers)), key=lambda k: distance2(point, centers[k]))
 
 
 def dominant_colors(file_id):
@@ -146,50 +146,50 @@ def dominant_colors(file_id):
     crop = round(CROP * width / 64)
     image = image.crop((crop, crop, width - crop, height - crop)).resize((SAMPLE, SAMPLE), Image.BOX)
     histogram = {}
-    for (r, g, b, a), centre in zip(image.getdata(), CENTRE_WEIGHTS):
+    for (r, g, b, a), center in zip(image.getdata(), CENTER_WEIGHTS):
         if a < 32:
             continue
         lab = pixel_lab(r >> 3, g >> 3, b >> 3)
         chroma = math.hypot(lab[1], lab[2])
-        weight = centre * (0.4 + 0.6 * min(chroma / 0.15, 1.0)) * (a / 255)
+        weight = center * (0.4 + 0.6 * min(chroma / 0.15, 1.0)) * (a / 255)
         histogram[lab] = histogram.get(lab, 0.0) + weight
     points = list(histogram.items())
     total = sum(w for _, w in points)
     if not total:
         return []
-    # Start from the heaviest colour, then repeatedly the one farthest from the chosen ones, weighted by mass.
-    centres = [max(points, key=lambda pw: pw[1])[0]]
-    while len(centres) < min(MAX_COLORS, len(points)):
-        centres.append(max(points, key=lambda pw: pw[1] * min(distance2(pw[0], c) for c in centres))[0])
+    # Start from the heaviest color, then repeatedly the one farthest from the chosen ones, weighted by mass.
+    centers = [max(points, key=lambda pw: pw[1])[0]]
+    while len(centers) < min(MAX_COLORS, len(points)):
+        centers.append(max(points, key=lambda pw: pw[1] * min(distance2(pw[0], c) for c in centers))[0])
     for _ in range(ITERATIONS):
-        sums = [[0.0, 0.0, 0.0, 0.0] for _ in centres]
+        sums = [[0.0, 0.0, 0.0, 0.0] for _ in centers]
         for point, weight in points:
-            s = sums[nearest(point, centres)]
+            s = sums[nearest(point, centers)]
             s[0] += point[0] * weight
             s[1] += point[1] * weight
             s[2] += point[2] * weight
             s[3] += weight
-        centres = [(s[0] / s[3], s[1] / s[3], s[2] / s[3]) if s[3] else c for s, c in zip(sums, centres)]
-    weights = [0.0] * len(centres)
+        centers = [(s[0] / s[3], s[1] / s[3], s[2] / s[3]) if s[3] else c for s, c in zip(sums, centers)]
+    weights = [0.0] * len(centers)
     for point, weight in points:
-        weights[nearest(point, centres)] += weight
-    found = sorted(([c, w / total] for c, w in zip(centres, weights) if w > 0), key=lambda cw: -cw[1])
+        weights[nearest(point, centers)] += weight
+    found = sorted(([c, w / total] for c, w in zip(centers, weights) if w > 0), key=lambda cw: -cw[1])
     merged = []
-    for centre, weight in found:
+    for center, weight in found:
         for other in merged:
-            if distance2(centre, other[0]) < MERGE**2:
+            if distance2(center, other[0]) < MERGE**2:
                 both = other[1] + weight
-                other[0] = tuple((other[0][j] * other[1] + centre[j] * weight) / both for j in range(3))
+                other[0] = tuple((other[0][j] * other[1] + center[j] * weight) / both for j in range(3))
                 other[1] = both
                 break
         else:
-            merged.append([centre, weight])
+            merged.append([center, weight])
     kept = [m for m in merged if m[1] >= MIN_WEIGHT]
     kept_total = sum(w for _, w in kept)
     return [(c, w / kept_total) for c, w in kept]
 
 
-def analyse(file_id):
+def analyze(file_id):
     try:
         return file_id, dominant_colors(file_id)
     except (OSError, ValueError, NotImplementedError) as err:
@@ -197,17 +197,17 @@ def analyse(file_id):
         return file_id, []
 
 
-def analyse_all(ids):
+def analyze_all(ids):
     present = [i for i in ids if os.path.exists(icon_path(i))]
     if len(present) < len(ids):
         log(f"{len(ids) - len(present)} icons have no image; run scripts/extract_icons.py")
     colors = {}
     with multiprocessing.Pool() as pool:
-        for n, (file_id, found) in enumerate(pool.imap(analyse, present, chunksize=64), 1):
+        for n, (file_id, found) in enumerate(pool.imap(analyze, present, chunksize=64), 1):
             if found:
                 colors[file_id] = found
             if n % 5000 == 0:
-                log(f"  analysed {n}/{len(present)}")
+                log(f"  analyzed {n}/{len(present)}")
     return colors
 
 
@@ -227,7 +227,7 @@ def write_csv(colors):
 
 
 def write_sheets(colors, per_sheet=96, columns=12):
-    """Per reference colour name, the icons with the most weight in colours of that name."""
+    """Per reference color name, the icons with the most weight in colors of that name."""
     os.makedirs(SHEET_DIR, exist_ok=True)
     shares = {}
     for file_id, found in colors.items():
@@ -247,9 +247,9 @@ def write_sheets(colors, per_sheet=96, columns=12):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sheets", action="store_true", help="write a contact sheet of the top icons per colour")
+    parser.add_argument("--sheets", action="store_true", help="write a contact sheet of the top icons per color")
     args = parser.parse_args()
-    colors = analyse_all(icon_ids())
+    colors = analyze_all(icon_ids())
     write_csv(colors)
     if args.sheets:
         write_sheets(colors)

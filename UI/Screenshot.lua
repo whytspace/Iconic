@@ -5,7 +5,7 @@ local L = ns.L
 local Shot = {}
 ns.Screenshot = Shot
 
--- Wait for a recolour to render; the client drops a second screenshot taken too soon after the first.
+-- Wait for a recolor to render; the client drops a second screenshot taken too soon after the first.
 local RENDER_DELAY = 0.5
 local SHOT_GAP = 1.5
 

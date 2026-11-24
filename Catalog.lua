@@ -83,8 +83,8 @@ end
 
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file (only for textures
 -- without data), refs (names, "a|b"), text (padded search text), tags (picture tags, "a b"), src (source bits), cls (class bits), cats (category numbers),
--- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant colour, the
--- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest colour key).
+-- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant color, the
+-- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest color key).
 function Catalog.NewIndex()
   return {
     count = 0,
@@ -437,7 +437,7 @@ function Catalog.Counts(index, rows)
   return counts
 end
 
--- Counts per filter value as if that value were also ticked: each group's counts honour every other
+-- Counts per filter value as if that value were also ticked: each group's counts honor every other
 -- group's active filters (and the usable filter) but not its own, since values in one group combine with OR.
 function Catalog.FacetCounts(index, rows, filters, usableSet)
   local active = {}
@@ -492,12 +492,12 @@ function Catalog.ActiveFilterCount(filters)
   return count
 end
 
-local DULL = { grey = true, black = true, white = true, brown = true }
--- Minimum weight (0-100) of a colour that names a group, and OKLab chroma (x100) a vivid colour needs.
+local DULL = { gray = true, black = true, white = true, brown = true }
+-- Minimum weight (0-100) of a color that names a group, and OKLab chroma (x100) a vivid color needs.
 local GROUP_MIN_WEIGHT, VIVID_CHROMA = 10, 4
 
--- Colour group of a row and the weight of that colour: its strongest vivid colour covering GROUP_MIN_WEIGHT, else
--- such a brown, else its strongest colour of any kind.
+-- Color group of a row and the weight of that color: its strongest vivid color covering GROUP_MIN_WEIGHT, else
+-- such a brown, else its strongest color of any kind.
 local function colorGroup(index, row)
   local vivid, vividWeight, brownWeight, strongest, strongestWeight
   for _, slot in ipairs(index.colorSlots) do
@@ -640,7 +640,7 @@ function Catalog.Sections(data, rows, groupBy, recentRows, suggestedRows)
   for _, value in ipairs(values) do
     local list = byValue[value]
     if groupBy == "color" then
-      -- Most of the group's colour first; equal weights keep the incoming order.
+      -- Most of the group's color first; equal weights keep the incoming order.
       local position, share = {}, {}
       for i, row in ipairs(list) do
         position[row] = i
@@ -684,7 +684,7 @@ local function filterCandidates(data)
   end
   for _, preset in ipairs(ns.Search.COLOR_PRESETS) do
     add("color", preset.key, L[preset.label], L["Color"], preset.hints)
-    -- Icons are counted per colour name; a preset counts those of the name its shade falls under.
+    -- Icons are counted per color name; a preset counts those of the name its shade falls under.
     list[#list].countKey = preset.name
   end
   return list

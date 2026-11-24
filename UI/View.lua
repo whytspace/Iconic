@@ -8,7 +8,7 @@ local MIN_ICON_SIZE, ICON_GAP, ROW_INSET = 34, 4, 8
 local BAND_HEIGHT, HEADER_GAP, SECTION_GAP, TOOLBAR_HEIGHT = 26, 8, 8, 40
 local HEADER_HEIGHT = BAND_HEIGHT + HEADER_GAP + 2
 local SEARCH_DELAY = 0.2
--- While a colour is dragged in the picker, the grid follows at most this often.
+-- While a color is dragged in the picker, the grid follows at most this often.
 local PICK_INTERVAL = 0.1
 local MIN_QUERY = 2
 local MAX_SUGGESTED_ROWS = 3
@@ -119,9 +119,9 @@ local function sortedKeys(map, numericOnly)
 end
 
 local MENU_ICON = 16
--- Shaded grey sphere (scripts/build_swatch.py), tinted per colour.
+-- Shaded gray sphere (scripts/build_swatch.py), tinted per color.
 local SWATCH = "Interface\\AddOns\\Iconic\\Assets\\swatch"
--- Hue wheel on the same sphere (scripts/build_swatch.py), for the button that adds a colour chip.
+-- Hue wheel on the same sphere (scripts/build_swatch.py), for the button that adds a color chip.
 local COLOR_WHEEL = "Interface\\AddOns\\Iconic\\Assets\\colorwheel"
 local SWATCH_ROW_SIZE, SUGGESTION_ICON_SIZE = 12, 19
 
@@ -143,16 +143,16 @@ end
 
 local MENU_ROW_HEIGHT, MENU_CHECK_WIDTH, MENU_COUNT_GAP, MENU_ARROW_WIDTH = 20, 22, 18, 22
 
-local function greyed(text)
+local function grayed(text)
   return "|cff808080" .. text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") .. "|r"
 end
 
--- Shows a right-aligned count in a menu entry (in front of the submenu arrow when there is one) and greys
+-- Shows a right-aligned count in a menu entry (in front of the submenu arrow when there is one) and grays
 -- the label when the count is zero. Runs on every menu refresh, so it reads the count live.
 local function addCount(description, label, getCount, isSelected, hasSubmenu)
   description:AddInitializer(function(button)
     local count = getCount()
-    button.fontString:SetText((count == 0 and not isSelected()) and greyed(label) or label)
+    button.fontString:SetText((count == 0 and not isSelected()) and grayed(label) or label)
     local text = button:AttachFontString()
     text:SetFontObject("GameFontDisableSmall")
     text:SetHeight(MENU_ROW_HEIGHT)
@@ -226,7 +226,7 @@ function View:SetupFilterMenu()
   self.filter:SetupMenu(function(_, root)
     local data = view.data
     -- Totals decide which values exist at all; facet counts (under the other active filters and the search)
-    -- are shown, and values with none are greyed out but stay visible.
+    -- are shown, and values with none are grayed out but stay visible.
     local totals = view.counts or {}
     local function total(dim, value)
       return totals[dim] and totals[dim][value] or 0
@@ -244,7 +244,7 @@ function View:SetupFilterMenu()
       end
       return list
     end
-    -- A checkbox entry with its right-aligned count; greyed at zero unless it is ticked.
+    -- A checkbox entry with its right-aligned count; grayed at zero unless it is ticked.
     local function entry(parent, label, dim, value, isSelected, setSelected, hasSubmenu)
       local description = parent:CreateCheckbox(label, isSelected, setSelected)
       addCount(description, label, function()
@@ -412,7 +412,7 @@ function View:InitHeader(frame, elementData)
   frame.toggle.down:SetShown(elementData.collapsed)
 end
 
--- Grouping in effect: grouping by colour pauses while colour chips rank the icons.
+-- Grouping in effect: grouping by color pauses while color chips rank the icons.
 function View:GroupBy()
   local groupBy = ns.db and ns.db.groupBy or "none"
   if groupBy == "color" and #self.chips > 0 then
@@ -476,10 +476,10 @@ end
 
 local MAX_CHIPS, CHIP_SIZE, CHIP_GAP, CHIP_MIN_SWATCH = 3, 22, 8, 8
 local MIN_WEIGHT = 0.1
--- Size of the red X on colour chips and on the filter button (Blizzard's is 23).
+-- Size of the red X on color chips and on the filter button (Blizzard's is 23).
 local RESET_SIZE = 20
 
--- A colour chip: its colour { r, g, b } (0-1), OKLab target, weight (0.1-1) and the preset it came from, if any.
+-- A color chip: its color { r, g, b } (0-1), OKLab target, weight (0.1-1) and the preset it came from, if any.
 local function newChip(color, weight, preset)
   return { color = color, target = Search.PickTarget(color.r, color.g, color.b), weight = weight or 1, preset = preset }
 end
@@ -516,8 +516,8 @@ local function createColorButton(parent, onClick, onEnter)
   return button
 end
 
--- Colour chips and the button that adds one, in a bar left of the filter button. Each chip is a colour the icons
--- must contain: click changes it in Blizzard's colour picker, right-click removes it.
+-- Color chips and the button that adds one, in a bar left of the filter button. Each chip is a color the icons
+-- must contain: click changes it in Blizzard's color picker, right-click removes it.
 function View:CreateColorBar(parent)
   local bar = CreateFrame("Frame", nil, parent)
   bar:SetHeight(CHIP_SIZE)
@@ -557,7 +557,7 @@ function View:CreateColorBar(parent)
       self:OpenColorPicker()
     end
   end, function()
-    GameTooltip:SetText(L["Search by colour"], 1, 1, 1)
+    GameTooltip:SetText(L["Search by color"], 1, 1, 1)
   end)
   self.addColorButton.swatch:SetTexture(COLOR_WHEEL)
   return bar
@@ -603,7 +603,7 @@ function View:SetChips(chips)
   self:QueuePickRefresh()
 end
 
--- Sets chip `i` (or a new last chip) to a picked colour { r, g, b }, keeping its weight.
+-- Sets chip `i` (or a new last chip) to a picked color { r, g, b }, keeping its weight.
 function View:SetChipColor(i, color, weight)
   local chips = self.chips
   i = math.min(i, #chips + 1, MAX_CHIPS)
@@ -622,7 +622,7 @@ function View:SetChipWeight(i, weight)
   end
 end
 
--- Adds a chip for a colour preset unless it is there already or the bar is full.
+-- Adds a chip for a color preset unless it is there already or the bar is full.
 function View:AddPresetChip(key)
   for _, chip in ipairs(self.chips) do
     if chip.preset == key then
@@ -642,8 +642,8 @@ function View:RemoveChip(i)
   self:QueuePickRefresh()
 end
 
--- Refreshes soon after a colour change; unlike QueueRefresh, further changes don't push it back, so the grid
--- keeps up while the colour is dragged.
+-- Refreshes soon after a color change; unlike QueueRefresh, further changes don't push it back, so the grid
+-- keeps up while the color is dragged.
 function View:QueuePickRefresh()
   if self.pickRefreshQueued then
     return
@@ -655,7 +655,7 @@ function View:QueuePickRefresh()
   end)
 end
 
--- Blizzard's colour picker is shared: while Iconic uses it, its Cancel button is hidden and Okay centred, it sits beside
+-- Blizzard's color picker is shared: while Iconic uses it, its Cancel button is hidden and Okay centered, it sits beside
 -- Iconic's window, and a weight slider hangs below it. All is restored when it closes.
 local picker, weightPanel
 
@@ -677,7 +677,7 @@ local function createWeightPanel(frame)
   panel.hint:SetPoint("TOPLEFT", panel.label, "BOTTOMLEFT", 0, -4)
   panel.hint:SetPoint("RIGHT", -18, 0)
   panel.hint:SetJustifyH("LEFT")
-  panel.hint:SetText(L["How much this colour counts in the colour search."])
+  panel.hint:SetText(L["How much this color counts in the color search."])
   panel.slider = CreateFrame("Frame", nil, panel, "MinimalSliderWithSteppersTemplate")
   panel.slider:SetPoint("TOPLEFT", panel.hint, "BOTTOMLEFT", -2, -6)
   panel.slider:SetPoint("RIGHT", -64, 0)
@@ -738,7 +738,7 @@ local function preparePicker(anchor)
   frame:SetClampedToScreen(true)
 end
 
--- Opens Blizzard's colour picker for chip `i`, or for a new chip; the grid follows the colour and weight while they
+-- Opens Blizzard's color picker for chip `i`, or for a new chip; the grid follows the color and weight while they
 -- change, and closing the picker keeps them.
 function View:OpenColorPicker(i)
   if not ColorPickerFrame and C_AddOns and C_AddOns.LoadAddOn then
@@ -748,7 +748,7 @@ function View:OpenColorPicker(i)
     return
   end
   local slot = i or #self.chips + 1
-  -- Counted before the picker opens: it reports its start colour at once, which already adds a new chip.
+  -- Counted before the picker opens: it reports its start color at once, which already adds a new chip.
   local chipCount = math.max(#self.chips, slot)
   local editing = i and self.chips[i]
   -- A new chip starts at white: no hue picked, full lightness.
@@ -761,8 +761,8 @@ function View:OpenColorPicker(i)
     hasOpacity = false,
     swatchFunc = function()
       local r, g, b = ColorPickerFrame:GetColorRGB()
-      -- Opening the picker reports the start colour: a new chip appears only once a colour is picked, and a preset
-      -- chip keeps its name until the colour changes.
+      -- Opening the picker reports the start color: a new chip appears only once a color is picked, and a preset
+      -- chip keeps its name until the color changes.
       local unchanged = math.abs(r - start.r) + math.abs(g - start.g) + math.abs(b - start.b) < 0.005
       if not unchanged then
         self:SetChipColor(slot, { r = r, g = g, b = b }, self.pickerWeight)
@@ -782,12 +782,12 @@ function View:OpenColorPicker(i)
   weightPanel:SetShown(chipCount > 1)
 end
 
--- The weight slider under the colour picker, once it exists (for /iconic shot demo).
+-- The weight slider under the color picker, once it exists (for /iconic shot demo).
 function View:WeightSlider()
   return weightPanel and weightPanel.slider
 end
 
--- The weight slider under the colour picker moved: applies to the chip being picked, or to the next one.
+-- The weight slider under the color picker moved: applies to the chip being picked, or to the next one.
 function View:SetPickerWeight(weight)
   self.pickerWeight = weight
   if self.chips[self.pickerSlot] then
@@ -852,7 +852,7 @@ function View:ShowTooltip(owner, row)
       end
     end)
   end
-  -- While searching, the words a search word finds are coloured and a line says what found the icon.
+  -- While searching, the words a search word finds are colored and a line says what found the icon.
   local query = self.search and self.search:GetText() or ""
   local searching = #Search.Normalize(query) >= MIN_QUERY or #self.chips > 0
   local opts = { synonyms = ns.synonyms, chips = self.chips }
@@ -874,7 +874,7 @@ function View:ShowTooltip(owner, row)
   if hidden > 0 then
     GameTooltip:AddLine(hidden == 1 and L["+1 more name"] or L["+%d more names"]:format(hidden), 0.5, 0.5, 0.5)
   end
-  -- Picture tags in the client's language, the ones a search word finds coloured.
+  -- Picture tags in the client's language, the ones a search word finds colored.
   local tags = {}
   for tag in (index.tags[row] or ""):gmatch("%S+") do
     tags[#tags + 1] = self.data.tagNames and self.data.tagNames[tag] or tag
@@ -893,7 +893,7 @@ function View:ShowTooltip(owner, row)
     local parts = {}
     for _, found in ipairs(Search.Explain(index, row, query, opts)) do
       if found.word then
-        -- Direct hits in a shown name or tag are coloured there; only the rest need saying.
+        -- Direct hits in a shown name or tag are colored there; only the rest need saying.
         local seen = not found.via
           and (
             found.where == "name" or (found.where == "tag" and Search.Highlight(tagText, found.word, opts) ~= tagText)
@@ -1000,7 +1000,7 @@ function View:SetSelected(texture)
   self:NotifySelectedState()
 end
 
--- Where the selected icon stands: "visible" in the grid, "hidden" by the search, colour chips, filters or a
+-- Where the selected icon stands: "visible" in the grid, "hidden" by the search, color chips, filters or a
 -- collapsed section, or "absent" from the picker's icons.
 function View:SelectedState()
   local row = self.selectedKey and self.data and self.data.index.byKey[self.selectedKey]
@@ -1016,7 +1016,7 @@ function View:NotifySelectedState()
   end
 end
 
--- Scrolls to the selected icon; when it is hidden, first clears the search, colour chips and filters, or opens
+-- Scrolls to the selected icon; when it is hidden, first clears the search, color chips and filters, or opens
 -- its collapsed section.
 function View:RevealSelected()
   if self:SelectedState() == "hidden" then
@@ -1194,7 +1194,7 @@ function View:Refresh(keepScroll)
     if hasText then
       self.empty:SetText(L['No icons match "%s".']:format(query))
     elseif hasQuery then
-      self.empty:SetText(L["No icons have these colours."])
+      self.empty:SetText(L["No icons have these colors."])
     else
       self.empty:SetText(L["No icons match these filters."])
     end
@@ -1224,7 +1224,7 @@ function View:UpdateSuggestions()
   local buttons = box:GetButtons()
   -- At least SUGGEST_WIDTH wide, so long labels such as item categories fit beside a narrow search box.
   box.searchPreviewContainer:SetWidth(math.max(box:GetWidth(), SUGGEST_WIDTH))
-  -- Colours that already have a chip count as active, like ticked filters.
+  -- Colors that already have a chip count as active, like ticked filters.
   local active = setmetatable({ color = {} }, { __index = self.filters })
   for _, chip in ipairs(self.chips) do
     if chip.preset then
@@ -1257,7 +1257,7 @@ function View:UpdateSuggestions()
   end
 end
 
--- Class icon, profession icon or colour swatch; other suggestions show none.
+-- Class icon, profession icon or color swatch; other suggestions show none.
 function View:SetSuggestionIcon(texture, suggestion)
   texture:SetTexCoord(0, 1, 0, 1)
   texture:SetVertexColor(1, 1, 1)
@@ -1274,7 +1274,7 @@ function View:SetSuggestionIcon(texture, suggestion)
     texture:Show()
     return
   elseif suggestion.dim == "color" and Search.Preset(suggestion.value) then
-    -- Smaller than the icon slot, centred in it.
+    -- Smaller than the icon slot, centered in it.
     local c = Search.HexColor(Search.Preset(suggestion.value).hex)
     texture:SetTexture(SWATCH)
     texture:SetSize(SWATCH_ROW_SIZE, SWATCH_ROW_SIZE)
@@ -1332,7 +1332,7 @@ function ns.CreateView(parent, opts)
   toolbar.line:SetColorTexture(1, 1, 1, 0.12)
   self.toolbar = toolbar
 
-  -- Right to left: expand all, collapse all, group by, filter, colour chips; the search box takes the rest.
+  -- Right to left: expand all, collapse all, group by, filter, color chips; the search box takes the rest.
   self.expandAll = self:CreateSignButton(toolbar, true, L["Expand all sections"], function()
     self:SetAllCollapsed(false)
   end)
