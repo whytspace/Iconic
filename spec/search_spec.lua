@@ -86,6 +86,12 @@ describe("Search", function()
     assert.are.same({ 1002 }, keys((find("cloak"))))
   end)
 
+  it("matches synonyms as whole words only", function()
+    assert.are.same({}, keys((find("helmet"))))
+    assert.are.same({}, Search.Explain(data.index, 6, "helmet", { synonyms = synonyms }))
+    assert.are.equal("Tattered Cape", Search.Highlight("Tattered Cape", "helmet", { synonyms = synonyms }))
+  end)
+
   it("matches word prefixes while typing", function()
     assert.are.same({ 135274 }, keys((find("shorts"))))
   end)
@@ -187,7 +193,7 @@ describe("Search", function()
     it("weighs word matches against colour", function()
       data = Catalog.Parse(addon.fakeData(ns, {
         { "1", "inv_shield_01", names = { "Emerald Shield" }, colors = "green:40" },
-        { "2", "inv_chest_01", names = { "Guardian Plate" }, colors = "green:70" },
+        { "2", "inv_chest_01", names = { "Guardian Plate" }, desc = "sturdy as a shield", colors = "green:70" },
       }))
       rows = Catalog.Rows(data, { 1, 2 })
       assert.are.same({ 1, 2 }, keys((find("shield", chips(chip("green"))))))

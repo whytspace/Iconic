@@ -28,6 +28,7 @@
 - **[Fix]** The `/iconic` window no longer stays above every other window; the one you clicked last is on top.
 - **[Fix]** The `/iconic` window's background no longer shows past its border, and both sides of its icon grid match. ([#14](https://github.com/whytspace/Iconic/issues/14))
 - **[Fix]** Pressing Shift, Ctrl or Alt over a unit or other tooltip no longer causes Lua errors. ([#17](https://github.com/whytspace/Iconic/issues/17))
+- **[Fix]** Synonyms no longer widen searches to unrelated icons, such as "box" finding chestplates or "helmet" finding capes. ([#16](https://github.com/whytspace/Iconic/issues/16))
 
 ## 1.0.0 - 2026-11-22
 

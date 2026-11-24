@@ -217,6 +217,11 @@ local function fieldAt(text, pos)
   return field
 end
 
+-- Whether a term also finds longer words; synonyms are whole words, so "cap" mustn't find "cape".
+local function prefixAllowed(term, quality)
+  return #term >= 3 and quality ~= QUALITY_SYNONYM
+end
+
 -- Best name/file hit and description hit of one term in a padded search text.
 local function termScore(text, term, quality)
   local needle = " " .. term
@@ -224,7 +229,7 @@ local function termScore(text, term, quality)
   if not p then
     return 0, 0
   end
-  local allowPrefix = #term >= 3
+  local allowPrefix = prefixAllowed(term, quality)
   local name, desc = 0, 0
   local len = #needle
   while p do
@@ -522,7 +527,7 @@ local function categoryHits(categoryWords, variants)
       local p = find(words, " " .. term, 1, true)
       if p then
         local exact = byte(words, p + #term + 1) == 32
-        if exact or #term >= 3 then
+        if exact or prefixAllowed(term, quality) then
           best = math.max(best, CATEGORY_WEIGHT * quality * (exact and 1 or QUALITY_PREFIX))
         end
       end
@@ -664,8 +669,8 @@ local function queryTerms(query, synonyms)
   return terms
 end
 
-local function startsWith(text, term)
-  return text == term or (#term >= 3 and sub(text, 1, #term) == term)
+local function startsWith(text, term, quality)
+  return text == term or (prefixAllowed(term, quality) and sub(text, 1, #term) == term)
 end
 
 -- Why a row matches a query: per search word { word, via = the synonym it matched through, if any, where = "name" | "file" | "picture" | "description" |
@@ -687,7 +692,7 @@ function Search.Explain(index, row, query, opts)
       local p = find(text, needle, 1, true)
       while p do
         local exact = byte(text, p + #needle) == 32
-        if exact or #variant >= 3 then
+        if exact or prefixAllowed(variant, quality) then
           local field = fieldAt(text, p)
           local score = FIELD_WEIGHTS[field] * quality * (exact and 1 or QUALITY_PREFIX)
           if score > best then
@@ -700,7 +705,7 @@ function Search.Explain(index, row, query, opts)
             else
               where = "picture"
               for _, fileWord in ipairs(fileWords) do
-                if startsWith(fileWord, variant) then
+                if startsWith(fileWord, variant, quality) then
                   where = "file"
                 end
               end
@@ -744,10 +749,10 @@ function Search.Highlight(text, query, opts)
     local stem = Search.Stem(normal)
     for _, term in ipairs(terms) do
       for i = 1, #term.variants, 2 do
-        local variant = term.variants[i]
+        local variant, quality = term.variants[i], term.variants[i + 1]
         if stem == variant or normal == variant then
           return HIGHLIGHT .. word .. "|r"
-        elseif startsWith(normal, variant) or startsWith(stem, variant) then
+        elseif startsWith(normal, variant, quality) or startsWith(stem, variant, quality) then
           -- A prefix match colours only the typed part, where it lines up with the word's letters.
           for k = #variant, #word do
             if Search.Normalize(sub(word, 1, k)) == variant then
