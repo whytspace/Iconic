@@ -9,7 +9,7 @@ local SYNONYM_ARROW = "|TInterface\\ChatFrame\\ChatFrameExpandArrow:8|t"
 -- How a tooltip names where a search word matched (Search.Explain).
 local MATCH_PLACES = {
   description = "description",
-  category = "item category",
+  category = "Blizzard category",
 }
 
 -- Tooltip for an icon row, anchored to `owner` (defaults to the hovered button's row).

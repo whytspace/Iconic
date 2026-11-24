@@ -40,10 +40,101 @@ Catalog.GROUPS = {
   { key = "none", label = "None" },
   { key = "source", label = "Source" },
   { key = "class", label = "Class" },
-  { key = "category", label = "Item category" },
+  { key = "category", label = "Blizzard category" },
+  { key = "tag", label = "Iconic category" },
   { key = "profession", label = "Profession" },
   { key = "color", label = "Color" },
 }
+
+-- Tag categories in display order: { key, label, rank, subs = { { key, label, top } } }. A subcategory's key is
+-- "top.sub"; a category without subcategories is its own and only value.
+Catalog.TAG_CATEGORIES = {}
+-- Tag category key (top or "top.sub") -> its entry; a subcategory's entry has `top`, the top's key.
+local TAG_ENTRIES = {}
+-- First picture tag -> tag category key.
+local TAG_WORDS = {}
+
+do
+  for rank, top in ipairs(ns.TAG_CATEGORIES or {}) do
+    local entry = { key = top.key, label = top.label, rank = rank, subs = {} }
+    Catalog.TAG_CATEGORIES[rank] = entry
+    TAG_ENTRIES[top.key] = entry
+    local leaves = top.subs or { { key = nil, words = top.words } }
+    for _, sub in ipairs(leaves) do
+      local key = sub.key and (top.key .. "." .. sub.key) or top.key
+      if sub.key then
+        local subEntry = { key = key, label = sub.label, top = top.key }
+        entry.subs[#entry.subs + 1] = subEntry
+        TAG_ENTRIES[key] = subEntry
+      end
+      for word in sub.words:gmatch("%S+") do
+        TAG_WORDS[word] = key
+      end
+    end
+  end
+  -- Synonyms of a group whose listed words all point at one category join it; others stay out.
+  local extra = {}
+  for _, group in ipairs(ns.SYNONYMS or {}) do
+    local key, single = nil, true
+    for _, word in ipairs(group) do
+      local found = TAG_WORDS[word]
+      if found then
+        single = single and (key == nil or key == found)
+        key = key or found
+      end
+    end
+    if key and single then
+      for _, word in ipairs(group) do
+        if not TAG_WORDS[word] then
+          extra[word] = (extra[word] == nil or extra[word] == key) and key or false
+        end
+      end
+    end
+  end
+  for word, key in pairs(extra) do
+    if key then
+      TAG_WORDS[word] = key
+    end
+  end
+  -- Icons without tags: not in Iconic's data, or not tagged yet.
+  local unknown = { key = "unknown", label = "Unknown", rank = #Catalog.TAG_CATEGORIES + 1, subs = {} }
+  Catalog.TAG_CATEGORIES[unknown.rank] = unknown
+  TAG_ENTRIES[unknown.key] = unknown
+end
+
+-- Top-level tag category key of a tag category key.
+local function tagTop(key)
+  local entry = TAG_ENTRIES[key]
+  return entry and (entry.top or entry.key)
+end
+
+-- Tag category key of a picture tag used as an icon's subject, or nil.
+function Catalog.TagCategoryOf(tag)
+  return TAG_WORDS[tag]
+end
+
+-- Per row, the tag category of its first picture tag (nil without one).
+local function tagCategories(index)
+  local list = {}
+  for row = 1, index.count do
+    local first = index.tags[row] and index.tags[row]:match("^%s*(%S+)")
+    list[row] = first and TAG_WORDS[first] or (not first and "unknown") or nil
+  end
+  return list
+end
+
+-- Display name of a tag category key, with its top category's name in front for a subcategory.
+function Catalog.TagCategoryLabel(key, withTop)
+  local entry = TAG_ENTRIES[key]
+  if not entry then
+    return tostring(key)
+  end
+  local top = entry.top and TAG_ENTRIES[entry.top]
+  if withTop and top then
+    return L[top.label] .. " › " .. L[entry.label]
+  end
+  return L[entry.label]
+end
 
 -- "key<TAB>name[<TAB>icon]" lines into key -> name and key -> icon.
 local function lookup(body)
@@ -83,8 +174,8 @@ end
 
 -- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file (only for textures
 -- without data), refs (names, "a|b"), text (padded search text), tags (picture tags, "a b"), sourceMask (source bits), classMask (class bits),
--- categories (category numbers), professions (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant color, the
--- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest color key).
+-- categories (category numbers), professions (profession IDs), spells (spell IDs); list columns are nil when empty. tagCategory: tag category key
+-- of the first tag. colorSlots: per dominant color, the columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest color key).
 function Catalog.NewIndex()
   return {
     count = 0,
@@ -101,6 +192,7 @@ function Catalog.NewIndex()
     categories = {},
     professions = {},
     spells = {},
+    tagCategory = {},
     colorSlots = {},
   }
 end
@@ -117,6 +209,7 @@ local function addRow(index, key, id, texture, file)
   index.text[row] = ns.Search.PadText(ns.Search.FileText(file))
   index.sourceMask[row] = 0
   index.classMask[row] = 0
+  index.tagCategory[row] = "unknown"
   return row
 end
 
@@ -208,6 +301,7 @@ function Catalog.Parse(raw)
   end
   index.count = #ids
   addTags(index)
+  index.tagCategory = tagCategories(index)
   index.categoryWords = categoryWords(data)
   return data
 end
@@ -356,11 +450,15 @@ local DIMENSION_MATCHERS = {
     end
     return false
   end,
+  tag = function(index, row, selected)
+    local key = index.tagCategory[row]
+    return key ~= nil and (selected[key] or selected[tagTop(key)]) or false
+  end,
 }
-Catalog.DIMENSIONS = { "source", "class", "category", "profession" }
+Catalog.DIMENSIONS = { "source", "class", "category", "tag", "profession" }
 
 -- filters: { source = {S=true}, class = {[8]=true}, category = {[2]=true, ["2:7"]=true},
--- profession = {[164]=true}, usable = true }; usableSet: key -> true.
+-- tag = {armor=true, ["weapons.swords"]=true}, profession = {[164]=true}, usable = true }; usableSet: key -> true.
 -- Values within a group combine with OR, groups with AND. `skip` names a group to ignore.
 function Catalog.Matches(index, row, filters, usableSet, skip)
   if not filters then
@@ -391,13 +489,23 @@ function Catalog.Filter(index, rows, filters, usableSet)
   return list
 end
 
--- Icons per filter value: { source = {S=n}, class = {[id]=n}, category = {[2]=n, ["2:7"]=n}, profession = {[id]=n} }.
+-- Icons per filter value: { source = {S=n}, class = {[id]=n}, category = {[2]=n, ["2:7"]=n},
+-- tag = {armor=n, ["armor.head"]=n}, profession = {[id]=n} }.
 function Catalog.Counts(index, rows)
-  local counts = { source = {}, class = {}, category = {}, profession = {}, color = {} }
+  local counts = { source = {}, class = {}, category = {}, tag = {}, profession = {}, color = {} }
   local source, class, category, profession = counts.source, counts.class, counts.category, counts.profession
   local sourceMasks, classMasks, categoryLists, professionLists =
     index.sourceMask, index.classMask, index.categories, index.professions
+  local tag, tagKeys = counts.tag, index.tagCategory
   for _, row in ipairs(rows) do
+    local tagKey = tagKeys[row]
+    if tagKey then
+      tag[tagKey] = (tag[tagKey] or 0) + 1
+      local top = tagTop(tagKey)
+      if top ~= tagKey then
+        tag[top] = (tag[top] or 0) + 1
+      end
+    end
     for _, key in ipairs(SOURCE_KEYS[sourceMasks[row]]) do
       source[key] = (source[key] or 0) + 1
     end
@@ -447,7 +555,7 @@ function Catalog.FacetCounts(index, rows, filters, usableSet)
       active[#active + 1] = dim
     end
   end
-  local counts = { source = {}, class = {}, category = {}, profession = {} }
+  local counts = { source = {}, class = {}, category = {}, tag = {}, profession = {} }
   local buckets = {}
   for _, row in ipairs(rows) do
     if not (filters and filters.usable) or (usableSet and usableSet[index.key[row]]) then
@@ -548,6 +656,8 @@ function Catalog.GroupValues(index, row, groupBy)
         values[#values + 1] = top
       end
     end
+  elseif groupBy == "tag" then
+    values[1] = tagTop(index.tagCategory[row])
   elseif groupBy == "profession" then
     for i, prof in ipairs(index.professions[row] or NONE) do
       values[i] = prof
@@ -570,6 +680,8 @@ function Catalog.GroupLabel(data, groupBy, value)
     return data and data.classes[value] or tostring(value)
   elseif groupBy == "category" then
     return data and data.itemClasses[value] or tostring(value)
+  elseif groupBy == "tag" then
+    return Catalog.TagCategoryLabel(value)
   elseif groupBy == "profession" then
     return data and data.professions[value] or tostring(value)
   elseif groupBy == "color" then
@@ -597,6 +709,8 @@ local function groupOrder(data, groupBy, a, b)
     return (SOURCE_RANK[a] or 99) < (SOURCE_RANK[b] or 99)
   elseif groupBy == "color" then
     return COLOR_RANK[a] < COLOR_RANK[b]
+  elseif groupBy == "tag" then
+    return TAG_ENTRIES[a].rank < TAG_ENTRIES[b].rank
   elseif groupBy == "profession" then
     return Catalog.GroupLabel(data, groupBy, a) < Catalog.GroupLabel(data, groupBy, b)
   end
@@ -678,7 +792,13 @@ local function filterCandidates(data)
   for key, name in pairs(data.itemClasses or {}) do
     local top = type(key) == "string" and tonumber(key:match("^(%d+):"))
     local parent = top and data.itemClasses[top]
-    add("category", key, (parent and parent ~= name) and (parent .. " › " .. name) or name, L["Item category"])
+    add("category", key, (parent and parent ~= name) and (parent .. " › " .. name) or name, L["Blizzard category"])
+  end
+  for _, top in ipairs(Catalog.TAG_CATEGORIES) do
+    add("tag", top.key, Catalog.TagCategoryLabel(top.key), L["Iconic category"])
+    for _, sub in ipairs(top.subs) do
+      add("tag", sub.key, Catalog.TagCategoryLabel(sub.key, true), L["Iconic category"])
+    end
   end
   for prof, name in pairs(data.professions or {}) do
     add("profession", prof, name, L["Profession"])

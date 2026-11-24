@@ -209,6 +209,84 @@ describe("Catalog", function()
     end)
   end)
 
+  describe("tag categories", function()
+    local tagData, tagRows
+
+    before_each(function()
+      tagData = Catalog.Parse(addon.fakeData(ns, {
+        { "1", "inv_helmet_01", tags = "helmet skull metal" },
+        { "2", "inv_misc_cowl", tags = "cowl cloth" },
+        { "3", "inv_sword_01", tags = "sword blade" },
+        { "4", "spell_fire_01", tags = "swirl fire" },
+        { "5", "inv_misc_thing", tags = "thingamajig" },
+        { "6", "inv_misc_skull", tags = "skull helmet" },
+        { "7", "inv_misc_none" },
+      }))
+      local textures = {}
+      for row = 1, tagData.index.count do
+        textures[row] = tagData.index.key[row]
+      end
+      tagRows = Catalog.Rows(tagData, textures)
+    end)
+
+    local function tagKeys(list)
+      local result = {}
+      for i, row in ipairs(list) do
+        result[i] = tagData.index.key[row]
+      end
+      return result
+    end
+
+    local function filtered(selected)
+      return tagKeys(Catalog.Filter(tagData.index, tagRows, { tag = selected }))
+    end
+
+    it("puts an icon in the category of its first tag only", function()
+      assert.are.same({ 6 }, filtered({ ["creatures.undead"] = true }))
+      assert.are.same({ 1, 2 }, filtered({ ["armor.head"] = true }))
+    end)
+
+    it("counts a word's synonyms toward its category", function()
+      assert.are.same({ 1, 2 }, filtered({ ["armor.head"] = true }))
+    end)
+
+    it("filters by a top category or one of its subcategories", function()
+      assert.are.same({ 1, 2, 3 }, filtered({ armor = true, ["weapons.swords"] = true }))
+      assert.are.same({ 4 }, filtered({ magic = true }))
+    end)
+
+    it("counts subcategories and their top category", function()
+      local counts = Catalog.Counts(tagData.index, tagRows).tag
+      assert.are.equal(2, counts["armor.head"])
+      assert.are.equal(2, counts.armor)
+      assert.are.equal(1, counts.magic)
+      assert.is_nil(counts["magic.magic"])
+    end)
+
+    it("groups by top category in table order, untagged icons under Unknown, unmapped subjects under Other", function()
+      local titles = {}
+      for i, section in ipairs(Catalog.Sections(tagData, tagRows, "tag")) do
+        titles[i] = section.title .. ":" .. table.concat(tagKeys(section.rows), ",")
+      end
+      assert.are.same({ "Armor:1,2", "Weapons:3", "Creatures:6", "Magic & effects:4", "Unknown:7", "Other:5" }, titles)
+    end)
+
+    it("puts textures without data under Unknown", function()
+      local newRows = Catalog.Rows(tagData, { 3, "Interface\\Icons\\Brand_New_Icon" })
+      assert.are.same(
+        { "Interface\\Icons\\Brand_New_Icon" },
+        tagKeys(Catalog.Filter(tagData.index, newRows, { tag = { unknown = true } }))
+      )
+    end)
+
+    it("offers tag categories as search hints", function()
+      local counts = Catalog.Counts(tagData.index, tagRows)
+      local hints = Catalog.Hints(tagData, "head", counts)
+      assert.are.equal("Armor › Head", hints[1].label)
+      assert.are.equal("Iconic category", hints[1].group)
+    end)
+  end)
+
   describe("hints", function()
     local counts
     before_each(function()
@@ -228,7 +306,10 @@ describe("Catalog", function()
     end)
 
     it("matches words inside labels and names the parent category", function()
-      assert.are.same({ "Item category: Weapon › One-Handed Swords" }, labels(Catalog.Hints(data, "sword", counts)))
+      assert.are.same(
+        { "Blizzard category: Weapon › One-Handed Swords" },
+        labels(Catalog.Hints(data, "sword", counts))
+      )
     end)
 
     it("skips values without icons and active filters", function()
@@ -314,5 +395,22 @@ describe("Catalog", function()
       assert.are.same({ "Feuerball", "Ruhestein" }, names)
       assert.is_true(anyPending)
     end)
+  end)
+end)
+
+-- Every subject (first picture tag) in scripts/icon_tags.json has a tag category in Data/TagCategories.lua.
+describe("Tag categories", function()
+  it("cover every icon's first tag", function()
+    local Catalog = addon.load().Catalog
+    local text = assert(io.open(addon.root .. "/scripts/icon_tags.json")):read("*a")
+    local missing, seen = {}, {}
+    for first in text:gmatch('%[%s*"(.-)"') do
+      if not seen[first] and not Catalog.TagCategoryOf(first) then
+        missing[#missing + 1] = first
+      end
+      seen[first] = true
+    end
+    table.sort(missing)
+    assert.are.same({}, missing)
   end)
 end)

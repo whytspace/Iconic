@@ -37,8 +37,8 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 
 - **What icons show:** we analyzed over 30,000 icons, so you can search by what they show, such as "werewolf" or "rose". Spell, item, mount, pet and currency names work too, and typos still find close matches.
 - **Colors:** search by one or more colors. Icons are sorted by how closely they match. Looking for an icon that's red and green? Iconic has you covered.
-- **Filters:** source, class, item category and profession, or only your own spells and items.
-- **Grouping:** group the icons by source, class, item category, profession or color.
+- **Filters:** source, class, Blizzard category, Iconic category and profession, or only your own spells and items.
+- **Grouping:** group the icons by source, class, Blizzard category, Iconic category, profession or color.
 - **Suggestions:** icons that fit where you opened the picker, such as the items in a bank tab, the spells in a macro or your spec icons.
 - **Recently used:** the icons you picked last.
 - **Icon IDs** in tooltips, always or while holding Shift, Ctrl or Alt (Options → AddOns → Iconic).

@@ -180,25 +180,51 @@ function View:SetupFilterMenu()
       end
     end
 
-    local tops = present("category", sortedKeys(data.itemClasses, true))
-    if #tops > 0 then
-      local menu = root:CreateButton(L["Item category"])
+    -- A two-level category menu: `tops` are the present top keys, `subsOf(top)` their present subcategory keys.
+    local function categoryMenu(title, dim, tops, subsOf, nameOf)
+      if #tops == 0 then
+        return
+      end
+      local menu = root:CreateButton(title)
       for _, top in ipairs(tops) do
-        local keys = present("category", subcategories(data.itemClasses, top))
-        local name = data.itemClasses[top]
+        local keys = present(dim, subsOf(top))
         if #keys <= 1 then
           -- A lone subcategory adds nothing; filter by it straight from the category entry.
           local key = keys[1] or top
-          entry(menu, name, "category", key, isSet("category", key), toggle("category", key))
+          entry(menu, nameOf(top), dim, key, isSet(dim, key), toggle(dim, key))
         else
           -- Checking the category selects all its subcategories; hovering opens them.
-          local sub = entry(menu, name, "category", top, allSet("category", keys), toggleAll("category", keys), true)
+          local sub = entry(menu, nameOf(top), dim, top, allSet(dim, keys), toggleAll(dim, keys), true)
           for _, key in ipairs(keys) do
-            entry(sub, data.itemClasses[key], "category", key, isSet("category", key), toggle("category", key))
+            entry(sub, nameOf(key), dim, key, isSet(dim, key), toggle(dim, key))
           end
         end
       end
     end
+
+    categoryMenu(
+      L["Blizzard category"],
+      "category",
+      present("category", sortedKeys(data.itemClasses, true)),
+      function(top)
+        return subcategories(data.itemClasses, top)
+      end,
+      function(key)
+        return data.itemClasses[key]
+      end
+    )
+
+    local tagTops, tagSubs = {}, {}
+    for _, top in ipairs(Catalog.TAG_CATEGORIES) do
+      tagTops[#tagTops + 1] = top.key
+      tagSubs[top.key] = {}
+      for _, sub in ipairs(top.subs) do
+        table.insert(tagSubs[top.key], sub.key)
+      end
+    end
+    categoryMenu(L["Iconic category"], "tag", present("tag", tagTops), function(top)
+      return tagSubs[top]
+    end, Catalog.TagCategoryLabel)
 
     local profs = present("profession", sortedKeys(data.professions))
     if #profs > 0 then

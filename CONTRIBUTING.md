@@ -30,6 +30,7 @@ Use the WoW Forever client's AddOns folder the same way. The Git setting prevent
 - `UI/` — frames, picker hooks, tooltips, settings, public API; checked in-game. `View.lua` is the icon grid; `ColorChips.lua`, `FilterMenu.lua`, `SearchHints.lua` and `IconTooltip.lua` add its parts.
 - `Adapters/` — one file per UI whose icon pickers Iconic replaces, listed in `Adapters/Adapters.xml`.
 - `Data/Synonyms.lua` — hand-curated synonym groups.
+- `Data/TagCategories.lua` — tag categories and the first tags (subjects) that put an icon in each.
 - `Iconic_Data/` — a separate load-on-demand add-on with the generated icon data, one file per game version, picked by `[AllowLoadGameType]`.
 
 ## Icon data

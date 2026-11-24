@@ -12,6 +12,7 @@ Locales/Locales.lua
 Locales/deDE.lua
 Core.lua
 Data/Synonyms.lua
+Data/TagCategories.lua
 Color.lua
 Search.lua
 Catalog.lua
