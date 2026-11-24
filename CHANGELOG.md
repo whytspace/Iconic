@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3 - 2026-11-24
+
 - **[Change]** Texts use American spelling ("color", "gray").
 - **[Fix]** Searching "grey" no longer misses icons named "gray", and the other way round.
 
