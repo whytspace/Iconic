@@ -25,8 +25,7 @@ local SYNONYM_ARROW = "|TInterface\\ChatFrame\\ChatFrameExpandArrow:8|t"
 -- How a tooltip names where a search word matched (Search.Explain).
 local MATCH_PLACES = {
   name = "name",
-  file = "file name",
-  picture = "picture",
+  tag = "tag",
   description = "description",
   category = "item category",
 }
@@ -76,7 +75,7 @@ local function computeUsable(data, extraTextures)
     end
   end
   local function add(texture)
-    local id = Catalog.ResolveId(data, texture)
+    local id = Catalog.ResolveId(texture)
     if id or texture then
       set[id or texture] = true
     end
@@ -867,15 +866,6 @@ function View:ShowTooltip(owner, row)
   for i = 2, math.min(#names, 5) do
     GameTooltip:AddLine(shown(names[i]), 0.8, 0.8, 0.8)
   end
-  if index.file[row] and names[1] then
-    local file = index.file[row]
-    GameTooltip:AddLine(
-      searching and Search.Highlight(file, query, { synonyms = ns.synonyms, file = true }) or file,
-      0.5,
-      0.5,
-      0.5
-    )
-  end
   if searching then
     local parts = {}
     for _, found in ipairs(Search.Explain(index, row, query, opts)) do
@@ -960,7 +950,7 @@ end
 
 function View:SetSelected(texture)
   self.selectedTexture = texture
-  self.selectedKey = texture and (Catalog.ResolveId(self.data, texture) or texture) or nil
+  self.selectedKey = texture and (Catalog.ResolveId(texture) or texture) or nil
   self.scrollBox:ForEachFrame(function(frame)
     for _, button in ipairs(frame.buttons or {}) do
       if button:IsShown() then

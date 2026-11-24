@@ -160,7 +160,7 @@ function Browser:SetSelected(texture)
   self.view:SetSelected(texture)
   self.preview.icon:SetTexture(texture or 134400)
   local data = self.view.data
-  local id = texture and Catalog.ResolveId(data, texture)
+  local id = texture and Catalog.ResolveId(texture)
   self.idBox.value = id and tostring(id) or ""
   self.idBox:SetText(self.idBox.value)
   local row = data and data.index.byKey[id or texture or ""]
@@ -176,7 +176,7 @@ function Browser:SetSelected(texture)
       end
     end)
   end
-  self.nameText:SetText(row and (names[1] or data.index.file[row]) or "")
+  self.nameText:SetText(row and (names[1] or data.index.file[row] or tostring(data.index.key[row])) or "")
   self.choose:SetEnabled(texture ~= nil)
 end
 

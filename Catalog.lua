@@ -59,8 +59,8 @@ local function lookup(body)
   return map, icons
 end
 
--- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file, names
--- (display, "a|b"), text (padded search text), src (source bits), cls (class bits), cats (category numbers),
+-- Column store, one row per icon. Columns: key (file ID or texture path), id, texture, file (only for textures
+-- without data), refs (names, "a|b"), text (padded search text), src (source bits), cls (class bits), cats (category numbers),
 -- profs (profession IDs), spells (spell IDs); list columns are nil when empty. colorSlots: per dominant colour, the
 -- columns l, a, b (OKLab * 100), w (weight 0-100) and name (nearest colour key).
 function Catalog.NewIndex()
@@ -97,7 +97,7 @@ local function addRow(index, key, id, texture, file)
   return row
 end
 
-local COLUMNS = { "file", "refs", "text", "src", "cls", "cats", "profs", "spells" }
+local COLUMNS = { "refs", "text", "src", "cls", "cats", "profs", "spells" }
 
 -- Search words per item category number (class * 256 + subclass) the icons use: its own and its class's name, padded
 -- like search text (" a b "), for Search.Find.
@@ -127,7 +127,6 @@ function Catalog.Parse(raw)
     professions = nil,
     professionIcons = nil,
     index = Catalog.NewIndex(),
-    byFile = {},
   }
   data.professions, data.professionIcons = lookup(raw.professions)
   local index, icons = data.index, raw.icons or {}
@@ -150,11 +149,11 @@ function Catalog.Parse(raw)
     index.colorSlots[k] = slot
   end
   index.hasColors = #index.colorSlots > 0
-  local key, texture, byKey, byFile, file = index.key, index.texture, index.byKey, data.byFile, index.file
+  index.file = {}
+  local key, texture, byKey = index.key, index.texture, index.byKey
   for row = 1, #ids do
     local id = ids[row]
     key[row], texture[row], byKey[id] = id, id, row
-    byFile[file[row]:lower()] = id
   end
   index.count = #ids
   index.categoryWords = categoryWords(data)
@@ -185,24 +184,26 @@ function Catalog.ApplyLocale(data, raw)
   end
 end
 
--- File ID for a provider texture: a number, or an "Interface\Icons\name" path.
-function Catalog.ResolveId(data, texture)
+-- File ID for a provider texture: a number, or an "Interface\Icons\name" path (the game resolves only full paths).
+function Catalog.ResolveId(texture)
   if type(texture) == "number" then
     return texture
   end
   if type(texture) == "string" then
-    local name = string.lower(texture):gsub("^interface[\\/]icons[\\/]", ""):gsub("%.blp$", "")
-    return tonumber(name) or (data and data.byFile[name])
+    local name = texture
+      :gsub("^[Ii][Nn][Tt][Ee][Rr][Ff][Aa][Cc][Ee][\\/][Ii][Cc][Oo][Nn][Ss][\\/]", "")
+      :gsub("%.[Bb][Ll][Pp]$", "")
+    return tonumber(name) or GetFileIDFromPath("Interface\\Icons\\" .. name)
   end
 end
 
 -- Rows for a list of provider textures, in order and without duplicates. Textures without data get
 -- a row with just their file name. Also returns the data and row -> position of its texture in `textures`.
 function Catalog.Rows(data, textures)
-  data = data or { index = Catalog.NewIndex(), byFile = {}, classes = {}, itemClasses = {}, professions = {} }
+  data = data or { index = Catalog.NewIndex(), classes = {}, itemClasses = {}, professions = {} }
   local index, rows, seen = data.index, {}, {}
   for position, texture in ipairs(textures) do
-    local id = Catalog.ResolveId(data, texture)
+    local id = Catalog.ResolveId(texture)
     local key = id or texture
     local row = index.byKey[key]
     if not row then
@@ -734,7 +735,7 @@ function Catalog.RecentRows(data, rows, recent, filters, usableSet)
   end
   local list = {}
   for _, texture in ipairs(recent or {}) do
-    local row = index.byKey[Catalog.ResolveId(data, texture) or texture]
+    local row = index.byKey[Catalog.ResolveId(texture) or texture]
     if row and present[row] and Catalog.Matches(index, row, filters, usableSet) then
       list[#list + 1] = row
     end
@@ -766,7 +767,7 @@ function Catalog.SuggestedRows(data, rows, entries, filters, usableSet, max, syn
           end
         end
       end
-    elseif add(index.byKey[Catalog.ResolveId(data, entry) or entry]) then
+    elseif add(index.byKey[Catalog.ResolveId(entry) or entry]) then
       return list
     end
   end

@@ -17,10 +17,16 @@ local function tocFiles()
   return files
 end
 
+-- File IDs by lowercase "interface\icons\name" path of the icons in the latest fakeData.
+local fileIds = {}
+
 -- Returns (ns, env). `globals` seeds the fake WoW globals.
 function M.load(globals)
   local ns = {}
   local env = setmetatable({}, { __index = _G })
+  env.GetFileIDFromPath = function(path)
+    return fileIds[path:lower()]
+  end
   for name, value in pairs(globals or {}) do
     env[name] = value
   end
@@ -103,7 +109,8 @@ M.COLOR_LAB = COLOR_LAB
 -- colors = "green:62 red:18 35/-9/7:20" }; each colour becomes a dominant colour with that weight, at a named
 -- reference shade or at the given OKLab (x100).
 function M.fakeData(ns, rows)
-  local icons = { id = {}, file = {}, refs = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
+  fileIds = {}
+  local icons = { id = {}, refs = {}, text = {}, src = {}, cls = {}, cats = {}, profs = {}, spells = {} }
   local colors = {}
   for _, r in ipairs(rows) do
     if r.colors then
@@ -117,7 +124,7 @@ function M.fakeData(ns, rows)
   for row, r in ipairs(rows) do
     local names = r.names or {}
     icons.id[row] = tonumber(r[1])
-    icons.file[row] = r[2]
+    fileIds["interface\\icons\\" .. r[2]:lower()] = icons.id[row]
     icons.refs[row] = #names > 0 and table.concat(names, "|") or nil
     icons.text[row] = ns.Search.PadText(searchField(ns.Search, names, r[2], r.desc, r.tags))
     local src = 0

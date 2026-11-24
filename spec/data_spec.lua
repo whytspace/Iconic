@@ -115,24 +115,8 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
     end)
 
     it("tags hunter spells with the hunter class", function()
-      local row = data.index.byKey[data.byFile["ability_hunter_snipershot"]]
+      local row = data.index.byKey[132212]
       assert.is_true(ns.Catalog.HasClass(data.index.cls[row], 3))
-    end)
-
-    it("tokenizes file names like the build script", function()
-      local index = data.index
-      local checked = 0
-      for row = 1, index.count, 31 do
-        local field = " " .. select(5, index.text[row]:match("^ (.-) | (.-) | (.-) | (.-) | (.-) |")) .. " "
-        for token in ns.Search.FileText(index.file[row]):gsub("|", ""):gmatch("%S+") do
-          assert.is_truthy(
-            field:find(" " .. token .. " ", 1, true),
-            index.file[row] .. " -> " .. token .. " in" .. field
-          )
-        end
-        checked = checked + 1
-      end
-      assert.is_true(checked > 500)
     end)
 
     it("stores names as game references or text", function()

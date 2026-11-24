@@ -243,12 +243,12 @@ describe("Search", function()
 
     it("says where each search word matched", function()
       local opts = { synonyms = synonyms }
-      assert.are.same({ { word = "werewolf", where = "picture" } }, Search.Explain(index, 1, "werewolf", opts))
-      assert.are.same({ { word = "druid", where = "file" } }, Search.Explain(index, 1, "druid", opts))
+      assert.are.same({ { word = "werewolf", where = "tag" } }, Search.Explain(index, 1, "werewolf", opts))
+      assert.are.same({ { word = "druid", where = "tag" } }, Search.Explain(index, 1, "druid", opts))
       assert.are.same({ { word = "pursuit", where = "name" } }, Search.Explain(index, 1, "pursuit", opts))
       assert.are.same({ { word = "movement", where = "description" } }, Search.Explain(index, 1, "movement", opts))
       assert.are.same(
-        { { word = "wolf", where = "picture" }, { word = "druid", where = "file" } },
+        { { word = "wolf", where = "tag" }, { word = "druid", where = "tag" } },
         Search.Explain(index, 1, "wolf druid", opts)
       )
     end)
@@ -272,14 +272,6 @@ describe("Search", function()
       assert.are.equal(gold .. "Shield|rwall", Search.Highlight("Shieldwall", "shield"))
       assert.are.equal("Mal des " .. gold .. "Jägers|r", Search.Highlight("Mal des Jägers", "jager"))
       assert.are.equal("Tireless Pursuit", Search.Highlight("Tireless Pursuit", "wolf"))
-      assert.are.equal(
-        "INV_Shield_1H_Artifact" .. gold .. "Azshara|r_D_01",
-        Search.Highlight("INV_Shield_1H_ArtifactAzshara_D_01", "azshara", { file = true })
-      )
-      assert.are.equal(
-        "INV_" .. gold .. "Shield|r_1H_ArtifactAzshara_D_01",
-        Search.Highlight("INV_Shield_1H_ArtifactAzshara_D_01", "shield", { file = true })
-      )
       assert.are.equal(gold .. "Inc|rorporeal Defense", Search.Highlight("Incorporeal Defense", "inc"))
       assert.are.equal("Blessing of " .. gold .. "Prot|rection", Search.Highlight("Blessing of Protection", "prot"))
     end)

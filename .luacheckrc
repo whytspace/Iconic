@@ -67,6 +67,7 @@ read_globals = {
   "GetClassAtlas",
   "GetCurrentGuildBankTab",
   "GetGuildBankItemInfo",
+  "GetFileIDFromPath",
   "GetInventoryItemTexture",
   "GetLocale",
   "GetMacroInfo",

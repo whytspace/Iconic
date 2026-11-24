@@ -673,16 +673,12 @@ local function startsWith(text, term, quality)
   return text == term or (prefixAllowed(term, quality) and sub(text, 1, #term) == term)
 end
 
--- Why a row matches a query: per search word { word, via = the synonym it matched through, if any, where = "name" | "file" | "picture" | "description" |
+-- Why a row matches a query: per search word { word, via = the synonym it matched through, if any, where = "name" | "tag" | "description" |
 -- "category" }, then per colour chip { color = name, share = 0-100 }. Words that don't match are left out.
 -- opts: synonyms, chips (as for Search.Find).
 function Search.Explain(index, row, query, opts)
   opts = opts or {}
-  local text, file = index.text[row], index.file[row]
-  local fileWords = {}
-  for token in Search.FileText(file):gsub("|", ""):gmatch("%S+") do
-    fileWords[#fileWords + 1] = token
-  end
+  local text = index.text[row]
   local found = {}
   for _, term in ipairs(queryTerms(query, opts.synonyms)) do
     local best, where, via = 0, nil, nil
@@ -703,12 +699,7 @@ function Search.Explain(index, row, query, opts)
             elseif field == DESC_FIELD then
               where = "description"
             else
-              where = "picture"
-              for _, fileWord in ipairs(fileWords) do
-                if startsWith(fileWord, variant, quality) then
-                  where = "file"
-                end
-              end
+              where = "tag"
             end
           end
         end
@@ -735,7 +726,7 @@ function Search.Explain(index, row, query, opts)
 end
 
 -- `text` with the words a query's words find coloured, by the same stemming, prefix and synonym rules as Find.
--- opts: synonyms, file (split camel-case words as in file names).
+-- opts: synonyms.
 function Search.Highlight(text, query, opts)
   local terms = queryTerms(query, opts and opts.synonyms)
   if #terms == 0 then
@@ -765,17 +756,5 @@ function Search.Highlight(text, query, opts)
     end
     return word
   end
-  return (
-    gsub(text, "[%w\128-\255]+", function(word)
-      if not (opts and opts.file) then
-        return mark(word)
-      end
-      -- File names glue words in camel case ("ArtifactAzshara"); search splits them there too.
-      local parts = {}
-      for part in gsub(word, "(%l)(%u)", "%1\1%2"):gmatch("[^\1]+") do
-        parts[#parts + 1] = mark(part)
-      end
-      return table.concat(parts)
-    end)
-  )
+  return (gsub(text, "[%w\128-\255]+", mark))
 end

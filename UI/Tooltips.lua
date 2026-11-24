@@ -37,7 +37,7 @@ local ICON_OF = {
 }
 
 local function addIconLine(tooltip, icon)
-  local id = type(icon) == "number" and icon or (ns.data and ns.Catalog.ResolveId(ns.data, icon))
+  local id = ns.Catalog.ResolveId(icon)
   if id then
     tooltip:AddLine(L["Icon ID: %d"]:format(id), 0.5, 0.8, 1)
   end

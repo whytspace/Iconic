@@ -43,9 +43,9 @@ devc python3 scripts/build_data.py forever
 
 Downloads are cached in `.cache/wago/`. `spec/data_spec.lua` runs the shipped files through the real search.
 
-Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
+Each data file holds one Lua table per field with one entry per icon (columns listed at `Catalog.NewIndex`), so the game builds them while loading the file and `Catalog.Parse` takes them over without parsing. Display names are stored in `refs` as references to what uses the icon, which the game looks up in the player's language (`s133` spell, `i6948` item, `c1792` currency, see `Catalog.NameOf`); search uses only the words in `text`. File names are not stored: the game can't name a file ID, but `Catalog.ResolveId` turns an icon path into its ID with `GetFileIDFromPath`. Achievement titles are left out: they rarely say what their icon shows. Sources and classes are bit masks; categories (`class * 256 + subclass`), professions and spells are number lists; colours are four dominant-colour slots, each an `l`, `a`, `b`, `w` and `name` column.
 
-`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together; the data spec catches drift.
+`build_data.py` tokenizes names the same way `Search.lua` does (normalize, stopwords, stemming), and splits file names at camel-case words (`SoothingMists` → soothing mists) like `Search.FileText`. Change both together.
 
 ## Icon colours
 

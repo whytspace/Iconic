@@ -463,7 +463,7 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
     color_columns = [color_columns[k] for k in keep]
     colors = {file_id: [values[k] if k < len(values) else "" for k in keep] for file_id, values in colors.items()}
     ids = sorted(icons)
-    columns = {name: [] for name in ("id", "file", "refs", "text", "src", "cls", "cats", "profs", "spells")}
+    columns = {name: [] for name in ("id", "refs", "text", "src", "cls", "cats", "profs", "spells")}
     # Dominant colours: l, a, b (OKLab * 100) and w (weight, 0 for no colour).
     shares = {name: [] for name in color_columns}
     for file_id in ids:
@@ -472,7 +472,6 @@ def write(flavor, build_version, branch, icons, classes, item_classes, professio
         names = [n for _, _, n, _ in ranked]
         display = "|".join(ref for _, _, _, ref in ranked[:MAX_DISPLAY_NAMES])
         columns["id"].append(str(file_id))
-        columns["file"].append(lua_string(t.words))
         columns["refs"].append(lua_string(display) if display else "nil")
         # Padded as Search.PadText does, so the game reads it as is.
         columns["text"].append(lua_string(" " + search_text(names, t.words, t.desc, t.tags).replace("|", " | ") + " "))
