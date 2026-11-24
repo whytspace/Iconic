@@ -7,7 +7,7 @@ describe("Translations", function()
     local files = io.popen(
       'find "'
         .. addon.root
-        .. '" -name "*.lua" -not -path "*/spec/*" -not -path "*/Iconic_Data/*" -not -path "*/Locales/*" -not -path "*/.cache/*"'
+        .. '" -type f -name "*.lua" -not -path "*/.luarocks/*" -not -path "*/spec/*" -not -path "*/Iconic_Data/*" -not -path "*/Locales/*" -not -path "*/.cache/*"'
     )
     for path in files:lines() do
       local source = assert(io.open(path)):read("*a")
