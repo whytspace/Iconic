@@ -143,6 +143,9 @@ end
 -- Calls `onChange` when the suggestions may have changed while the picker is open.
 function TemplateAdapter.HookSuggestionChanges(_popup, _onChange) end
 
+-- Calls `onRefill` when the popup gets new contents after it was shown, or while it stays shown.
+function TemplateAdapter.HookRefill(_popup, _onRefill) end
+
 function TemplateAdapter.HookConfirm(popup, onConfirm)
   if popup.OkayButton_OnClick then
     hooksecurefunc(popup, "OkayButton_OnClick", onConfirm)
@@ -209,6 +212,11 @@ function Pickers.Attach(popup, overrides)
   end
 
   popup:HookScript("OnShow", onShow)
+  adapter.HookRefill(popup, function()
+    if popup:IsShown() then
+      onShow()
+    end
+  end)
   adapter.HookStateChanges(popup, sync)
   adapter.HookSuggestionChanges(popup, function()
     if state.view and popup:IsShown() then

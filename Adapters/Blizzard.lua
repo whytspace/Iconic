@@ -174,8 +174,9 @@ local transmogOverrides = {
   end,
 }
 
--- Shared with adapters for other add-ons' copies of the bank tab settings menu.
+-- Shared with adapters for other add-ons' copies of the bank tab settings menu and guild bank tab popup.
 Pickers.BANK_OVERRIDES = bankOverrides
+Pickers.GUILD_BANK_OVERRIDES = guildBankOverrides
 
 -- A frame built on Blizzard's template, or nothing.
 local function templateFrame(popup)

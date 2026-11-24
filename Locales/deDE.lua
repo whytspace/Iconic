@@ -2,6 +2,7 @@ local ADDON_NAME, ns = ...
 
 ns.Locales.deDE = {
   ["%s of %s icons"] = "%s von %s Symbolen",
+  ["%s icons"] = "%s Symbole",
   ["A searchable icon picker for World of Warcraft."] = "Eine durchsuchbare Symbolauswahl für World of Warcraft.",
   ["About"] = "Über",
   ["All icons"] = "Alle Symbole",

@@ -308,8 +308,13 @@ local function formatCount(count)
   return BreakUpLargeNumbers and BreakUpLargeNumbers(count) or tostring(count)
 end
 
+-- A compact footer, set by adapters with little room, leaves out the total.
 function View:UpdateFooter(shown, total)
-  self.footer.count:SetText(L["%s of %s icons"]:format(formatCount(shown), formatCount(total)))
+  if self.footer.compact then
+    self.footer.count:SetText(L["%s icons"]:format(formatCount(shown)))
+  else
+    self.footer.count:SetText(L["%s of %s icons"]:format(formatCount(shown), formatCount(total)))
+  end
 end
 
 -- Icons to suggest while the search is empty: textures, or { query = text } for that text's results.

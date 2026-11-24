@@ -28,6 +28,8 @@ globals = {
 
 read_globals = {
   "Baganator",
+  "BagBrotherGuildTabEditPopup",
+  "Bagnon",
   "CreateSettingsListSectionHeaderInitializer",
   "BankPanel",
   "BreakUpLargeNumbers",

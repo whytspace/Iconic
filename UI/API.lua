@@ -27,7 +27,7 @@ end
 --   ShowSelectedState(frame, state) with state "visible", "hidden" or "absent",
 --   HookSelectedIconClick(frame, onClick, onTextReset),
 --   GetSuggestions(frame) -> list of textures or { query = text } shown first while the search is empty,
---   HookSuggestionChanges(frame, onChange)
+--   HookSuggestionChanges(frame, onChange), HookRefill(frame, onRefill) for frames filled after they show
 -- Returns true when attached now, false when waiting for the frame.
 function Iconic.RegisterPicker(frame, adapter)
   if frame == nil then
