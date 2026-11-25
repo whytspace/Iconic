@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v4 - 2026-11-25
+
 - **[New]** Support for Classic Era, TBC Anniversary and MoP Classic. ([#12](https://github.com/whytspace/Iconic/issues/12))
 - **[New]** Filter and group icons by Iconic category, such as "Armor › Head" or "Creatures", based on what the icon shows; icons Iconic has no tags for yet are under "Unknown". ([#8](https://github.com/whytspace/Iconic/issues/8))
 - **[New]** Support for Bagnon's icon pickers: filter editor, guild bank tabs and bank tabs. ([#11](https://github.com/whytspace/Iconic/issues/11))
