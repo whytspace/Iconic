@@ -4,7 +4,7 @@
 
 # Iconic
 
-**A searchable icon picker for World of Warcraft: WoW Forever and retail.**
+**A searchable icon picker for World of Warcraft: WoW Forever, retail and Classic.**
 
 Imagine you've just put together a new equipment set or written the perfect macro. But now it needs an icon. After scrolling through WoW's 33,000 icons looking for the right one, you just give up.
 
@@ -50,7 +50,7 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 ## Install
 
 - **CurseForge:** install [Iconic – Icon Search](https://www.curseforge.com/wow/addons/iconic-icon-search) with the CurseForge app.
-- **Manually:** download `Iconic-vN.zip` from the [latest release](https://github.com/whytspace/Iconic/releases/latest) and unpack both folders, `Iconic` and `Iconic_Data`, into `World of Warcraft/_retail_/Interface/AddOns` (`_forever_` for WoW Forever).
+- **Manually:** download `Iconic-vN.zip` from the [latest release](https://github.com/whytspace/Iconic/releases/latest) and unpack both folders, `Iconic` and `Iconic_Data`, into `World of Warcraft/_retail_/Interface/AddOns` (`_forever_` for WoW Forever, `_classic_era_`, `_anniversary_` or `_classic_` for Classic).
 
 ## Getting started
 

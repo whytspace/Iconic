@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build Iconic_Data/<Flavor>.lua from wago.tools DB2 CSV exports.
 
-Usage: python3 scripts/build_data.py [forever|retail ...] [--refresh]
+Usage: python3 scripts/build_data.py [forever|retail|era|anniversary|classic ...] [--refresh]
 
 Also writes Iconic_Data/<Flavor>_<locale>.lua for each of LOCALES: translated names, labels and search text.
 """
@@ -13,16 +13,20 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CACHE, PICKER_NAME, ROOT, WAGO_CACHE, cached_icon_names, log, manifest_icons, unnamed_icon_ids  # noqa: E402
+from common import CACHE, PICKER_NAME, ROOT, UNNAMED_BRANCHES, WAGO_CACHE, cached_icon_names, log, manifest_icons, unnamed_icon_ids  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "Iconic_Data")
 
 FLAVORS = {
     "forever": {"branch": "wowf", "file": "Forever.lua"},
     "retail": {"branch": "wow", "file": "Retail.lua"},
+    "era": {"branch": "wow_classic_era", "file": "ClassicEra.lua"},
+    "anniversary": {"branch": "wow_anniversary", "file": "Anniversary.lua"},
+    "classic": {"branch": "wow_classic", "file": "Classic.lua"},
 }
 
 # Translations shipped next to the English data; each needs its lines in Iconic_Data/Iconic_Data.toc.
@@ -276,6 +280,8 @@ TABLES = [
     "ChrClasses", "Item", "ItemSparse", "ItemModifiedAppearance", "ItemAppearance", "ItemClass", "ItemSubClass",
     "Mount", "BattlePetSpecies", "CurrencyTypes",
 ]
+# Tables of systems older clients don't have yet (wago.tools answers 400 for them); missing ones count as empty.
+OPTIONAL_TABLES = {"Mount", "BattlePetSpecies", "CurrencyTypes"}
 
 
 class Icons(dict):
@@ -288,7 +294,14 @@ class Icons(dict):
 def load_tables(branch, refresh, locale):
     tables, versions = {}, []
     for name in TABLES:
-        tables[name], version = fetch(name, branch, refresh, locale)
+        try:
+            tables[name], version = fetch(name, branch, refresh, locale)
+        except urllib.error.HTTPError as error:
+            if name not in OPTIONAL_TABLES or error.code != 400:
+                raise
+            log(f"{branch}: no {name} table")
+            tables[name] = []
+            continue
         versions.append(version)
     return tables, newest_version(versions)
 
@@ -301,7 +314,7 @@ def picker_icons(tables, stopwords):
         if PICKER_NAME.match(name):
             icons[file_id] = Icon(name, stopwords)
     # Item and spell icons this client has no file name for; another client's name, when it has one, gives file words.
-    names = cached_icon_names(missing_ok=True)
+    names = cached_icon_names(UNNAMED_BRANCHES, missing_ok=True)
     for file_id in unnamed_icon_ids(tables, own):
         name = names.get(file_id, "")
         if not name or PICKER_NAME.match(name):
@@ -686,7 +699,7 @@ def write_locale(flavor, locale, english, translated):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("flavors", nargs="*", help="forever, retail (default: both)")
+    parser.add_argument("flavors", nargs="*", help="forever, retail, era, anniversary, classic (default: all)")
     parser.add_argument("--refresh", action="store_true", help="re-download the CSVs")
     args = parser.parse_args()
     unknown = set(args.flavors) - set(FLAVORS)

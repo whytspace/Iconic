@@ -268,7 +268,7 @@ ns.TAG_CATEGORIES = {
         label = "Other creatures",
         words = "beholder chimera crawler creature creeper elemental gnoll golem gronn kirin kobold mandrake maw "
           .. "mech mechanical monster moonkin naaru pixiu podling quilin ragnaros ravager robot shredder "
-          .. "snobold stalker swamp treant vessel zergling",
+          .. "snobold stalker swamp treant vessel warpstalker zergling",
       },
       {
         key = "mounts",

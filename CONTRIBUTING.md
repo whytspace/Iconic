@@ -21,11 +21,11 @@ ln -s "$PWD" "/Applications/Games/World of Warcraft/_retail_/Interface/AddOns/Ic
 ln -s "$PWD/Iconic_Data" "/Applications/Games/World of Warcraft/_retail_/Interface/AddOns/Iconic_Data"
 ```
 
-Use the WoW Forever client's AddOns folder the same way. The Git setting prevents WoW's permission updates from appearing as executable-bit changes.
+Use the AddOns folder of the WoW Forever and Classic clients the same way. The Git setting prevents WoW's permission updates from appearing as executable-bit changes.
 
 ## Layout
 
-- `Iconic.toc` — one add-on for WoW Forever and retail.
+- `Iconic.toc` — one add-on for WoW Forever, retail, Classic Era, TBC Anniversary and MoP Classic.
 - `Search.lua`, `Color.lua`, `Catalog.lua`, `Data.lua` — search, color matching, filters, groups and data loading; pure Lua, unit-tested.
 - `UI/` — frames, picker hooks, tooltips, settings, public API; checked in-game. `View.lua` is the icon grid; `ColorChips.lua`, `FilterMenu.lua`, `SearchHints.lua` and `IconTooltip.lua` add its parts.
 - `Adapters/` — one file per UI whose icon pickers Iconic replaces, listed in `Adapters/Adapters.xml`.
@@ -35,10 +35,10 @@ Use the WoW Forever client's AddOns folder the same way. The Git setting prevent
 
 ## Icon data
 
-`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes `Iconic_Data/Forever.lua` and `Iconic_Data/Retail.lua`. It keeps only the icons Blizzard's picker offers, since Iconic shows no others: `Interface\Icons` files named like `PICKER_NAME`, plus item and spell icons the client has no file name for (`unnamed_icon_ids` in `scripts/common.py`; the pickers list those by file ID, except housing decor). Rerun it after a game patch and commit the result:
+`scripts/build_data.py` downloads DB2 tables from [wago.tools](https://wago.tools/db2) and writes one data file per client: `Forever.lua`, `Retail.lua`, `ClassicEra.lua`, `Anniversary.lua` and `Classic.lua` (MoP Classic) in `Iconic_Data/`, each loaded by its game type in `Iconic_Data.toc` (`camelot`, `standard`, `vanilla`, `tbc`, `mists`). Tables of systems a client doesn't have yet, such as mounts in Classic Era, count as empty (`OPTIONAL_TABLES`). It keeps only the icons Blizzard's picker offers, since Iconic shows no others: `Interface\Icons` files named like `PICKER_NAME`, plus item and spell icons the client has no file name for (`unnamed_icon_ids` in `scripts/common.py`; the pickers list those by file ID, except housing decor). Rerun it after a game patch and commit the result:
 
 ```sh
-devc python3 scripts/build_data.py            # both versions, cached downloads
+devc python3 scripts/build_data.py            # every client, cached downloads
 devc python3 scripts/build_data.py --refresh  # fetch fresh tables
 devc python3 scripts/build_data.py forever
 ```
@@ -51,7 +51,7 @@ Each data file holds one Lua table per field with one entry per icon (columns li
 
 ## Icon colors
 
-Color data needs the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from the retail and the WoW Forever product. The dev container mounts the install read-only at `/wow`:
+Color data needs the icon images. `scripts/extract_icons.py` reads them straight from a local WoW install's CASC storage (standard library only) into `.cache/icons/`, from every client's product (`BRANCHES` in `scripts/common.py`). The dev container mounts the install read-only at `/wow`:
 
 - Default source: `/Applications/Games/World of Warcraft`. Elsewhere, set `WOW_DIR` to the install folder before `devc up`.
 - Docker Desktop must share that folder: Settings → Resources → File sharing.
@@ -177,15 +177,15 @@ End an entry that comes from an issue with a full Markdown link, `([#2](https://
 
 ## Project rules
 
-- Support WoW Forever and current retail. Guard APIs that only one client has.
+- Support WoW Forever, current retail and the Classic clients. Guard APIs that not every client has. Classic Era is the most limited one to test in; MoP Classic adds the equipment set picker.
 - Use `WowScrollBox`, `MinimalScrollBar` and `MenuUtil`. Avoid legacy UI systems.
 - Pure logic needs unit tests. Verify UI changes in-game with `/reload`.
 
 ## When WoW updates
 
-After a patch to WoW Forever or retail:
+After a patch to any client:
 
-1. Update `## Interface` in `Iconic.toc` and `Iconic_Data/Iconic_Data.toc` (both the same). The number is the client version as `MMmmpp`: 12.1.5 → `120105`, 1.60.1 → `16001`. This prints it for each installed client (`wow` retail, `wowf` WoW Forever):
+1. Update `## Interface` in `Iconic.toc` and `Iconic_Data/Iconic_Data.toc` (both the same). The number is the client version as `MMmmpp`: 12.1.5 → `120105`, 1.60.1 → `16001`, 1.15.9 → `11509`. This prints it for each installed client (`wow` retail, `wowf` WoW Forever, `wow_classic_era`, `wow_anniversary`, `wow_classic`):
 
    ```sh
    awk -F'|' 'NR>1 { split($13, v, "."); printf "%s %d\n", $15, v[1]*10000 + v[2]*100 + v[3] }' "/Applications/Games/World of Warcraft/.build.info"

@@ -4,7 +4,7 @@
 Reads the install's CASC storage directly (formats: https://wowdev.wiki/TACT, https://wowdev.wiki/CASC).
 Standard library only.
 
-Usage: python3 scripts/extract_icons.py [--wow-dir DIR] [--product wow --product wowf] [--limit N]
+Usage: python3 scripts/extract_icons.py [--wow-dir DIR] [--product wow --product wowf ...] [--limit N]
 """
 
 import argparse
@@ -15,7 +15,7 @@ import sys
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import ICON_CACHE as OUT, cached_icon_names, cached_unnamed_icon_ids, log  # noqa: E402
+from common import BRANCHES, ICON_CACHE as OUT, cached_icon_names, cached_unnamed_icon_ids, log  # noqa: E402
 
 DEFAULT_WOW = os.environ.get("WOW_DIR", "/Applications/Games/World of Warcraft")
 
@@ -194,7 +194,7 @@ def main():
     parser.add_argument(
         "--product",
         action="append",
-        help="product in .build.info, repeatable: wow (retail), wowf (Forever); default both",
+        help="product in .build.info, repeatable: wow (retail), wowf (Forever), wow_classic_era, wow_anniversary, wow_classic; default all",
     )
     parser.add_argument("--limit", type=int, help="extract only this many icons per product (for testing)")
     parser.add_argument("--out", default=OUT, help="output folder (default .cache/icons)")
@@ -204,7 +204,7 @@ def main():
     log(f"{len(storage.entries)} local storage entries")
     os.makedirs(args.out, exist_ok=True)
     wanted = set(cached_icon_names()) | cached_unnamed_icon_ids()
-    for product in args.product or ["wow", "wowf"]:
+    for product in args.product or BRANCHES:
         # Products share the archives; each has its own root, so a later one adds only icons not yet written.
         extract(storage, args.wow_dir, product, wanted, args)
 

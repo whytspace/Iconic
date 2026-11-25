@@ -2399,6 +2399,7 @@ spektral	spectral
 sperrfeuer	barrage
 sphare	orb sphere
 spharen	orb
+spharenjager	warpstalker
 spiegel	mirror
 spiegeln	reflect
 spiegelung	reflection
@@ -5161,6 +5162,7 @@ warhammer	kriegshammer
 warlock	hexenmeister
 warp	verzerrung
 warpaint	kriegsbemalung
+warpstalker	sphärenjäger
 warrior	krieger
 warts	warzen
 wasp	wespe

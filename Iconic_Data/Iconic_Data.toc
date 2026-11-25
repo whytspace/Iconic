@@ -1,4 +1,4 @@
-## Interface: 120105, 120107, 16001
+## Interface: 120105, 120107, 16001, 11509, 20506, 50504
 ## Title: Iconic Data
 ## Notes: Icon names and categories for Iconic, loaded when an icon picker opens.
 ## Author: whytspace
@@ -7,7 +7,13 @@
 ## LoadOnDemand: 1
 ## Dependencies: Iconic
 
-Forever.lua [AllowLoadGameType camelot, forever][ExcludeLoadGameType standard]
+Forever.lua [AllowLoadGameType camelot, forever][ExcludeLoadGameType standard, vanilla, tbc, mists]
 Retail.lua [AllowLoadGameType standard][ExcludeLoadGameType camelot, forever]
-Forever_deDE.lua [AllowLoadGameType camelot, forever][ExcludeLoadGameType standard][AllowLoadTextLocale deDE]
+ClassicEra.lua [AllowLoadGameType vanilla][ExcludeLoadGameType camelot, forever]
+Anniversary.lua [AllowLoadGameType tbc][ExcludeLoadGameType camelot, forever]
+Classic.lua [AllowLoadGameType mists][ExcludeLoadGameType camelot, forever]
+Forever_deDE.lua [AllowLoadGameType camelot, forever][ExcludeLoadGameType standard, vanilla, tbc, mists][AllowLoadTextLocale deDE]
 Retail_deDE.lua [AllowLoadGameType standard][ExcludeLoadGameType camelot, forever][AllowLoadTextLocale deDE]
+ClassicEra_deDE.lua [AllowLoadGameType vanilla][ExcludeLoadGameType camelot, forever][AllowLoadTextLocale deDE]
+Anniversary_deDE.lua [AllowLoadGameType tbc][ExcludeLoadGameType camelot, forever][AllowLoadTextLocale deDE]
+Classic_deDE.lua [AllowLoadGameType mists][ExcludeLoadGameType camelot, forever][AllowLoadTextLocale deDE]

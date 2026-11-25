@@ -10,9 +10,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, ".cache")
 WAGO_CACHE = os.path.join(CACHE, "wago")
 ICON_CACHE = os.path.join(CACHE, "icons")
-BRANCHES = ("wow", "wowf")
+BRANCHES = ("wow", "wowf", "wow_classic_era", "wow_anniversary", "wow_classic")
+# The clients whose pickers list icons that have no file name.
+UNNAMED_BRANCHES = ("wow", "wowf")
 
-# The Interface\Icons files both clients' icon pickers offer by name (checked against in-game exports).
+# The Interface\Icons files every client's icon pickers offer by name (checked against in-game exports).
 PICKER_NAME = re.compile(r"(inv|ability|spell)_", re.IGNORECASE)
 
 

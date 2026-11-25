@@ -12,7 +12,17 @@ local function hasRef(index, row, refs)
 end
 
 -- Runs the shipped data files through the real search, guarding the build script and the parser together.
-for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
+-- minIcons: fewer means the build lost icons; werewolf: the client has icon 538517 (added in Cataclysm).
+local FILES = {
+  { file = "Forever.lua", minIcons = 25000, werewolf = true },
+  { file = "Retail.lua", minIcons = 25000, werewolf = true },
+  { file = "ClassicEra.lua", minIcons = 5000 },
+  { file = "Anniversary.lua", minIcons = 3500 },
+  { file = "Classic.lua", minIcons = 10000, werewolf = true },
+}
+
+for _, spec in ipairs(FILES) do
+  local file = spec.file
   describe("data " .. file, function()
     local ns, data, rows, opts
 
@@ -53,25 +63,29 @@ for _, file in ipairs({ "Forever.lua", "Retail.lua" }) do
       end
       assert.is_true(shared, "no icon in the top 3 for both pyroschlag and pyroblast")
       -- German words find the English picture tags: 538517 shows a werewolf.
-      local germanOpts = { synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS, german.translatedWords) }
-      local found
-      for _, row in ipairs(ns.Search.Find(german.index, germanRows, "werwolf", germanOpts)) do
-        found = found or german.index.key[row] == 538517
+      if spec.werewolf then
+        local germanOpts = { synonyms = ns.Search.BuildSynonyms(ns.SYNONYMS, german.translatedWords) }
+        local found
+        for _, row in ipairs(ns.Search.Find(german.index, germanRows, "werwolf", germanOpts)) do
+          found = found or german.index.key[row] == 538517
+        end
+        assert.is_true(found, "538517 not found for 'werwolf'")
       end
-      assert.is_true(found, "538517 not found for 'werwolf'")
     end)
 
-    it("finds icons by their picture tags", function()
-      -- 538517 (spell_druid_tirelesspursuit) shows a werewolf; only its tags say so.
-      local found
-      for i, row in ipairs(ns.Search.Find(data.index, rows, "werewolf", opts)) do
-        found = found or (i <= 3 and data.index.key[row] == 538517)
-      end
-      assert.is_true(found, "538517 not in the top 3 for 'werewolf'")
-    end)
+    if spec.werewolf then
+      it("finds icons by their picture tags", function()
+        -- 538517 (spell_druid_tirelesspursuit) shows a werewolf; only its tags say so.
+        local found
+        for i, row in ipairs(ns.Search.Find(data.index, rows, "werewolf", opts)) do
+          found = found or (i <= 3 and data.index.key[row] == 538517)
+        end
+        assert.is_true(found, "538517 not in the top 3 for 'werewolf'")
+      end)
+    end
 
     it("has icons and lookups", function()
-      assert.is_true(#rows > 25000)
+      assert.is_true(#rows > spec.minIcons)
       assert.are.equal("Hunter", data.classes[3])
       assert.are.equal("Cooking", data.professions[185])
     end)
