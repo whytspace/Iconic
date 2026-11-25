@@ -22,17 +22,6 @@ This is where **Iconic** comes in. It adds a search box, filters and categories 
 
 **A few seconds, and there it is.**
 
-Iconic replaces the icon grid wherever the game lets you choose an icon:
-
-- Macros
-- Equipment sets
-- Bank tabs
-- Guild bank tabs
-- Transmog outfits
-- Other add-ons that use it
-
-![Iconic in the macro window](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png)
-
 ## Finding icons
 
 - **What icons show:** we analyzed over 30,000 icons, so you can search by what they show, such as "werewolf" or "rose". Spell, item, mount, pet and currency names work too, and typos still find close matches.
@@ -47,6 +36,28 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 
 ![Color search](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/colors.png)
 
+## Search icons everywhere
+
+Iconic replaces the icon grid wherever the game lets you choose an icon:
+
+- Macros
+- Equipment sets
+- Bank tabs
+- Guild bank tabs
+- Transmog outfits
+
+It also replaces the built-in icon pickers of these add-ons:
+
+- **[Bagnon](https://www.curseforge.com/wow/addons/bagnon):** filter editor, bank tabs and guild bank tabs
+- **[Baganator](https://www.curseforge.com/wow/addons/baganator):** bank tabs
+- **[Clique](https://www.curseforge.com/wow/addons/clique):** custom macros
+- **[Details!](https://www.curseforge.com/wow/addons/details), [Plater](https://www.curseforge.com/wow/addons/plater-nameplates) and [World Quest Tracker](https://www.curseforge.com/wow/addons/world-quest-tracker)** (DetailsFramework)
+- Any other add-on that uses Iconic's API
+
+Add-on authors are encouraged to add Iconic support to their add-ons: `Iconic.OpenPicker(onChoose, opts)` opens Iconic as a picker, and `Iconic.RegisterPicker(frame, adapter)` puts Iconic into your own icon picker (see [`UI/API.lua`](UI/API.lua)). Alternatively, contribute an adapter like the ones in [`Adapters`](https://github.com/whytspace/Iconic/tree/main/Adapters).
+
+![Iconic in the macro window](https://raw.githubusercontent.com/whytspace/Iconic/main/docs/images/picker.png)
+
 ## Install
 
 - **CurseForge:** install [Iconic – Icon Search](https://www.curseforge.com/wow/addons/iconic-icon-search) with the CurseForge app.
@@ -57,10 +68,6 @@ Iconic replaces the icon grid wherever the game lets you choose an icon:
 1. Open the macro window (`/macro`) and create or edit a macro. Iconic replaces the icon grid.
 2. Type in the search box, or pick filters from the toolbar.
 3. Type `/iconic` to browse icons without changing anything, and `/iconic settings` for the options.
-
-## For add-on authors
-
-`Iconic.OpenPicker(onChoose, opts)` opens Iconic as a picker for your add-on. `Iconic.RegisterPicker(frame, adapter)` puts Iconic into your own icon picker. See `UI/API.lua`.
 
 ## License
 
