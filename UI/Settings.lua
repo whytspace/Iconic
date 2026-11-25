@@ -107,6 +107,42 @@ function SettingsPage.Setup()
   )
   Settings.CreateCheckbox(category, recent, L["Icons you picked recently appear first."])
 
+  -- One switch per integration with another add-on, for installed ones; on unless turned off.
+  local exists = C_AddOns and C_AddOns.DoesAddOnExist
+  local installed = {}
+  for _, integration in ipairs(ns.Pickers.Integrations()) do
+    for _, addon in ipairs(integration.addons) do
+      if exists and exists(addon) then
+        installed[#installed + 1] = integration
+        break
+      end
+    end
+  end
+  if #installed > 0 and Settings.RegisterProxySetting then
+    section(L["Other add-ons"])
+  end
+  for _, integration in ipairs(Settings.RegisterProxySetting and installed or {}) do
+    local id = integration.id
+    local setting = Settings.RegisterProxySetting(
+      category,
+      "ICONIC_INTEGRATION_" .. id:upper(),
+      Settings.VarType.Boolean,
+      integration.name,
+      true,
+      function()
+        return not ns.db.disabledIntegrations[id]
+      end,
+      function(enabled)
+        ns.Pickers.SetIntegrationEnabled(id, enabled)
+      end
+    )
+    Settings.CreateCheckbox(
+      category,
+      setting,
+      L["Iconic replaces this add-on's icon picker. Turning it off takes effect after /reload."]
+    )
+  end
+
   Settings.RegisterCanvasLayoutSubcategory(category, ns.About.CreatePanel(), L["About"])
   Settings.RegisterAddOnCategory(category)
   SettingsPage.category = category

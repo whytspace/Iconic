@@ -238,7 +238,16 @@ Pickers.adapters = {}
 local eventAdapters = {}
 local adapterEvents = CreateFrame("Frame")
 
+-- False for an adapter whose integration the player turned off in the settings.
+function Pickers.IsEnabled(spec)
+  local disabled = ns.db and ns.db.disabledIntegrations
+  return not (spec.integration and disabled and disabled[spec.integration.id])
+end
+
 local function attachAdapter(spec)
+  if not Pickers.IsEnabled(spec) then
+    return
+  end
   local ok, frames = pcall(spec.frames)
   for _, popup in ipairs(ok and frames or {}) do
     Pickers.Attach(popup, spec.overrides)
@@ -253,9 +262,11 @@ adapterEvents:SetScript("OnEvent", function(_, event)
   end
 end)
 
--- Registers an adapter: { addon, frames, overrides, events }. `addon` is the add-on whose pickers it handles (nil for
--- the game's always-loaded UI); frames() returns the picker frames that exist now; `overrides` replace
--- TemplateAdapter functions; `events` name further events after which its pickers may exist.
+-- Registers an adapter: { addon, frames, overrides, events, integration }. `addon` is the add-on whose pickers it
+-- handles (nil for the game's always-loaded UI); frames() returns the picker frames that exist now; `overrides`
+-- replace TemplateAdapter functions; `events` name further events after which its pickers may exist.
+-- `integration` ({ id, name, addons }) makes it a setting players can turn off, shared by adapters with the same id
+-- and shown while one of `addons` is installed.
 function Pickers.AddAdapter(spec)
   Pickers.adapters[#Pickers.adapters + 1] = spec
   for _, event in ipairs(spec.events or {}) do
@@ -267,6 +278,35 @@ end
 
 local function isLoaded(addon)
   return not addon or not (C_AddOns and C_AddOns.IsAddOnLoaded) or C_AddOns.IsAddOnLoaded(addon)
+end
+
+-- The integrations of the registered adapters, one per id, in registration order.
+function Pickers.Integrations()
+  local list, seen = {}, {}
+  for _, spec in ipairs(Pickers.adapters) do
+    local integration = spec.integration
+    if integration and not seen[integration.id] then
+      seen[integration.id] = true
+      list[#list + 1] = integration
+    end
+  end
+  return list
+end
+
+-- Turns integration `id` on or off. Turning it on attaches its loaded pickers now; pickers already replaced stay so
+-- until /reload.
+function Pickers.SetIntegrationEnabled(id, enabled)
+  if not ns.db then
+    return
+  end
+  ns.db.disabledIntegrations[id] = not enabled or nil
+  if enabled then
+    for _, spec in ipairs(Pickers.adapters) do
+      if spec.integration and spec.integration.id == id and isLoaded(spec.addon) then
+        attachAdapter(spec)
+      end
+    end
+  end
 end
 
 -- Attaches the pickers of every adapter whose add-on is loaded.

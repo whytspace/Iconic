@@ -16,6 +16,8 @@ ns.DEFAULTS = {
   recent = {},
   -- groupBy -> section key -> true
   collapsed = {},
+  -- Integration id -> true for the other add-ons' pickers the player turned off; all others are on.
+  disabledIntegrations = {},
 }
 
 ns.MAX_RECENT = 24

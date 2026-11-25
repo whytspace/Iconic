@@ -5,6 +5,7 @@ local Pickers = ns.Pickers
 -- Baganator's bank windows, one per skin, each with its own copies of Blizzard's bank tab settings menu.
 Pickers.AddAdapter({
   addon = "Baganator",
+  integration = { id = "Baganator", name = "Baganator", addons = { "Baganator" } },
   events = { "BANKFRAME_OPENED" },
   overrides = Pickers.BANK_OVERRIDES,
   frames = function()

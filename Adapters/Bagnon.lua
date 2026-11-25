@@ -7,9 +7,12 @@ local function templateFrame(popup)
   return popup and popup.IconSelector and { popup } or {}
 end
 
+local INTEGRATION = { id = "Bagnon", name = "Bagnon", addons = { "Bagnon" } }
+
 -- Bank tab settings menu (retail only), a copy of Blizzard's.
 Pickers.AddAdapter({
   addon = "Bagnon_Bank",
+  integration = INTEGRATION,
   overrides = Pickers.BANK_OVERRIDES,
   frames = function()
     local bag = Bagnon and Bagnon.BankBag
@@ -20,6 +23,7 @@ Pickers.AddAdapter({
 -- Guild bank tab popup.
 Pickers.AddAdapter({
   addon = "Bagnon_GuildBank",
+  integration = INTEGRATION,
   overrides = Pickers.GUILD_BANK_OVERRIDES,
   frames = function()
     return templateFrame(BagBrotherGuildTabEditPopup)
@@ -48,6 +52,7 @@ end
 -- Filter editor: Display fills it after showing it.
 Pickers.AddAdapter({
   addon = "Bagnon_Config",
+  integration = INTEGRATION,
   overrides = {
     AnchorFooter = function(popup, footer)
       Pickers.TemplateAdapter.AnchorFooter(popup, footer)

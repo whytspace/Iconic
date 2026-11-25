@@ -132,7 +132,7 @@ Add a group only when a player would plausibly search one word to find the other
 
 `UI/Pickers.lua` replaces the icon grid of every frame built on Blizzard's `IconSelectorPopupFrameTemplate`. A new Blizzard picker is one entry in `BLIZZARD` in `Adapters/Blizzard.lua`.
 
-Another add-on's pickers get a file in `Adapters/`, added to `Adapters/Adapters.xml`, that calls `Pickers.AddAdapter({ addon, frames, overrides, events })` (see `Adapters/Baganator.lua`). Iconic looks for the frames once that add-on has loaded and after each of `events`. Add-ons can also call `Iconic.RegisterPicker(frame, adapter)` themselves, documented in `UI/API.lua`.
+Another add-on's pickers get a file in `Adapters/`, added to `Adapters/Adapters.xml`, that calls `Pickers.AddAdapter({ addon, frames, overrides, events, integration })` (see `Adapters/Baganator.lua`). Iconic looks for the frames once that add-on has loaded and after each of `events`. `integration` gives it a switch under "Other add-ons" in Iconic's settings; adapters for one add-on share its id. Add-ons can also call `Iconic.RegisterPicker(frame, adapter)` themselves, documented in `UI/API.lua`.
 
 ## Assets
 

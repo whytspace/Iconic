@@ -94,7 +94,7 @@ local overrides = {
 }
 
 -- The frame exists once an add-on first opens the picker, so Iconic attaches right after IconPick.
-local hookedPick
+local spec, hookedPick
 
 local function hookLibrary()
   local DF = LibStub and LibStub("DetailsFramework-1.0", true)
@@ -102,15 +102,23 @@ local function hookLibrary()
     return
   end
   hooksecurefunc(DF, "IconPick", function()
-    Pickers.Attach(DetailsFrameworkIconPickFrame, overrides)
+    if Pickers.IsEnabled(spec) then
+      Pickers.Attach(DetailsFrameworkIconPickFrame, overrides)
+    end
   end)
   hookedPick = DF.IconPick
 end
 
-Pickers.AddAdapter({
+spec = {
+  integration = {
+    id = "DetailsFramework",
+    name = "Details!, Plater, World Quest Tracker",
+    addons = { "Details", "Plater", "WorldQuestTracker" },
+  },
   overrides = overrides,
   frames = function()
     hookLibrary()
     return DetailsFrameworkIconPickFrame and { DetailsFrameworkIconPickFrame } or {}
   end,
-})
+}
+Pickers.AddAdapter(spec)
