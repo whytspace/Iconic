@@ -3,5 +3,6 @@
 	<Script file="Blizzard.lua"/>
 	<Script file="Bagnon.lua"/>
 	<Script file="Baganator.lua"/>
+	<Script file="Clique.lua"/>
 	<Script file="DetailsFramework.lua"/>
 </Ui>

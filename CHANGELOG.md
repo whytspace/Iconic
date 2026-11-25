@@ -5,6 +5,7 @@
 - **[New]** Filter and group icons by Iconic category, such as "Armor › Head" or "Creatures", based on what the icon shows; icons Iconic has no tags for yet are under "Unknown". ([#8](https://github.com/whytspace/Iconic/issues/8))
 - **[New]** Support for Bagnon's icon pickers: filter editor, guild bank tabs and bank tabs. ([#11](https://github.com/whytspace/Iconic/issues/11))
 - **[New]** Support for the icon picker of Details!, Plater and World Quest Tracker. ([#11](https://github.com/whytspace/Iconic/issues/11))
+- **[New]** Support for Clique's custom macro icons. ([#11](https://github.com/whytspace/Iconic/issues/11))
 - **[New]** Turn off Iconic for single add-ons under Options → AddOns → Iconic → Other add-ons.
 - **[Change]** The "Item category" filter and grouping are now called "Blizzard category".
 - **[Change]** Picture tags use the singular only ("gem" instead of both "gem" and "gems").
