@@ -683,12 +683,31 @@ function View.Create(parent, opts)
   self.search:SetPoint("LEFT", opts and opts.searchLeft or 16, 0)
   self.search:SetPoint("RIGHT", self.colorBar, "LEFT", -10, 0)
   self.search:SetAutoFocus(false)
+  -- Classic's search box asks the removed GetMouseFocus whether to keep focus, so it never lets go.
+  self.search.HasStickyFocus = function(box)
+    for _, focus in ipairs(GetMouseFoci and GetMouseFoci() or {}) do
+      if DoesAncestryInclude(box, focus) then
+        return true
+      end
+    end
+    return false
+  end
+  -- Classic keeps an edit box's focus on clicks elsewhere, which would keep the hints open.
+  self.search:HookScript("OnEvent", function(box, event)
+    if event == "GLOBAL_MOUSE_DOWN" and box:HasFocus() and not box:HasStickyFocus() then
+      box:ClearFocus()
+    end
+  end)
+  self.search:HookScript("OnEditFocusLost", function(box)
+    box:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+  end)
   self.search.Instructions:SetText(L["Search…"])
   self.search:HookScript("OnTextChanged", function()
     self:QueueRefresh()
     self:UpdateHints()
   end)
-  self.search:HookScript("OnEditFocusGained", function()
+  self.search:HookScript("OnEditFocusGained", function(box)
+    box:RegisterEvent("GLOBAL_MOUSE_DOWN")
     self:UpdateHints()
   end)
   for _, button in ipairs(self.search:GetButtons()) do

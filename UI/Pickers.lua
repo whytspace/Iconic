@@ -96,6 +96,13 @@ end
 function TemplateAdapter.HookStateChanges(popup, onChange)
   if popup.UpdateStateFromCursorType then
     hooksecurefunc(popup, "UpdateStateFromCursorType", onChange)
+  else
+    -- Classic updates the drag state straight in OnEvent.
+    popup:HookScript("OnEvent", function(_, event)
+      if event == "CURSOR_CHANGED" then
+        onChange()
+      end
+    end)
   end
 end
 

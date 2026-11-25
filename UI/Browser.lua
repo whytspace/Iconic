@@ -35,7 +35,7 @@ function Browser:Create()
   logo:SetPoint("CENTER", portrait, "CENTER", 0, 2)
   -- No empty band under the title; a footer tall enough for the 36px preview.
   ButtonFrameTemplate_HideAttic(frame)
-  FrameTemplate_SetButtonBarHeight(frame, FOOTER_HEIGHT)
+  frame.Inset:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, FOOTER_HEIGHT)
   frame:SetSize(560, 560)
   frame:SetPoint("CENTER")
   frame:SetMovable(true)

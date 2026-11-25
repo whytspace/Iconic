@@ -158,8 +158,14 @@ end
 function SettingsPage.CreateButton(parent)
   local button = CreateFrame("Button", nil, parent)
   button:SetSize(15, 16)
-  button:SetNormalAtlas("questlog-icon-setting")
-  button:SetHighlightAtlas("questlog-icon-setting", "ADD")
+  -- Classic Era (interface 1.15) lacks the atlas's texture file.
+  if select(4, GetBuildInfo()) < 11600 then
+    button:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+    button:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
+  else
+    button:SetNormalAtlas("questlog-icon-setting")
+    button:SetHighlightAtlas("questlog-icon-setting", "ADD")
+  end
   button:GetHighlightTexture():SetAlpha(0.4)
   button:SetScript("OnClick", SettingsPage.Open)
   button:SetScript("OnEnter", function(owner)
