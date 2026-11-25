@@ -7,6 +7,7 @@
 - **[New]** Support for the icon picker of Details!, Plater and World Quest Tracker. ([#11](https://github.com/whytspace/Iconic/issues/11))
 - **[New]** Support for Clique's custom macro icons. ([#11](https://github.com/whytspace/Iconic/issues/11))
 - **[New]** Turn off Iconic for single add-ons under Options → AddOns → Iconic → Other add-ons.
+- **[New]** The header of the group you're scrolling through stays at the top of the list.
 - **[Change]** "Iconic Data" shows Iconic's icon in the add-on list.
 - **[Change]** The "Item category" filter and grouping are now called "Blizzard category".
 - **[Change]** Picture tags use the singular only ("gem" instead of both "gem" and "gems").

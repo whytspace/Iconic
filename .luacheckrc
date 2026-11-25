@@ -38,6 +38,7 @@ read_globals = {
   "LibStub",
   "CreateSettingsListSectionHeaderInitializer",
   "BankPanel",
+  "BaseScrollBoxEvents",
   "BreakUpLargeNumbers",
   "Clique",
   "ButtonFrameTemplate_HideAttic",

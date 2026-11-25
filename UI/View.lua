@@ -158,6 +158,62 @@ function View:InitHeader(frame, elementData)
   frame.toggle.down:SetShown(elementData.collapsed)
 end
 
+-- Top of a header's band, in the list's scroll coordinates.
+function View:BandTop(index)
+  local data = self.provider:Find(index)
+  return self.scrollBox:GetExtentUntil(index)
+    + (data.gap and SECTION_GAP or 0)
+    + HEADER_HEIGHT
+    - HEADER_GAP
+    - BAND_HEIGHT
+end
+
+-- Pins the header of the group at the top of the list while its own header is scrolled away; the next group's
+-- header pushes it out.
+function View:UpdateStickyHeader()
+  local sticky, indexes = self.sticky, self.headerIndexes
+  if not (sticky and self.provider and indexes and #indexes > 0) then
+    if sticky then
+      sticky:Hide()
+    end
+    return
+  end
+  if not self.bandTops then
+    self.bandTops = {}
+    for i, index in ipairs(indexes) do
+      self.bandTops[i] = self:BandTop(index)
+    end
+  end
+  local tops = self.bandTops
+  local offset = self.scrollBox:GetDerivedScrollOffset()
+  local current
+  for i in ipairs(indexes) do
+    if tops[i] - offset < 0 then
+      current = i
+    else
+      break
+    end
+  end
+  if not current then
+    sticky:Hide()
+    return
+  end
+  local data = self.provider:Find(indexes[current])
+  if sticky.key ~= data.key or sticky.collapsed ~= data.collapsed then
+    self:InitHeader(sticky, data)
+    sticky.key, sticky.collapsed = data.key, data.collapsed
+  end
+  -- Lifted by the space above its band, so the band sits flush under the toolbar.
+  local lift = HEADER_HEIGHT - HEADER_GAP - BAND_HEIGHT
+  if tops[current + 1] then
+    lift = lift + math.max(0, BAND_HEIGHT - (tops[current + 1] - offset))
+  end
+  sticky:ClearAllPoints()
+  sticky:SetPoint("TOPLEFT", sticky:GetParent(), "TOPLEFT", 0, lift)
+  sticky:SetPoint("TOPRIGHT", sticky:GetParent(), "TOPRIGHT", 0, lift)
+  sticky:Show()
+end
+
 -- Grouping in effect: grouping by color pauses while color chips rank the icons.
 function View:ActiveGroupBy()
   local groupBy = View.SavedGroupBy()
@@ -194,6 +250,19 @@ function View:ToggleSection(key, all)
   end
   set[key] = collapse or nil
   self:Refresh(true)
+end
+
+-- Scrolls so the band of section `key`'s header sits flush at the top, where the pinned header was, at once.
+function View:ScrollToSection(key)
+  for _, index in ipairs(self.headerIndexes or {}) do
+    if self.provider:Find(index).key == key then
+      local range = self.scrollBox:GetDerivedScrollRange()
+      if range > 0 then
+        self.scrollBox:SetScrollPercentage(math.min(1, self:BandTop(index) / range), true)
+      end
+      return
+    end
+  end
 end
 
 -- Small toolbar button with a drawn sign and a tooltip.
@@ -488,8 +557,9 @@ function View:Refresh(keepScroll)
     sections[1].title = L["Close matches"]
   end
 
-  local elements, collapsed = {}, self:CollapsedSet()
+  local elements, collapsed, headerIndexes = {}, self:CollapsedSet(), {}
   self.sectionKeys, self.sectionOf, self.visibleRows = {}, {}, {}
+  self.headerIndexes = headerIndexes
   for sectionIndex, section in ipairs(sections) do
     local key = (section.suggested and "suggested")
       or (section.recent and "recent")
@@ -510,6 +580,7 @@ function View:Refresh(keepScroll)
         key = key,
         collapsed = isCollapsed,
       }
+      headerIndexes[#headerIndexes + 1] = #elements
     end
     for i = 1, isCollapsed and 0 or #section.rows, perRow do
       local chunk = {}
@@ -525,6 +596,8 @@ function View:Refresh(keepScroll)
     self.provider,
     keepScroll and ScrollBoxConstants.RetainScrollPosition or ScrollBoxConstants.DiscardScrollPosition
   )
+  self.bandTops = nil
+  self:UpdateStickyHeader()
 
   local empty = #rows == 0
   self.empty:SetShown(empty)
@@ -693,6 +766,30 @@ function View.Create(parent, opts)
     end
   end)
   ScrollUtil.InitScrollBoxListWithScrollBar(self.scrollBox, self.scrollBar, listView)
+
+  -- The pinned group header, clipped to the list so it slides out under the toolbar.
+  local stickyClip = CreateFrame("Frame", nil, frame)
+  stickyClip:SetAllPoints(self.scrollBox)
+  stickyClip:SetClipsChildren(true)
+  stickyClip:SetFrameLevel(self.scrollBox:GetFrameLevel() + 20)
+  self.sticky = CreateFrame("Button", nil, stickyClip)
+  self.sticky:SetHeight(HEADER_HEIGHT)
+  self:InitHeader(self.sticky, { header = "", key = false })
+  -- Toggling from the pinned header keeps that group's header at the top instead of jumping past it.
+  self.sticky:SetScript("OnClick", function(header)
+    local key = header.sectionKey
+    self:ToggleSection(key, IsShiftKeyDown())
+    self:ScrollToSection(key)
+  end)
+  -- Opaque behind the band, so icons scrolling under it don't show through.
+  self.sticky.under = self.sticky:CreateTexture(nil, "BACKGROUND", nil, -8)
+  self.sticky.under:SetPoint("TOPLEFT")
+  self.sticky.under:SetPoint("BOTTOMRIGHT", self.sticky.band, "BOTTOMRIGHT")
+  self.sticky.under:SetColorTexture(0.05, 0.05, 0.05, 0.95)
+  self.sticky:Hide()
+  self.scrollBox:RegisterCallback(BaseScrollBoxEvents.OnScroll, function()
+    self:UpdateStickyHeader()
+  end, self)
 
   self.empty = frame:CreateFontString(nil, "OVERLAY", "GameFontDisable")
   self.empty:SetPoint("CENTER", self.scrollBox)
